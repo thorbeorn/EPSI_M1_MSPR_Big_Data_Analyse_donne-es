@@ -1,0 +1,57 @@
+{
+  "annee": {
+    "nom": "annee",
+    "type": "year",
+    "description": "Année de référence des données"
+  },
+  "nombre": {
+    "nom": "nombre",
+    "type": "int",
+    "description": "Nombre total observé"
+  },
+  "insee_log": {
+    "nom": "insee_log",
+    "type": "int",
+    "description": "Nombre de logements INSEE"
+  },
+  "insee_pop": {
+    "nom": "insee_pop",
+    "type": "int",
+    "description": "Population INSEE"
+  },
+  "indicateur": {
+    "nom": "indicateur",
+    "type": "string",
+    "description": "Type d’indicateur"
+  },
+  "Code_region": {
+    "nom": "code_region",
+    "type": "string",
+    "description": "Code de la région"
+  },
+  "taux_pour_mille": {
+    "nom": "taux_pour_mille",
+    "type": "float",
+    "description": "Taux pour mille habitants"
+  },
+  "unite_de_compte": {
+    "nom": "unite_de_compte",
+    "type": "string",
+    "description": "Unité de mesure"
+  },
+  "Code_departement": {
+    "nom": "code_departement",
+    "type": "string",
+    "description": "Code du département"
+  },
+  "insee_log_millesime": {
+    "nom": "insee_log_millesime",
+    "type": "year",
+    "description": "Millésime des données logements INSEE"
+  },
+  "insee_pop_millesime": {
+    "nom": "insee_pop_millesime",
+    "type": "year",
+    "description": "Millésime des données population INSEE"
+  }
+}
