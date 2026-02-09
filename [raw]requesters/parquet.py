@@ -4,7 +4,7 @@ from typing import Union
 import fastparquet
 import requests
 
-def creer_dataframe_depuis_parquet(parquet_url: str, temp_file_path: str, metadata_json: Union[str, dict]) -> pd.DataFrame:
+def creer_dataframe_depuis_parquet_url(parquet_url: str, temp_file_path: str, metadata_json: Union[str, dict]) -> pd.DataFrame:
     """
     Charge un fichier parquet et applique des métadonnées.
     
