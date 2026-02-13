@@ -16,7 +16,8 @@ TEMP_PATHS = {
 URLS = {
     "delinquance": "https://object.files.data.gouv.fr/hydra-parquet/hydra-parquet/2b27a675-e3bf-41ef-a852-5fb9ab483967.parquet",
     "taux_chommage": "https://www.insee.fr/fr/statistiques/fichier/2012804/sl_etc_2025T3.xls",
-    "age_moyen": "https://api.insee.fr/melodi/data/DS_RP_POPULATION_COMP?SEX=_T&PCS=_T&GEO=DEP"
+    "age_moyen": "https://api.insee.fr/melodi/data/DS_RP_POPULATION_COMP?SEX=_T&PCS=_T&GEO=DEP",
+    "revenu_moyen": "https://api.insee.fr/melodi/data/DS_FILOSOFI_MEN_TP_NIVVIE?FILOSOFI_MEASURE=MED_SL&TPH_FISCAL=_T&UNIT_MEASURE=EUR_YR&GEO=DEP"
 }
 
 # raw_delinquance_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["delinquance"], TEMP_PATHS["temp_delinquance"], PATHS["metadata_delinquance"])
@@ -27,6 +28,10 @@ URLS = {
 # silver_taux_chommage_df = silver_dataframe_module.clean_taux_chomage(raw_taux_chommage_df)
 # print(silver_taux_chommage_df)
 
-raw_age_moyen_df = raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["age_moyen"])
-silver_age_moyen_df = silver_dataframe_module.clean_age_moyen(raw_age_moyen_df)
-print(silver_age_moyen_df)
+# raw_age_moyen_df = raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["age_moyen"])
+# silver_age_moyen_df = silver_dataframe_module.clean_age_moyen(raw_age_moyen_df)
+# print(silver_age_moyen_df)
+
+raw_revenu_moyen_df = raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["revenu_moyen"])
+silver_revenu_moyen_df = silver_dataframe_module.clean_revenu_moyen(raw_revenu_moyen_df)
+print(silver_revenu_moyen_df)

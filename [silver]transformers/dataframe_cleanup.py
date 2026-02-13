@@ -113,3 +113,37 @@ def clean_age_moyen(df: pd.DataFrame) -> pd.DataFrame:
 
   return df
 
+def clean_revenu_moyen(df: pd.DataFrame) -> pd.DataFrame:
+  """
+  Nettoie les données du revenu moyen par département.
+  - Extrait le code département depuis la colonne GEO (format: 2025-DEP-XX)
+  - Garde uniquement TIME_PERIOD (renommé en annee) et OBS_VALUE_NIVEAU (renommé en [revenu]moyen)
+  - Supprime les autres colonnes
+  - Trie par code département (avec la Corse à la fin)
+  
+  Parameters
+  ----------
+  df : pd.DataFrame
+  
+  Returns
+  -------
+  pd.DataFrame
+  """
+  
+  # Extraire le code département depuis la colonne GEO (2025-DEP-01 → 01)
+  df['Code_departement'] = df['GEO'].str.split('-').str[2]
+  
+  # Sélectionner et renommer les colonnes
+  df = df[['Code_departement', 'TIME_PERIOD', 'OBS_VALUE_NIVEAU']].copy()
+  df.columns = ['Code_departement', 'annee', '[revenu]moyen']
+  
+  # Convertir les types
+  df['annee'] = df['annee'].astype(int)
+  df['[revenu]moyen'] = pd.to_numeric(df['[revenu]moyen'], errors='coerce')
+  
+  # Trier par code département avec la Corse (2A, 2B) à la fin
+  df['sort_key'] = df['Code_departement'].replace({'2A': '1000', '2B': '1001'})
+  df['sort_key'] = pd.to_numeric(df['sort_key'], errors='coerce')
+  df = df.sort_values('sort_key').reset_index(drop=True).drop('sort_key', axis=1)
+  
+  return df
