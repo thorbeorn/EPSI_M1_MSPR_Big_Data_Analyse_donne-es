@@ -17,9 +17,9 @@ URLS = {
     "taux_chommage": "https://www.insee.fr/fr/statistiques/fichier/2012804/sl_etc_2025T3.xls" 
 }
 
-# raw_delinquance_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["delinquance"], TEMP_PATHS["temp_delinquance"], PATHS["metadata_delinquance"])
-# silver_delinquance_df = silver_dataframe_module.clean_delinquance(raw_delinquance_df)
-# print(silver_delinquance_df)
+raw_delinquance_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["delinquance"], TEMP_PATHS["temp_delinquance"], PATHS["metadata_delinquance"])
+silver_delinquance_df = silver_dataframe_module.clean_delinquance(raw_delinquance_df)
+print(silver_delinquance_df)
 
 raw_taux_chommage_df = raw_xls_module.creer_dataframe_depuis_xls_url(URLS["taux_chommage"], TEMP_PATHS["temp_taux_chommage"], "Département")
 silver_taux_chommage_df = silver_dataframe_module.clean_taux_chomage(raw_taux_chommage_df)

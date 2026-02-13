@@ -1,0 +1,15 @@
+certifi
+charset-normalizer
+cramjam
+fastparquet
+fsspec
+idna
+numpy
+packaging
+pandas
+python-dateutil
+requests
+six
+typing
+urllib3
+xlrd
