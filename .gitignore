@@ -2,4 +2,5 @@
 __pycache__
 .venv
 .git
-[raw]requesters/temp
+*.parquet
+*.xls

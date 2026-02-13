@@ -1,4 +1,14 @@
 import pandas as pd
+import json
+import unicodedata
+
+def normaliser(texte):
+  """Normalise le texte : minuscules + suppression des accents"""
+  texte = texte.lower()
+  # Supprime les accents
+  texte = unicodedata.normalize('NFD', texte)
+  texte = ''.join(char for char in texte if unicodedata.category(char) != 'Mn')
+  return texte
 
 def clean_delinquance(df: pd.DataFrame) -> pd.DataFrame:
   """
@@ -89,9 +99,7 @@ def clean_age_moyen(df: pd.DataFrame) -> pd.DataFrame:
   """
 
   #Supprime les colonnes
-  df = df.drop('RP_MEASURE', axis=1)
-  df = df.drop('PCS', axis=1)
-  df = df.drop('SEX', axis=1)
+  df = df.drop(['RP_MEASURE', 'PCS', 'SEX'], axis=1)
 
   # Tri la colone GEO et la rennome
   df['GEO'] = df['GEO'].str.split('-').str[-1]
@@ -146,4 +154,59 @@ def clean_revenu_moyen(df: pd.DataFrame) -> pd.DataFrame:
   df['sort_key'] = pd.to_numeric(df['sort_key'], errors='coerce')
   df = df.sort_values('sort_key').reset_index(drop=True).drop('sort_key', axis=1)
   
+  return df
+
+def clean_president_sortant(df: pd.DataFrame, metadata_famille_politique: str) -> pd.DataFrame:
+  """
+  Nettoie les données du président sortant par département.
+  - Conserver uniquement les présidentiel T1 et T2
+  - Supprimer les colonnes qui ne sont pas utile
+  - Reorganiser les colones pour avoir Code_departement, annee, tour, nom, prenom
+  - Supprimer les doublon exacte
+  - Fusionné les colonnes nom et prénom
+  
+  Parameters
+  ----------
+  df : pd.DataFrame
+  
+  Returns
+  -------
+  pd.DataFrame
+  """
+
+  #conserve uniquement les présidentiels T1 et T2 + annee
+  df = df[df['id_election'].str.contains('pres_t1|pres_t2')]
+  df[['annee', 'tour']] = df['id_election'].str.extract(r'(\d{4})_pres_(t[12])')
+  df = df.drop('id_election', axis=1)
+  df['annee'] = df['annee'].astype(int) - 1
+
+  #Supprimer les colonnes inutiles
+  df = df.drop(['id_brut_miom', 'code_commune', 'code_bv', 'nuance', 'sexe', 'no_panneau', 'ratio_voix_inscrits', 'ratio_voix_exprimes', 'libelle_abrege_liste', 'nom_tete_liste', 'binome', 'liste', 'libelle_etendu_liste', 'voix'], axis=1)
+
+  #Reorganisation des colonnesCode_departement
+  df = df[['code_departement', 'annee', 'tour', 'nom', 'prenom']]
+
+  # supprime les doublon
+  df = df.drop_duplicates().reset_index(drop=True)
+
+  # fusionne le nom prénom
+  df['candidat'] = df['nom'] + ' ' + df['prenom']
+  df = df.drop(['nom', 'prenom'], axis=1)
+
+  # Lire le fichier JSON
+  with open(metadata_famille_politique, 'r', encoding='utf-8') as f:
+    bords = json.load(f)
+
+  # Créer le mapping et ajouter la colonne
+  mapping = {normaliser(item['nom']): item['famille_politique'] for item in bords}
+  df['famille_politique'] = df['candidat'].apply(normaliser).map(mapping)
+
+  df['candidat'].to_csv('candidats.csv', index=False, header=False)
+
+  df = df.rename(columns={'tour': '[president_sortant]tour'})
+  df = df.rename(columns={'candidat': '[president_sortant]tour'})
+  df = df.rename(columns={'famille_politique': '[president_sortant]tour'})
+
+  df = df.sort_values(['code_departement', 'annee']).reset_index(drop=True)
+
   return df
