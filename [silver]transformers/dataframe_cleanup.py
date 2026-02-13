@@ -66,8 +66,9 @@ def clean_taux_chomage(df: pd.DataFrame) -> pd.DataFrame:
 
   # reformat et calcul le taux 
   df = df.melt(id_vars=['Code'], var_name='Periode', value_name='Taux')
+  df['Code'] = df['Code'].astype(str).str.zfill(2)
   df['Annee'] = df['Periode'].str.split('_').str[1].astype(int)
-  df = df.groupby(['Code', 'Annee'])['Taux'].mean().reset_index()
+  df = df.groupby(['Code', 'Annee'])['Taux'].mean()
   df.columns = ['Code_departement', 'annee', '[taux_chomage]Taux_moyen']
 
   return df
