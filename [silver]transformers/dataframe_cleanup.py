@@ -201,12 +201,63 @@ def clean_president_sortant(df: pd.DataFrame, metadata_famille_politique: str) -
   mapping = {normaliser(item['nom']): item['famille_politique'] for item in bords}
   df['famille_politique'] = df['candidat'].apply(normaliser).map(mapping)
 
-  df['candidat'].to_csv('candidats.csv', index=False, header=False)
-
   df = df.rename(columns={'tour': '[president_sortant]tour'})
   df = df.rename(columns={'candidat': '[president_sortant]tour'})
   df = df.rename(columns={'famille_politique': '[president_sortant]tour'})
 
   df = df.sort_values(['code_departement', 'annee']).reset_index(drop=True)
+
+  return df
+
+def clean_population_active(df: pd.DataFrame, metadata_population_active: str) -> pd.DataFrame:
+  """
+  Nettoie les données de population active par département.
+  - Extrait le code département depuis la colonne GEO (format: 2025-DEP-XX)
+  - Garde uniquement TIME_PERIOD (renommé en annee)
+  - Supprime les autres colonnes
+  - Trie par code département (avec la Corse à la fin)
+  
+  Parameters
+  ----------
+  df : pd.DataFrame
+  
+  Returns
+  -------
+  pd.DataFrame
+  """
+  
+  # Extraire le code département depuis la colonne GEO (2025-DEP-01 → 01)
+  df['Code_departement'] = df['GEO'].str.split('-').str[2]
+  df['annee'] = df['TIME_PERIOD'].astype(int) - 1
+
+  # Suppression des colonnes en trop
+  df = df.drop(['SEX', 'FREQ', 'RP_MEASURE', 'GEO', 'TIME_PERIOD', 'EDUC'], axis=1)
+  
+  # Trier par code département avec la Corse (2A, 2B) à la fin
+  df['sort_key'] = df['Code_departement'].replace({'2A': '1000', '2B': '1001'})
+  df['sort_key'] = pd.to_numeric(df['sort_key'], errors='coerce')
+  df = df.sort_values('sort_key').reset_index(drop=True).drop('sort_key', axis=1)
+
+  #Reformat les colonnes AGE et OBS_VALUE_NIVEAU et renomme les colone reformater et supprime la colone du total
+  df = df.pivot(index=['Code_departement', 'annee', 'EMPSTA_ENQ'], columns='AGE', values='OBS_VALUE_NIVEAU').reset_index()
+  df.columns.name = None
+  df = df.drop('Y15T64', axis=1)
+  df = df.drop('Y_GE15', axis=1)
+  df = df.rename(columns={'Y15T24': '[population_active]entre15et24'})
+  df = df.rename(columns={'Y25T54': '[population_active]entre25et54'})
+  df = df.rename(columns={'Y55T64': '[population_active]entre55et64'})
+
+  # Lire le fichier JSON
+  with open(metadata_population_active, 'r', encoding='utf-8') as f:
+    bords = json.load(f)
+
+  # Créer le mapping et ajouter la colonne
+  mapping = {normaliser(item['EMPSTA_ENQ']): item['Statut_emploi'] for item in bords}
+  df['Statut_emploi'] = df['EMPSTA_ENQ'].apply(normaliser).map(mapping)
+
+  #Regorganisation des colonnes et supprime l'emploie chiffre
+  df = df.drop('EMPSTA_ENQ', axis=1)
+  df = df[['Code_departement', 'annee', 'Statut_emploi', '[population_active]entre15et24', '[population_active]entre25et54', '[population_active]entre55et64']]
+  df = df.fillna(0)
 
   return df

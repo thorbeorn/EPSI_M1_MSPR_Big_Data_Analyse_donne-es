@@ -4,4 +4,4 @@ source .venv/bin/activate
 
 Windows
 python3 -m venv .venv
-.venv\bin\Activate
+.venv\Scripts\Activate

@@ -1,0 +1,7 @@
+[
+    {"EMPSTA_ENQ": "1", "Statut_emploi": "Actif occupé"},
+    {"EMPSTA_ENQ": "31", "Statut_emploi": "Retraité"},
+    {"EMPSTA_ENQ": "33", "Statut_emploi": "Etudiant"},
+    {"EMPSTA_ENQ": "35", "Statut_emploi": "Femme ou homme au foyer"},
+    {"EMPSTA_ENQ": "36", "Statut_emploi": "Autre inactif"}
+]
