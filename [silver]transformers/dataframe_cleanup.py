@@ -261,3 +261,54 @@ def clean_population_active(df: pd.DataFrame, metadata_population_active: str) -
   df = df.fillna(0)
 
   return df
+
+def clean_categorie_professionnelle(df: pd.DataFrame, metadata_categorie_professionnelle: str) -> pd.DataFrame:
+  """
+  Nettoie les données des categorie professionne par département.
+  - Supprime les colonnes non utilisé
+  - tri par date croissante
+  - supprime les lignes qui contienne le cumule des categories
+  - map les metadata avec le bon code categorie
+  
+  Parameters
+  ----------
+  df : pd.DataFrame
+  
+  Returns
+  -------
+  pd.DataFrame
+  """
+  
+  # Suppression des colonnes en trop
+  df = df.drop(['IMMI', 'EEC_MEASURE', 'SEX', 'EDUC', 'UNDEREMP', 'EMPFORM', 'UNEMPDUR', 'COMPOHALO', 'EMPSTA', 'WKTIME', 'ACTIVITY', 'AGE', 'OBS_STATUS', 'UNIT_MULT', 'UNIT_MEASURE'], axis=1)
+
+  # tri les lignes par ordre croissant
+  df['TIME_PERIOD'] = pd.to_numeric(df['TIME_PERIOD'], errors='coerce')
+  df = df.sort_values('TIME_PERIOD').reset_index(drop=True)
+
+  #supprimer les lignes où la colonne PCS contient la valeur _T
+  df = df[~df["PCS"].str.contains("_T", na=False)]
+
+  # Créer le mapping et ajouter la colonne
+  with open(metadata_categorie_professionnelle, 'r', encoding='utf-8') as f:
+    bords = json.load(f)
+
+  mapping = {normaliser(item['code']): item['libelle'] for item in bords}
+  df['PCS'] = df['PCS'].apply(normaliser).map(mapping)
+
+  # pivote la table
+  df = df.pivot_table(
+    index="TIME_PERIOD", 
+    columns="PCS",
+    values="OBS_VALUE_NIVEAU",
+    aggfunc="sum"
+  ).reset_index()
+
+  #renome les colone
+  df = df.rename(columns={"TIME_PERIOD": "annee"})
+  df.columns = [
+    col if col == "annee" else f"[categorie_professionnelle] {col}"
+    for col in df.columns
+  ]
+  df.columns.name = None
+  return df

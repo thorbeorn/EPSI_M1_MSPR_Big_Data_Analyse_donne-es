@@ -1,0 +1,12 @@
+[
+  {"code": "1", "libelle": "Agriculteurs"},
+  {"code": "2", "libelle": "Artisans, commerçants et chefs d’entreprise"},
+  {"code": "3", "libelle": "Cadres et professions intellectuelles supérieures"},
+  {"code": "4", "libelle": "Professions intermédiaires"},
+  {"code": "5", "libelle": "Employés"},
+  {"code": "5N", "libelle": "Employés peu qualifiés"},
+  {"code": "5Q", "libelle": "Employés qualifiés"},
+  {"code": "6N", "libelle": "Ouvriers peu qualifiés"},
+  {"code": "6Q", "libelle": "Ouvriers qualifiés"},
+  {"code": "83_NR", "libelle": "Autres"}
+]
