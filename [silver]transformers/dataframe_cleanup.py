@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import unicodedata
+import numpy as np
 
 def normaliser(texte):
   """Normalise le texte : minuscules + suppression des accents"""
@@ -269,6 +270,7 @@ def clean_categorie_professionnelle(df: pd.DataFrame, metadata_categorie_profess
   - tri par date croissante
   - supprime les lignes qui contienne le cumule des categories
   - map les metadata avec le bon code categorie
+  - renomme les colonnes
   
   Parameters
   ----------
@@ -311,4 +313,100 @@ def clean_categorie_professionnelle(df: pd.DataFrame, metadata_categorie_profess
     for col in df.columns
   ]
   df.columns.name = None
+
   return df
+
+def clean_equipement_sportif(df: pd.DataFrame) -> pd.DataFrame:
+  """
+  Nettoie les données des categorie professionne par département.
+  - Supprime les colonnes non utilisé
+  - Determination de la date d'installation
+  - Determination de la date de suppression
+  - Suppression des colonne de base
+  
+  Parameters
+  ----------
+  df : pd.DataFrame
+  
+  Returns
+  -------
+  pd.DataFrame
+  """
+  
+  # conservation des colonnes importantes
+  df = df.loc[:, [
+    "dep_code",
+    "equip_service_date",
+    "equip_service_periode",
+    "inst_hs_bool",
+    "inst_date_etat"
+  ]]
+
+  # Determination de la date d'installation
+  df["equip_service_date"] = pd.to_datetime(df["equip_service_date"], errors="coerce")
+  annee_date = df["equip_service_date"].dt.year
+  annees = df["equip_service_periode"].str.extract(r"(\d{4})(?:-(\d{4}))?").astype(float)
+  annee_periode = annees[1].fillna(annees[0])
+  df["equip_service_annee"] = annee_date.fillna(annee_periode).astype("Int64")
+
+  # Determination de la date de suppression
+  annee_actuelle = pd.Timestamp.now().year
+  df["inst_date_etat"] = pd.to_datetime(df["inst_date_etat"], errors="coerce")
+  annee_etat = df["inst_date_etat"].dt.year
+  df["dern_inst_date"] = np.where(
+      df["inst_hs_bool"] == True,
+      annee_etat,
+      annee_actuelle
+  )
+  df["dern_inst_date"] = df["dern_inst_date"].astype("Int64")
+
+  #Suppression des colonne de base
+  df = df.drop(columns=['equip_service_date', 'equip_service_periode', 'inst_hs_bool', 'inst_date_etat'])
+
+  #Comptage des equipements par année par departement
+  df_temp = df[["dep_code", "equip_service_annee", "dern_inst_date"]].copy()
+  # +1 l'année de mise en service
+  debut = df_temp.groupby(
+      ["dep_code", "equip_service_annee"]
+  ).size().rename("delta").reset_index()
+  debut = debut.rename(columns={"equip_service_annee": "annee"})
+  debut["delta"] = debut["delta"]
+  # -1 l'année suivant la fin
+  fin = df_temp.groupby(
+      ["dep_code", "dern_inst_date"]
+  ).size().rename("delta").reset_index()
+  fin = fin.rename(columns={"dern_inst_date": "annee"})
+  fin["annee"] = fin["annee"] + 1
+  fin["delta"] = -fin["delta"]
+  # Combiner
+  variations = pd.concat([debut, fin], ignore_index=True)
+  annee_min = df["equip_service_annee"].min()
+  annee_max = df["dern_inst_date"].max()
+  deps = df["dep_code"].unique()
+  annees = range(annee_min, annee_max + 1)
+  index = pd.MultiIndex.from_product([deps, annees], names=["dep_code", "annee"])
+  base = pd.DataFrame(index=index).reset_index()
+  # Ajouter les deltas
+  base = base.merge(variations, on=["dep_code", "annee"], how="left")
+  base["delta"] = base["delta"].fillna(0)
+  # Cumul par département = nombre d'équipements en service
+  base["nb_equipements"] = base.groupby("dep_code")["delta"].cumsum()
+  base = base[base["annee"] >= 1950]
+  deps_actifs = (
+    base.groupby("dep_code")["nb_equipements"]
+    .max()
+    .loc[lambda x: x > 0]
+    .index
+  )
+  base = base[
+    base["dep_code"].isin(deps_actifs) &
+    (base["nb_equipements"] > 0)
+  ]
+  base = base.sort_values(by=["annee", "dep_code"]).reset_index(drop=True)
+
+  #renomme les colonnes
+  base = base.drop(columns=['delta'])
+  base = base.rename(columns={'dep_code': 'Code_departement'})
+  base = base.rename(columns={'nb_equipements': '[equipement_sportif]nb_equipements'})
+
+  return base

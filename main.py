@@ -18,7 +18,7 @@ TEMP_PATHS = {
     "temp_delinquance": "[raw]requesters/temp/delinquance.parquet",
     "temp_taux_chommage": "[raw]requesters/temp/taux_chommage.xls",
     "temp_president_sortant": "[raw]requesters/temp/president_sortant.parquet",
-    "temp_recensement_equipements_sportifs": "[raw]requesters/temp/recensement_equipements_sportifs.parquet",
+    "temp_equipements_sportifs": "[raw]requesters/temp/equipements_sportifs.parquet",
 }
 URLS = {
     "revenu_moyen": "https://api.insee.fr/melodi/data/DS_FILOSOFI_MEN_TP_NIVVIE?FILOSOFI_MEASURE=MED_SL&TPH_FISCAL=_T&UNIT_MEASURE=EUR_YR&GEO=DEP",
@@ -28,7 +28,8 @@ URLS = {
     "age_moyen": "https://api.insee.fr/melodi/data/DS_RP_POPULATION_COMP?SEX=_T&PCS=_T&GEO=DEP",
     "president_sortant": "https://object.files.data.gouv.fr/data-pipeline-open/elections/candidats_results.parquet",
     "population_active": "https://api.insee.fr/melodi/data/DS_RP_EMPLOI_LR_PRINC?SEX=_T&EDUC=_T&EMPSTA_ENQ=1&EMPSTA_ENQ=31&EMPSTA_ENQ=33&EMPSTA_ENQ=35&EMPSTA_ENQ=36&GEO=DEP",
-    "categorie_professionnelle": "https://api.insee.fr/melodi/data/DD_EEC_SERIES?UNIT_MEASURE=_Z&SEX=_T&AGE=_T&EDUC=_T&WKTIME=_T&UNDEREMP=_T"
+    "categorie_professionnelle": "https://api.insee.fr/melodi/data/DD_EEC_SERIES?UNIT_MEASURE=_Z&SEX=_T&AGE=_T&EDUC=_T&WKTIME=_T&UNDEREMP=_T",
+    "equipement_sportif": "https://data.education.gouv.fr/api/explore/v2.1/catalog/datasets/fr-en-data-es-base-de-donnees/exports/parquet?lang=fr&timezone=Europe%2FBerlin"
 }
 
 # raw_delinquance_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["delinquance"], TEMP_PATHS["temp_delinquance"], PATHS["metadata_delinquance"])
@@ -51,9 +52,14 @@ URLS = {
 # silver_population_active_df = silver_dataframe_module.clean_population_active(raw_population_active_df, PATHS["metadata_population_active"])
 # print(silver_population_active_df)
 
-raw_categorie_professionnelle_df = raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["categorie_professionnelle"])
-silver_categorie_professionnelle_df = silver_dataframe_module.clean_categorie_professionnelle(raw_categorie_professionnelle_df, PATHS["metadata_categorie_professionnelle"])
-print(silver_categorie_professionnelle_df)
+# raw_categorie_professionnelle_df = raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["categorie_professionnelle"])
+# silver_categorie_professionnelle_df = silver_dataframe_module.clean_categorie_professionnelle(raw_categorie_professionnelle_df, PATHS["metadata_categorie_professionnelle"])
+# print(silver_categorie_professionnelle_df)
+
+# raw_equipement_sportif_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["equipement_sportif"], TEMP_PATHS["temp_equipements_sportifs"], {})
+# silver_equipement_sportif_df = silver_dataframe_module.clean_equipement_sportif(raw_equipement_sportif_df)
+# print(silver_equipement_sportif_df)
+
 
 # raw_revenu_moyen_df = raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["revenu_moyen"])
 # silver_revenu_moyen_df = silver_dataframe_module.clean_revenu_moyen(raw_revenu_moyen_df)
