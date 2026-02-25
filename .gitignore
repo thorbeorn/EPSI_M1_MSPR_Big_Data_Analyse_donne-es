@@ -4,3 +4,4 @@ __pycache__
 .git
 *.parquet
 *.xls
+.pytest_cache

@@ -56,9 +56,10 @@ def creer_dataframe_depuis_melodi_api_url(melodi_url: str) -> pd.DataFrame:
 			# Suivant les jeux de données value peut être absent
 			logger.debug("On recherche les valeurs")
 			if 'value' in obs['measures']['OBS_VALUE_NIVEAU']:
+				print("value")
 				measures = obs['measures']['OBS_VALUE_NIVEAU']['value']
 			else:
-				mesures = None
+				measures = None
 			
 			# on rassemble tout dans un objet
 			logger.debug("On rassemble tout dans un objet")
