@@ -766,3 +766,66 @@ def clean_pouvoir_achat(df: pd.DataFrame) -> pd.DataFrame:
   ]
   
   return df
+
+def clean_niveau_etude(df: pd.DataFrame, metadata_niveau_etude: str) -> pd.DataFrame:
+  """
+  Nettoie les données du revenu moyen par département.
+  - supprime les colonnes non utile
+  - remplace certaine valeur de diplome et met les bon nom
+
+  Parameters
+  ----------
+  df : pd.DataFrame
+  
+  Returns
+  -------
+  pd.DataFrame
+  """
+  # Suppression des colones inutile
+  df = df.drop(columns=['STUD_AREA', 'SEX', 'FREQ', 'RP_MEASURE', 'AGE', 'OBS_STATUS'])
+
+  # remplace certaine valeur de diplome + créer le mapping et ajouter la colonne
+  df.loc[df["EDUC"].isin(["001T100_RP", "001T200_RP"]), "EDUC"] = "001T003_RP"
+  with open(metadata_niveau_etude, 'r', encoding='utf-8') as f:
+    bords = json.load(f)
+  mapping = {normaliser(item['code']): item['libelle'] for item in bords}
+  df['EDUC'] = df['EDUC'].apply(normaliser).map(mapping)
+  
+  # normalise le departement et l'année
+  df['Code_departement'] = df['GEO'].str.split('-').str[2]
+  df['annee'] = df['TIME_PERIOD'].astype(int) - 1
+  df = df.drop(columns=['GEO', 'TIME_PERIOD'])
+  
+  # Renomme les colonnes
+  df.columns = [
+    "[niveau_etude]diplome",
+    "[niveau_etude]nombre_diplome",
+    "Code_departement",
+    "annee"
+  ]
+  df = df[
+    [
+      "Code_departement",
+      "annee",
+      "[niveau_etude]diplome",
+      "[niveau_etude]nombre_diplome"
+    ]
+  ]
+
+  #pivote le df
+  df = df.pivot_table(
+    index=["Code_departement", "annee"],
+    columns="[niveau_etude]diplome",
+    values="[niveau_etude]nombre_diplome",
+    aggfunc="sum"
+  )
+  # Supprimer le nom de l'axe des colonnes
+  df.columns.name = None
+  # Ajouter le préfixe [niveau_etude] devant chaque colonne diplôme
+  df = df.rename(columns=lambda x: f"[niveau_etude]{x}")
+  # Remettre les index en colonnes
+  df = df.reset_index()
+  # remplacer les NaN par 0
+  df = df.fillna(0)
+  
+  return df

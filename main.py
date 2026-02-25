@@ -14,7 +14,8 @@ PATHS = {
     "metadata_delinquance": "[raw]requesters/metadata/DEP_Base_statistique_delinquance_police_gendarmerie.json",
     "metadata_famille_politique": "[silver]transformers/metadata/bords_politiques.json",
     "metadata_population_active": "[silver]transformers/metadata/population_active.json", 
-    "metadata_categorie_professionnelle": "[silver]transformers/metadata/categorie_professionnelle.json"
+    "metadata_categorie_professionnelle": "[silver]transformers/metadata/categorie_professionnelle.json",
+    "metadata_niveau_etude": "[silver]transformers/metadata/niveau_etude.json"
 }
 URLS = {
     "delinquance": "https://object.files.data.gouv.fr/hydra-parquet/hydra-parquet/2b27a675-e3bf-41ef-a852-5fb9ab483967.parquet",
@@ -31,6 +32,7 @@ URLS = {
     },
     "etablissement_culturel": "https://data.culture.gouv.fr/api/explore/v2.1/catalog/datasets/entreprises-culturelles-par-departement/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
     "pouvoir_achat": "https://www.insee.fr/fr/outil-interactif/5367857/data/30_RPC/31_RNP/31H_Figure8/dataExcel.fr.xlsx",
+    "niveau_etude": "https://api.insee.fr/melodi/data/DS_RP_DIPLOMES_PRINC?SEX=_T&EDUC=001T100_RP&EDUC=001T003_RP&EDUC=001T200_RP&EDUC=100_RP&EDUC=200_RP&EDUC=300_RP&EDUC=700_RP&EDUC=600T702_RP&EDUC=600_RP&EDUC=500T702_RP&EDUC=350T351_RP&EDUC=500_RP&GEO=DEP",
     "president_sortant": "https://object.files.data.gouv.fr/data-pipeline-open/elections/candidats_results.parquet"
 }
 
@@ -78,6 +80,12 @@ URLS = {
 # raw_pouvoir_achat_df = raw_xls_module.creer_dataframe_depuis_xls_url(URLS["pouvoir_achat"], "Données")
 # silver_pouvoir_achat_df = silver_dataframe_module.clean_pouvoir_achat(raw_pouvoir_achat_df)
 # print(silver_pouvoir_achat_df)
+
+print("================DATA niveau_etude================")
+raw_niveau_etude_df = raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["niveau_etude"])
+silver_niveau_etude_df = silver_dataframe_module.clean_niveau_etude(raw_niveau_etude_df, PATHS["metadata_niveau_etude"])
+print(silver_niveau_etude_df)
+
 
 
 # print("================DATA president_sortant================")

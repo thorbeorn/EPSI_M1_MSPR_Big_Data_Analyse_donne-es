@@ -1,0 +1,12 @@
+[
+  {"code": "001T003_RP", "libelle": "Aucun diplôme"},
+  {"code": "100_RP", "libelle": "CEP (certificat d’études primaires)"},
+  {"code": "200_RP", "libelle": "BEPC, brevet élémentaire, brevet des collèges, DNB"},
+  {"code": "300_RP", "libelle": "CAP, BEP ou diplôme de niveau équivalent"},
+  {"code": "350T351_RP", "libelle": "Baccalauréat, brevet professionnel ou équivalent"},
+  {"code": "500_RP", "libelle": "Enseignement supérieur de cycle court : BTS, DUT, Deug, Deust, diplôme de la santé ou du social de niveau bac+2, diplôme"},
+  {"code": "500T702_RP", "libelle": "Diplôme d'études supérieures"},
+  {"code": "600_RP", "libelle": "Baccalauréat universitaire ou équivalent : Licence, licence pro, maîtrise, diplôme équivalent de niveau bac+3 ou bac+4"},
+  {"code": "600T702_RP", "libelle": "Diplôme universitaire 2e ou 3e cycle"},
+  {"code": "700_RP", "libelle": "Diplôme de niveau bac + 5 ou plus"}
+]
