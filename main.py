@@ -1,13 +1,18 @@
 import pandas as pd
 import json
+import logging
 
 # pd.set_option('display.max_columns', None)
+LOG_LEVEL = logging.INFO
+logging.basicConfig(
+    level=LOG_LEVEL,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 raw_parquet_module = getattr(__import__("[raw]requesters.parquet"), "parquet")
 raw_xls_module = getattr(__import__("[raw]requesters.xls"), "xls")
 raw_melodi_module = getattr(__import__("[raw]requesters.melodi"), "melodi")
 raw_mixed_xlsx_zip_module = getattr(__import__("[raw]requesters.mixedxlsxzip"), "mixedxlsxzip")
-
 silver_dataframe_module = getattr(__import__("[silver]transformers.dataframe_cleanup"), "dataframe_cleanup")
 
 PATHS = {
