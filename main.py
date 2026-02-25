@@ -30,6 +30,7 @@ URLS = {
         "23": "https://static.data.gouv.fr/resources/limpot-sur-le-revenu-par-collectivite-territoriale-ircom/20250919-135242/ircom-2024-revenus-2023.zip"
     },
     "etablissement_culturel": "https://data.culture.gouv.fr/api/explore/v2.1/catalog/datasets/entreprises-culturelles-par-departement/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
+    "pouvoir_achat": "https://www.insee.fr/fr/outil-interactif/5367857/data/30_RPC/31_RNP/31H_Figure8/dataExcel.fr.xlsx",
     "president_sortant": "https://object.files.data.gouv.fr/data-pipeline-open/elections/candidats_results.parquet"
 }
 
@@ -72,6 +73,11 @@ URLS = {
 # raw_etablissement_culturel_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["etablissement_culturel"], {})
 # silver_etablissement_culturel_df = silver_dataframe_module.clean_etablissement_culturel(raw_etablissement_culturel_df)
 # print(silver_etablissement_culturel_df)
+
+# print("================DATA pouvoir_achat================")
+# raw_pouvoir_achat_df = raw_xls_module.creer_dataframe_depuis_xls_url(URLS["pouvoir_achat"], "Données")
+# silver_pouvoir_achat_df = silver_dataframe_module.clean_pouvoir_achat(raw_pouvoir_achat_df)
+# print(silver_pouvoir_achat_df)
 
 
 # print("================DATA president_sortant================")

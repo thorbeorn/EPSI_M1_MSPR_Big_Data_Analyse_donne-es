@@ -733,3 +733,36 @@ def clean_etablissement_culturel(df: pd.DataFrame) -> pd.DataFrame:
   ]
 
   return df
+
+def clean_pouvoir_achat(df: pd.DataFrame) -> pd.DataFrame:
+  """
+  Nettoie les données du revenu moyen par département.
+  - supprime les lignes non utile
+  - supprime les colonnes non utile
+
+  Parameters
+  ----------
+  df : pd.DataFrame
+  
+  Returns
+  -------
+  pd.DataFrame
+  """
+
+  # Suppression des lignes inutiles
+  df = df.iloc[2:]
+  df.columns = df.iloc[0]
+  df = df.iloc[1:].reset_index(drop=True)
+  df.drop(df.tail(5).index, inplace=True)
+  df.columns.name = None
+
+  # Suppression des colones inutile
+  df = df.drop(columns=['Pouvoir d’achat du revenu disponible brut'])
+
+  # Renomme les colonnes
+  df.columns = [
+    "annee",
+    "[pouvoir_achat]pourcentage_annee_precedente"
+  ]
+  
+  return df
