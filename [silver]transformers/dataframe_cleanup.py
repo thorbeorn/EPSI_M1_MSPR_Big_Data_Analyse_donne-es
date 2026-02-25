@@ -168,8 +168,8 @@ def clean_president_sortant(df: pd.DataFrame, metadata_famille_politique: str) -
   df['famille_politique'] = df['candidat'].apply(normaliser).map(mapping)
 
   df = df.rename(columns={'tour': '[president_sortant]tour'})
-  df = df.rename(columns={'candidat': '[president_sortant]tour'})
-  df = df.rename(columns={'famille_politique': '[president_sortant]tour'})
+  df = df.rename(columns={'candidat': '[president_sortant]candidat'})
+  df = df.rename(columns={'famille_politique': '[president_sortant]famille_politique'})
 
   df = df.sort_values(['code_departement', 'annee']).reset_index(drop=True)
 
@@ -828,4 +828,73 @@ def clean_niveau_etude(df: pd.DataFrame, metadata_niveau_etude: str) -> pd.DataF
   # remplacer les NaN par 0
   df = df.fillna(0)
   
+  return df
+
+def clean_abstention_votant(df: pd.DataFrame) -> pd.DataFrame:
+  """
+  Nettoie les données du président sortant par département.
+  - Conserver uniquement les présidentiel T1 et T2
+  - Supprimer les colonnes qui ne sont pas utile
+  - Reorganiser les colones pour avoir Code_departement, annee, tour, nom, prenom
+  - Supprimer les doublon exacte
+  - Fusionné les colonnes nom et prénom
+  
+  Parameters
+  ----------
+  df : pd.DataFrame
+  
+  Returns
+  -------
+  pd.DataFrame
+  """
+
+  #conserve uniquement les présidentiels T1 et T2 + annee
+  df = df[df['id_election'].str.contains('pres_t1|pres_t2')]
+  df[['annee', 'tour']] = df['id_election'].str.extract(r'(\d{4})_pres_(t[12])')
+  df = df.drop('id_election', axis=1)
+  df['annee'] = df['annee'].astype(int) - 1
+
+  #Supprimer les colonnes inutiles
+  df = df.drop(['id_brut_miom', 'code_commune', 'libelle_canton', 'code_canton', 'libelle_departement', 'code_circonscription', 'libelle_commune', 'libelle_circonscription', 'code_bv', 'ratio_blancs_votants', 'ratio_nuls_inscrits', 'ratio_nuls_votants', 'ratio_exprimes_inscrits', 'ratio_exprimes_votants', 'ratio_abstentions_inscrits', 'ratio_votants_inscrits', 'ratio_blancs_inscrits', 'votants', 'exprimes'], axis=1)
+
+  #Reorganisation des colonnesCode_departement
+  df = df[['code_departement', 'annee', 'tour', 'inscrits', 'abstentions', 'blancs', 'nuls']]
+  df = df.fillna(0)
+  df = df.rename(columns={'tour': '[abstention_votant]tour'})
+  df = df.rename(columns={'inscrits': '[abstention_votant]inscrits'})
+  df = df.rename(columns={'abstentions': '[abstention_votant]abstentions'})
+  df = df.rename(columns={'blancs': '[abstention_votant]blancs'})
+  df = df.rename(columns={'nuls': '[abstention_votant]nuls'})
+  df["code_departement"] = df["code_departement"].replace({
+    "ZA": "971",
+    "ZB": "972",
+    "ZC": "973",
+    "ZD": "974",
+    "ZM": "976",
+    "ZN": "988",
+    "ZP": "987",
+    "ZS": "975",
+    "ZT": "978",
+    "ZW": "986",
+    "ZX": "977",
+    "ZY": "977",
+  })
+  df = df[df.iloc[:, 0] != "ZZ"]
+
+  # supprime les doublon
+  df = df.drop_duplicates().reset_index(drop=True)
+
+  df = df.sort_values(['code_departement', 'annee']).reset_index(drop=True)
+
+  df = df.groupby(
+    ["code_departement", "annee", "[abstention_votant]tour"],
+    as_index=False
+  )[[
+      "[abstention_votant]inscrits",
+      "[abstention_votant]abstentions",
+      "[abstention_votant]blancs",
+      "[abstention_votant]nuls"
+  ]].sum()
+
+  print(df)
   return df
