@@ -122,41 +122,6 @@ def clean_age_moyen(df: pd.DataFrame) -> pd.DataFrame:
 
   return df
 
-def clean_revenu_moyen(df: pd.DataFrame) -> pd.DataFrame:
-  """
-  Nettoie les données du revenu moyen par département.
-  - Extrait le code département depuis la colonne GEO (format: 2025-DEP-XX)
-  - Garde uniquement TIME_PERIOD (renommé en annee) et OBS_VALUE_NIVEAU (renommé en [revenu]moyen)
-  - Supprime les autres colonnes
-  - Trie par code département (avec la Corse à la fin)
-  
-  Parameters
-  ----------
-  df : pd.DataFrame
-  
-  Returns
-  -------
-  pd.DataFrame
-  """
-  
-  # Extraire le code département depuis la colonne GEO (2025-DEP-01 → 01)
-  df['Code_departement'] = df['GEO'].str.split('-').str[2]
-  
-  # Sélectionner et renommer les colonnes
-  df = df[['Code_departement', 'TIME_PERIOD', 'OBS_VALUE_NIVEAU']].copy()
-  df.columns = ['Code_departement', 'annee', '[revenu]moyen']
-  
-  # Convertir les types
-  df['annee'] = df['annee'].astype(int)
-  df['[revenu]moyen'] = pd.to_numeric(df['[revenu]moyen'], errors='coerce')
-  
-  # Trier par code département avec la Corse (2A, 2B) à la fin
-  df['sort_key'] = df['Code_departement'].replace({'2A': '1000', '2B': '1001'})
-  df['sort_key'] = pd.to_numeric(df['sort_key'], errors='coerce')
-  df = df.sort_values('sort_key').reset_index(drop=True).drop('sort_key', axis=1)
-  
-  return df
-
 def clean_president_sortant(df: pd.DataFrame, metadata_famille_politique: str) -> pd.DataFrame:
   """
   Nettoie les données du président sortant par département.
@@ -410,3 +375,326 @@ def clean_equipement_sportif(df: pd.DataFrame) -> pd.DataFrame:
   base = base.rename(columns={'nb_equipements': '[equipement_sportif]nb_equipements'})
 
   return base
+
+def clean_revenu_moyen(dfs: dict) -> pd.DataFrame:
+  """
+  Nettoie les données du revenu moyen par département.
+  - 8420 
+    - Supprime la feuille 'notice'
+      - Supprime les lignes vides
+      - Supprime les colone non importante
+      - calcule le revenue moyen par foyer
+      - Renomme les colones
+      - reformat les departement
+
+  Parameters
+  ----------
+  dfs : pd.DataFrame
+  
+  Returns
+  -------
+  pd.DataFrame
+  """
+  
+  # Supprime la feuille 'notice' uniquement pour l'année '8420'
+  dfs["8420"] = {
+    sheet_name: df
+    for sheet_name, df in dfs["8420"].items()
+    if sheet_name.lower() != "notice"
+  }
+
+  # Supprime les premiere ligne vide et reajuste l'index
+  df = dfs["8420"]['1984_1999']
+  df = df.iloc[7:]
+  df.columns = df.iloc[0]
+  df = df.iloc[1:].reset_index(drop=True)
+  df.columns.name = None
+
+  # Supprime la premiere colone vide et les colonnes non utile
+  df = df.iloc[:, 1:]
+  df = df.iloc[:, :-5]
+  df = df.drop(columns=['Nom'])
+
+  # calcule les revenue moyen par foyer
+  df["Revenu net imposable moyen"] = (
+    df["Revenus nets imposables"] / df["Nombre de foyers fiscaux"]
+  )
+  df = df.drop(columns=['Revenus nets imposables', 'Nombre de foyers fiscaux'])
+
+  # renomme les colonnes
+  df.columns = [
+    "Code_departement",
+    "annee",
+    "[revenu_moyen]revenu_moyen_par_foyer"
+  ] 
+
+  #traitement de code departement
+  def fix_departement(code):
+    """
+    Convertit les codes département bruts vers le format standard français.
+    
+    Exemples :
+      '010' → '01'
+      '100' → '10'
+      '2A0' → '2A'
+      '2B0' → '2B'
+      '971' → '971' (DOM-TOM, inchangé)
+    """
+    # Corse
+    if code in ('2A0', '2B0'):
+        return code[:-1]  # '2A0' → '2A'
+    
+    # DOM-TOM (971, 972, 973, 974, 976...)
+    if int(code) >= 970:
+        return code  # inchangé
+    
+    # Métropole
+    return str(int(code) // 10).zfill(2)
+  df['Code_departement'] = df['Code_departement'].apply(fix_departement)
+  dfs["8420"]['1984_1999'] = df
+
+  # Supprime les premiere ligne vide et reajuste l'index
+  df = dfs["8420"]['2000_2017']
+  df = df.iloc[7:]
+  df.columns = df.iloc[0]
+  df = df.iloc[1:].reset_index(drop=True)
+  df.columns.name = None
+
+  # Supprime la premiere colone vide et les colonnes non utile
+  df = df.iloc[:, 1:]
+  df = df.iloc[:, :-7]
+  df = df.drop(columns=['Nom'])
+
+  # calcule les revenue moyen par foyer
+  df["Revenu net imposable moyen"] = (
+    df["Revenu fiscal de référence"] / df["Nombre de foyers fiscaux"]
+  )
+  df = df.drop(columns=['Revenu fiscal de référence', 'Nombre de foyers fiscaux'])
+
+  # renomme les colonnes
+  df.columns = [
+    "Code_departement",
+    "annee",
+    "[revenu_moyen]revenu_moyen_par_foyer"
+  ] 
+
+  #traitement de code departement
+  df = df[df["Code_departement"] != "B31"]
+  df['Code_departement'] = df['Code_departement'].apply(fix_departement)
+
+  dfs["8420"]['2000_2017'] = df
+
+  # Supprime les premiere ligne vide et reajuste l'index
+  df = dfs["8420"]['2018']
+  df = df.iloc[7:]
+  df.columns = df.iloc[0]
+  df = df.iloc[1:].reset_index(drop=True)
+  df.drop(df.tail(4).index, inplace=True)
+  df.columns.name = None
+
+  # Supprime la premiere colone vide et les colonnes non utile
+  df = df.iloc[:, 1:]
+  df = df.iloc[:, :-9]
+  df = df.drop(columns=['Nom'])
+
+  # calcule les revenue moyen par foyer
+  df["Revenu net imposable moyen"] = (
+    df["Revenu fiscal de référence"] / df["Nombre de foyers fiscaux"]
+  )
+  df = df.drop(columns=['Revenu fiscal de référence', 'Nombre de foyers fiscaux'])
+
+  # renomme les colonnes
+  df.columns = [
+    "Code_departement",
+    "annee",
+    "[revenu_moyen]revenu_moyen_par_foyer"
+  ] 
+
+  #traitement de code departement
+  df = df[df["Code_departement"] != "B31"]
+  df['Code_departement'] = df['Code_departement'].apply(fix_departement)
+
+  dfs["8420"]['2018'] = df
+
+  # Supprime les premiere ligne vide et reajuste l'index
+  df = dfs["8420"]['2019_2020']
+  df = df.iloc[7:]
+  df.columns = df.iloc[0]
+  df = df.iloc[1:].reset_index(drop=True)
+  df.columns.name = None
+
+  # Supprime la premiere colone vide et les colonnes non utile
+  df = df.iloc[:, 1:]
+  df = df.iloc[:, :-7]
+  df = df.drop(columns=['Nom'])
+
+  # calcule les revenue moyen par foyer
+  df["Revenu net imposable moyen"] = (
+    df["Revenu fiscal de référence"] / df["Nombre de foyers fiscaux"]
+  )
+  df = df.drop(columns=['Revenu fiscal de référence', 'Nombre de foyers fiscaux'])
+
+  # renomme les colonnes
+  df.columns = [
+    "Code_departement",
+    "annee",
+    "[revenu_moyen]revenu_moyen_par_foyer"
+  ] 
+
+  #traitement de code departement
+  df = df[df["Code_departement"] != "B31"]
+  df['Code_departement'] = df['Code_departement'].apply(fix_departement)
+
+  dfs["8420"]['2019_2020'] = df
+
+  dfs["8420"] = pd.concat(dfs["8420"].values(), ignore_index=True)
+
+  # Supprime les premiere ligne vide et reajuste l'index
+  df = dfs['21']['Feuil1']
+  df = df.iloc[6:]
+  df.columns = df.iloc[0]
+  df = df.iloc[1:].reset_index(drop=True)
+  df.columns.name = None
+
+  # Supprime la premiere colone vide et les colonnes non utile
+  df = df.iloc[:, 1:]
+  df = df.iloc[:, :-7]
+  df = df[df.iloc[:, 3].astype(str).str.strip().str.lower() == "total"]
+
+  #traitement de code departement
+  df = df[df.iloc[:, 0] != "B31"]
+
+  # renomme les colonnes
+  df.columns = [
+    "Code_departement",
+    "commune",
+    "libelle_commune",
+    "tranche",
+    "nbr_foyer",
+    "revenue_referance"
+  ] 
+
+  # calcule les revenue moyen par foyer
+  for col in ["revenue_referance", "nbr_foyer"]:
+    df[col] = (
+      df[col]
+      .astype(str)
+      .str.replace(" ", "")
+      .str.replace(",", ".")
+    )
+    df[col] = pd.to_numeric(df[col], errors="coerce")
+
+  df["[revenu_moyen]revenu_moyen_par_foyer"] = (
+    df["revenue_referance"] * 1000 / df["nbr_foyer"]
+  )
+  df = df.drop(columns=['revenue_referance', "nbr_foyer", 'libelle_commune', 'commune', 'tranche'])
+
+  df['Code_departement'] = df['Code_departement'].apply(fix_departement)
+  df = df.reset_index(drop=True)
+
+  df = (
+    df.groupby("Code_departement", as_index=False)["[revenu_moyen]revenu_moyen_par_foyer"]
+    .mean()
+  )
+  df["annee"] = 2021
+  df = df[
+    [
+        "Code_departement",
+        "annee",
+        "[revenu_moyen]revenu_moyen_par_foyer"
+    ]
+  ]
+  dfs["21"] = df
+
+  # Supprime les premiere ligne vide et reajuste l'index
+  df = dfs["22"]['Feuil1']
+  df = df.iloc[4:]
+  df.columns = df.iloc[0]
+  df = df.iloc[2:].reset_index(drop=True)
+  df.drop(df.tail(2).index, inplace=True)
+  df.columns.name = None
+
+  # Supprime la premiere colone vide et les colonnes non utile
+  df = df.iloc[:, :-7]
+  df = df[df.iloc[:, 3].astype(str).str.strip().str.lower() == "total"]
+
+  # calcule les revenue moyen par foyer
+  for col in ["Revenu fiscal de référence des foyers fiscaux", "Nombre de foyers fiscaux"]:
+    df[col] = (
+      df[col]
+      .astype(str)
+      .str.replace(" ", "")
+      .str.replace(",", ".")
+    )
+    df[col] = pd.to_numeric(df[col], errors="coerce")
+
+  df["[revenu_moyen]revenu_moyen_par_foyer"] = (
+    df["Revenu fiscal de référence des foyers fiscaux"] * 1000 / df["Nombre de foyers fiscaux"]
+  )
+  df = df.drop(columns=['Revenu fiscal de référence des foyers fiscaux', "Nombre de foyers fiscaux", 'Libellé de la commune', 'Commune', 'Revenu fiscal de référence par tranche (en euros)'])
+
+  #traitement de code departement
+  df = df[df.iloc[:, 0] != "B31"]
+  df['Code_departement'] = df['Dép.'].apply(fix_departement)
+  df = df.drop(columns=['Dép.'])
+  df = df.reset_index(drop=True)
+
+  df["annee"] = 2022
+  df = df[
+    [
+        "Code_departement",
+        "annee",
+        "[revenu_moyen]revenu_moyen_par_foyer"
+    ]
+  ]
+  dfs["22"] = df
+
+  # Supprime les premiere ligne vide et reajuste l'index
+  df = dfs["23"]['ListeCommune']
+  df = df.iloc[4:]
+  df.columns = df.iloc[0]
+  df = df.iloc[2:].reset_index(drop=True)
+  # df.drop(df.tail(2).index, inplace=True)
+  df.columns.name = None
+
+  # Supprime la premiere colone vide et les colonnes non utile
+  df = df.iloc[:, :-7]
+  df = df[df.iloc[:, 3].astype(str).str.strip().str.lower() == "total"]
+
+  # calcule les revenue moyen par foyer
+  for col in ["Revenu fiscal de référence des foyers fiscaux", "Nombre de foyers fiscaux"]:
+    df[col] = (
+      df[col]
+      .astype(str)
+      .str.replace(" ", "")
+      .str.replace(",", ".")
+    )
+    df[col] = pd.to_numeric(df[col], errors="coerce")
+
+  df["[revenu_moyen]revenu_moyen_par_foyer"] = (
+    df["Revenu fiscal de référence des foyers fiscaux"] * 1000 / df["Nombre de foyers fiscaux"]
+  )
+  df = df.drop(columns=['Revenu fiscal de référence des foyers fiscaux', "Nombre de foyers fiscaux", 'Libellé de la commune', 'Commune', 'Revenu fiscal de référence par tranche (en euros)'])
+
+  #traitement de code departement
+  df = df[df.iloc[:, 0] != "B31"]
+  df['Code_departement'] = df['Dép.'].apply(fix_departement)
+  df = df.drop(columns=['Dép.'])
+  df = df.reset_index(drop=True)
+
+  df["annee"] = 2023
+  df = df[
+    [
+        "Code_departement",
+        "annee",
+        "[revenu_moyen]revenu_moyen_par_foyer"
+    ]
+  ]
+  dfs["23"] = df
+
+  df_final = pd.concat(
+    [dfs["8420"], dfs["21"], dfs["22"], dfs["23"]],
+    ignore_index=True
+  )
+
+  return df_final

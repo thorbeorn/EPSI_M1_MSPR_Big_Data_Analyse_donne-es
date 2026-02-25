@@ -3,8 +3,9 @@ import json
 from typing import Union
 import fastparquet
 import requests
+import tempfile
 
-def creer_dataframe_depuis_parquet_url(parquet_url: str, temp_file_path: str, metadata_json: Union[str, dict]) -> pd.DataFrame:
+def creer_dataframe_depuis_parquet_url(parquet_url: str, metadata_json: Union[str, dict]) -> pd.DataFrame:
     """
     Charge un fichier parquet et applique des métadonnées.
     
@@ -12,8 +13,6 @@ def creer_dataframe_depuis_parquet_url(parquet_url: str, temp_file_path: str, me
     ----------
     parquet_path : str
         URL du fichier parquet
-    temp_file_path : str
-        PATH du fichier parquet temporaire
     metadata_json : str ou dict
         Chemin vers un fichier JSON de métadonnées ou dictionnaire
     
@@ -30,10 +29,13 @@ def creer_dataframe_depuis_parquet_url(parquet_url: str, temp_file_path: str, me
         metadata = metadata_json
 
     r = requests.get(parquet_url, verify=False)
-    open(temp_file_path, "wb").write(r.content)
+    r.raise_for_status()
 
-    # Lire le parquet
-    df = pd.read_parquet(temp_file_path)
+    with tempfile.NamedTemporaryFile(suffix=".parquet") as tmp_file:
+        tmp_file.write(r.content)
+        tmp_file.flush()
+        
+        df = pd.read_parquet(tmp_file.name)
 
     # Ajouter les métadonnées au DataFrame
     df.attrs["metadata"] = metadata

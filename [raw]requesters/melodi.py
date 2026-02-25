@@ -3,6 +3,18 @@ import json
 import requests
 
 def creer_dataframe_depuis_melodi_api_url(melodi_url: str) -> pd.DataFrame:
+    """
+    Charge un dataframe depuis une API melodi
+    
+    Parameters
+    ----------
+    melodi_url : str
+        URL de l'API de melodi
+    
+    Returns
+    -------
+    pd.DataFrame
+    """
     get_data = requests.get(melodi_url, verify= False)
     data_from_net = get_data.content
     data = json.loads(data_from_net)
