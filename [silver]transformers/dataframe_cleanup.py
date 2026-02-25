@@ -1,706 +1,1319 @@
+"""
+Module de nettoyage et transformation des données socio-économiques et électorales.
+
+Ce module regroupe toutes les fonctions de nettoyage (cleaning) utilisées dans
+le pipeline de données. Chaque fonction prend en entrée un DataFrame brut issu
+d'une source externe (Excel, CSV, JSON) et retourne un DataFrame normalisé,
+prêt pour la fusion et l'analyse.
+
+Conventions de nommage des colonnes :
+    - Les colonnes issues d'une source spécifique sont préfixées par [nom_source]
+    - La clé de jointure commune est toujours `Code_departement` + `annee`
+"""
+
 import pandas as pd
 import json
 import unicodedata
+import logging
 
-def normaliser(texte):
-    """Normalise le texte : minuscules + suppression des accents"""
-    texte = texte.lower()
-    # Supprime les accents
-    texte = unicodedata.normalize('NFD', texte)
-    texte = ''.join(char for char in texte if unicodedata.category(char) != 'Mn')
-    return texte
-def clean_excel_block(df: pd.DataFrame, skip_rows: int, drop_last: int = 0):
-    """Nettoyage générique Excel mal formé"""
-    df = df.iloc[skip_rows:]
-    df.columns = df.iloc[0]
-    df = df.iloc[1:].reset_index(drop=True)
-    df.columns.name = None
-    if drop_last:
-        df = df.iloc[:-drop_last]
-    return df
-def load_json_mapping(path: str, key_field: str, value_field: str, normalize=True) -> dict:
-    """Charge un JSON et retourne un dictionnaire mapping optimisé"""
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    if normalize:
-        return {
-            normaliser(item[key_field]): item[value_field]
-            for item in data
-        }
-    return {item[key_field]: item[value_field] for item in data}
-def fix_departement(code):
-    code = str(code).strip()
-    if code in ('2A0', '2B0'):
-        return code[:-1]
+# ─── Logger ──────────────────────────────────────────────────────────────────
+logger = logging.getLogger(__name__)
+
+# UTILITAIRES GÉNÉRIQUES
+def normaliser(texte: str) -> str:
+    """
+    Normalise une chaîne de caractères pour les comparaisons insensibles
+    à la casse et aux accents.
+
+    Opérations appliquées :
+        1. Conversion en minuscules.
+        2. Décomposition Unicode (NFD) pour isoler les diacritiques.
+        3. Suppression des caractères de catégorie Unicode 'Mn' (marques non-espacées).
+
+    Args:
+        texte (str): La chaîne à normaliser.
+
+    Returns:
+        str: La chaîne normalisée, sans majuscules ni accents.
+
+    Raises:
+        TypeError: Si `texte` n'est pas une chaîne de caractères.
+
+    Exemple:
+        >>> normaliser("Île-de-France")
+        'ile-de-france'
+    """
     try:
-        if int(code) >= 970:
-            return code
-        return str(int(code) // 10).zfill(2)
-    except ValueError:
-        return code
-def _parse_numeric_col(series):
-    return pd.to_numeric(
-        series.astype(str).str.replace(" ", "").str.replace(",", "."),
-        errors="coerce"
-    )
-def _set_header(df, skip_rows):
-    df = df.iloc[skip_rows:]
-    df.columns = df.iloc[0]
-    df = df.iloc[1:].reset_index(drop=True)
-    df.columns.name = None
-    return df
+        texte = texte.lower()
+        # Décomposition NFD : sépare chaque lettre accentuée en lettre + diacritique
+        texte = unicodedata.normalize('NFD', texte)
+        # Supprime uniquement les diacritiques (catégorie Mn = Mark, Nonspacing)
+        texte = ''.join(char for char in texte if unicodedata.category(char) != 'Mn')
+        return texte
+    except AttributeError as e:
+        logger.error(f"normaliser() : entrée invalide (non-string) → {e}")
+        raise TypeError(f"normaliser() attend une str, reçu : {type(texte)}") from e
 
-def clean_delinquance(df: pd.DataFrame) -> pd.DataFrame: 
-    required_cols = {"Code_departement", "annee", "nombre", "taux_pour_mille"}
-    missing = required_cols - set(df.columns)
-    if missing:
-        raise ValueError(f"Colonnes manquantes : {missing}")
+def clean_excel_block(df: pd.DataFrame, skip_rows: int, drop_last: int = 0) -> pd.DataFrame:
+    """
+    Nettoie un bloc Excel mal formaté dont les vraies en-têtes ne sont pas
+    sur la première ligne.
 
-    return (
-        df
-        .groupby(
-            ["Code_departement", "annee"],
-            as_index=False,
-            sort=False,
-            observed=True
-        )
-        .agg(
-            **{
-                "[delinquance]nombre": ("nombre", "sum"),
-                "[delinquance]taux_pour_mille": ("taux_pour_mille", "mean"),
+    Problème courant : les fichiers Excel exportés contiennent des lignes
+    de titre ou de métadonnées avant les vraies colonnes.
+
+    Args:
+        df (pd.DataFrame): DataFrame brut issu de pd.read_excel().
+        skip_rows (int): Nombre de lignes à ignorer avant l'en-tête réelle.
+        drop_last (int): Nombre de lignes de pied de tableau à supprimer
+                         (totaux, notes, etc.). Par défaut 0.
+
+    Returns:
+        pd.DataFrame: DataFrame nettoyé avec les bonnes colonnes.
+
+    Raises:
+        ValueError: Si skip_rows est négatif ou supérieur à la taille du DataFrame.
+        IndexError: Si le DataFrame n'a pas assez de lignes après le skip.
+    """
+    try:
+        if skip_rows < 0:
+            raise ValueError(f"skip_rows doit être >= 0, reçu : {skip_rows}")
+        if skip_rows >= len(df):
+            raise ValueError(
+                f"skip_rows ({skip_rows}) >= nombre de lignes ({len(df)})"
+            )
+
+        # Saute les lignes de métadonnées initiales
+        df = df.iloc[skip_rows:]
+
+        # La première ligne restante devient l'en-tête
+        df.columns = df.iloc[0]
+        df = df.iloc[1:].reset_index(drop=True)
+        df.columns.name = None  # Supprime le nom de l'axe colonnes (artefact pandas)
+
+        # Supprime les lignes de pied (totaux, notes en bas de tableau)
+        if drop_last:
+            df = df.iloc[:-drop_last]
+
+        return df
+
+    except (ValueError, IndexError) as e:
+        logger.error(f"clean_excel_block() : erreur de nettoyage → {e}")
+        raise
+
+def load_json_mapping(
+    path: str,
+    key_field: str,
+    value_field: str,
+    normalize: bool = True
+) -> dict:
+    """
+    Charge un fichier JSON et construit un dictionnaire de mapping clé → valeur.
+
+    Utilisé pour mapper des codes (ex: codes PCS, codes diplômes) vers leurs
+    libellés humains, ou des noms de candidats vers leur famille politique.
+
+    Args:
+        path (str): Chemin vers le fichier JSON.
+        key_field (str): Nom du champ à utiliser comme clé du dictionnaire.
+        value_field (str): Nom du champ à utiliser comme valeur.
+        normalize (bool): Si True, les clés sont normalisées via `normaliser()`.
+                          Utile pour des comparaisons robustes. Par défaut True.
+
+    Returns:
+        dict: Dictionnaire {clé: valeur} construit depuis le JSON.
+
+    Raises:
+        FileNotFoundError: Si le fichier JSON n'existe pas.
+        KeyError: Si `key_field` ou `value_field` sont absents d'un item.
+        json.JSONDecodeError: Si le fichier n'est pas un JSON valide.
+    """
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        if normalize:
+            return {
+                normaliser(item[key_field]): item[value_field]
+                for item in data
             }
+        return {item[key_field]: item[value_field] for item in data}
+
+    except FileNotFoundError:
+        logger.error(f"load_json_mapping() : fichier introuvable → {path}")
+        raise
+    except json.JSONDecodeError as e:
+        logger.error(f"load_json_mapping() : JSON invalide dans {path} → {e}")
+        raise
+    except KeyError as e:
+        logger.error(f"load_json_mapping() : champ manquant dans le JSON → {e}")
+        raise
+
+def fix_departement(code) -> str:
+    """
+    Corrige et normalise les codes départementaux issus de sources fiscales.
+
+    Problème : dans les fichiers de revenus (DGFiP), les codes département
+    sont parfois encodés comme des multiples de 10 (ex: 750 → 75),
+    ou présentent des suffixes parasites pour la Corse (2A0, 2B0).
+
+    Traitement :
+        - '2A0' → '2A'  /  '2B0' → '2B'  (Corse)
+        - Codes >= 970 : retournés tels quels (DOM-TOM)
+        - Autres : division entière par 10 + formatage sur 2 chiffres
+
+    Args:
+        code: Le code département brut (str, int ou float acceptés).
+
+    Returns:
+        str: Le code département normalisé.
+
+    Exemple:
+        >>> fix_departement('750')
+        '75'
+        >>> fix_departement('2A0')
+        '2A'
+    """
+    try:
+        code = str(code).strip()
+
+        # Cas Corse avec suffixe parasite
+        if code in ('2A0', '2B0'):
+            return code[:-1]  # Supprime le '0' final
+
+        # Tentative de conversion en entier pour les codes numériques
+        try:
+            code_int = int(code)
+        except ValueError:
+            # Code non numérique non-Corse : retourné tel quel (ex: '2A', '2B')
+            return code
+
+        # DOM-TOM : codes >= 970, on garde tel quel
+        if code_int >= 970:
+            return code
+
+        # Codes DGFiP encodés ×10 : on divise et on zero-pad à 2 chiffres
+        return str(code_int // 10).zfill(2)
+
+    except Exception as e:
+        logger.warning(f"fix_departement() : impossible de traiter '{code}' → {e}")
+        return str(code)
+
+def _parse_numeric_col(series: pd.Series) -> pd.Series:
+    """
+    Convertit une colonne de valeurs textuelles (issues d'Excel) en float.
+
+    Gère les cas courants :
+        - Espaces comme séparateurs de milliers (ex: '1 234 567')
+        - Virgules comme séparateur décimal (ex: '12,5')
+
+    Args:
+        series (pd.Series): Colonne à convertir.
+
+    Returns:
+        pd.Series: Colonne numérique (float). Les valeurs non convertibles
+                   deviennent NaN (errors='coerce').
+    """
+    try:
+        return pd.to_numeric(
+            series.astype(str)
+                  .str.replace(" ", "")   # Supprime les espaces (séparateurs milliers)
+                  .str.replace(",", "."),  # Virgule décimale → point
+            errors="coerce"
         )
-    )
+    except Exception as e:
+        logger.error(f"_parse_numeric_col() : erreur de conversion → {e}")
+        raise
+
+def _set_header(df: pd.DataFrame, skip_rows: int) -> pd.DataFrame:
+    """
+    Version simplifiée de `clean_excel_block` sans suppression de fin.
+    Positionne l'en-tête correctement après avoir sauté des lignes initiales.
+
+    Args:
+        df (pd.DataFrame): DataFrame brut.
+        skip_rows (int): Nombre de lignes à ignorer avant l'en-tête.
+
+    Returns:
+        pd.DataFrame: DataFrame avec les bonnes colonnes.
+    """
+    try:
+        df = df.iloc[skip_rows:]
+        df.columns = df.iloc[0]
+        df = df.iloc[1:].reset_index(drop=True)
+        df.columns.name = None
+        return df
+    except Exception as e:
+        logger.error(f"_set_header() : erreur → {e}")
+        raise
+
+# FONCTIONS DE NETTOYAGE PAR SOURCE
+def clean_delinquance(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Agrège les données de délinquance par département et par année.
+
+    Source : données INSERM / Ministère de l'Intérieur.
+    Les données sont fournies par type d'infraction, on les agrège donc
+    en sommant le nombre de faits et en moyennant le taux pour mille.
+
+    Colonnes requises :
+        - Code_departement : code INSEE du département
+        - annee            : année des faits
+        - nombre           : nombre de faits enregistrés
+        - taux_pour_mille  : taux pour 1000 habitants
+
+    Colonnes produites :
+        - [delinquance]nombre          : somme des faits par dept/année
+        - [delinquance]taux_pour_mille : moyenne du taux par dept/année
+
+    Args:
+        df (pd.DataFrame): DataFrame brut avec les colonnes requises.
+
+    Returns:
+        pd.DataFrame: Données agrégées par (Code_departement, annee).
+
+    Raises:
+        ValueError: Si des colonnes requises sont manquantes.
+    """
+    try:
+        # Vérification de la présence des colonnes obligatoires
+        required_cols = {"Code_departement", "annee", "nombre", "taux_pour_mille"}
+        missing = required_cols - set(df.columns)
+        if missing:
+            raise ValueError(f"Colonnes manquantes dans clean_delinquance : {missing}")
+
+        return (
+            df
+            .groupby(
+                ["Code_departement", "annee"],
+                as_index=False,
+                sort=False,
+                observed=True  # Ignore les catégories non présentes (perf)
+            )
+            .agg(
+                **{
+                    # Somme des faits (chaque ligne = un type d'infraction)
+                    "[delinquance]nombre": ("nombre", "sum"),
+                    # Moyenne du taux (le taux global n'est pas la somme des taux)
+                    "[delinquance]taux_pour_mille": ("taux_pour_mille", "mean"),
+                }
+            )
+        )
+    except ValueError:
+        raise
+    except Exception as e:
+        logger.error(f"clean_delinquance() : erreur inattendue → {e}")
+        raise
 
 def clean_taux_chomage(df: pd.DataFrame) -> pd.DataFrame:
-    # Nettoyage Excel
-    df = clean_excel_block(df, skip_rows=2, drop_last=4)
-    # Suppression colonne inutile
-    df = df.drop(columns="Libellé", errors="ignore")
-    # Transformation wide → long
-    df = df.melt(
-        id_vars="Code",
-        var_name="Periode",
-        value_name="Taux"
-    )
-    # Normalisation
-    df["Code"] = df["Code"].astype(str).str.zfill(2)
-    df["annee"] = df["Periode"].str[-4:].astype(int)
-    # Sécurise type numérique (important si Excel)
-    df["Taux"] = pd.to_numeric(df["Taux"], errors="coerce")
-    # Agrégation annuelle
-    df = (
-        df
-        .groupby(["Code", "annee"], as_index=False, sort=False)
-        .agg(**{"[taux_chomage]Taux_moyen": ("Taux", "mean")})
-    )
-    return df.rename(columns={"Code": "Code_departement"})
+    """
+    Nettoie et restructure les données du taux de chômage trimestriel
+    en une table annuelle par département.
+
+    Problème d'entrée :
+        - Fichier Excel avec 2 lignes de métadonnées en tête
+        - Format wide : une colonne par période (ex: 'T1 2020', 'T2 2020'…)
+        - 4 lignes de totaux en bas
+
+    Transformations :
+        1. Nettoyage de l'en-tête Excel (skip 2 lignes, drop 4 en bas)
+        2. Pivot wide → long (melt)
+        3. Extraction de l'année depuis la période (ex: 'T3 2019' → 2019)
+        4. Agrégation trimestrielle → moyenne annuelle
+
+    Colonnes produites :
+        - Code_departement            : code sur 2 chiffres (zero-padded)
+        - annee                       : année (int)
+        - [taux_chomage]Taux_moyen    : moyenne annuelle du taux de chômage
+
+    Args:
+        df (pd.DataFrame): DataFrame brut issu du fichier Excel DARES/INSEE.
+
+    Returns:
+        pd.DataFrame: Taux de chômage moyen annuel par département.
+    """
+    try:
+        # Nettoyage de l'en-tête spécifique à ce fichier Excel
+        df = clean_excel_block(df, skip_rows=2, drop_last=4)
+
+        # Supprime la colonne "Libellé" (libellé textuel du département, inutile)
+        df = df.drop(columns="Libellé", errors="ignore")
+
+        # Passage du format wide (une colonne par trimestre) au format long
+        df = df.melt(
+            id_vars="Code",        # Identifiant département (garde tel quel)
+            var_name="Periode",    # Nom de l'ancienne colonne (ex: 'T1 2020')
+            value_name="Taux"      # Valeur du taux de chômage
+        )
+
+        # Normalisation du code département sur 2 chiffres
+        df["Code"] = df["Code"].astype(str).str.zfill(2)
+
+        # Extraction de l'année depuis le libellé de période (4 derniers caractères)
+        df["annee"] = df["Periode"].str[-4:].astype(int)
+
+        # Sécurisation numérique (les valeurs Excel peuvent être des strings)
+        df["Taux"] = pd.to_numeric(df["Taux"], errors="coerce")
+        # Agrégation trimestrielle vers annuelle (moyenne des 4 trimestres)
+        df = (
+            df
+            .groupby(["Code", "annee"], as_index=False, sort=False)
+            .agg(**{"[taux_chomage]Taux_moyen": ("Taux", "mean")})
+        )
+        return df.rename(columns={"Code": "Code_departement"})
+    except Exception as e:
+        logger.error(f"clean_taux_chomage() : erreur → {e}")
+        raise
 
 def clean_age_moyen(df: pd.DataFrame) -> pd.DataFrame:
-    # Suppression colonnes inutiles
-    df = df.drop(columns=["RP_MEASURE", "PCS", "SEX"], errors="ignore")
-    # Extraction code département
-    df["Code_departement"] = df["GEO"].str.rsplit("-", n=1).str[-1]
-    # Gestion tri correct avec Corse
-    sort_series = (
-        df["Code_departement"]
-        .replace({"2A": "1000", "2B": "1001"})
-        .astype(int)
-    )
-    df = (
-        df
-        .assign(_sort=sort_series)
-        .sort_values("_sort", kind="mergesort")  # stable
-        .drop(columns=["_sort", "GEO"])
-    )
-    # Renommage année
-    df = df.rename(columns={"TIME_PERIOD": "annee"})
-    # Pivot sécurisé
-    df = (
-        df
-        .pivot_table(
-            index=["Code_departement", "annee"],
-            columns="AGE",
-            values="OBS_VALUE_NIVEAU",
-            aggfunc="first"  # plus rapide que sum si unique
-        )
-        .reset_index()
-    )
-    df.columns.name = None
-    # Drop + renommage en une seule étape
-    return df.rename(columns={
-        "Y15T24": "[age_moyen]entre15et24",
-        "Y25T54": "[age_moyen]entre25et54",
-        "Y_GE55": "[age_moyen]plus55"
-    }).drop(columns=["Y_GE15"], errors="ignore")
+    """
+    Nettoie les données d'âge moyen de la population active par tranche d'âge
+    et par département, issues de l'INSEE (format Eurostat/SDMX).
 
-def clean_president_sortant(df: pd.DataFrame, metadata_famille_politique: str) -> pd.DataFrame:
-    # Filtre présidentielles T1 / T2 + extraction année/tour
-    mask = df["id_election"].str.contains("pres_t", na=False)
-    df = df.loc[mask].copy()
-    df[["annee", "tour"]] = df["id_election"].str.extract(
-        r"(\d{4})_pres_(t[12])",
-        expand=True
-    )
-    df["annee"] = df["annee"].astype(int) - 1
-    # Suppression colonnes inutiles
-    df = df.drop(
-        columns=[
-            "id_election", "id_brut_miom", "code_commune", "code_bv",
-            "nuance", "sexe", "no_panneau",
-            "ratio_voix_inscrits", "ratio_voix_exprimes",
-            "libelle_abrege_liste", "nom_tete_liste",
-            "binome", "liste", "libelle_etendu_liste", "voix"
-        ],
-        errors="ignore"
-    )
-    # Sélection utile
-    df = df[["code_departement", "annee", "tour", "nom", "prenom"]]
-    # Suppression doublons AVANT concat (plus rapide)
-    df = df.drop_duplicates(ignore_index=True)
-    # Fusion nom/prénom (vectorisé)
-    df["candidat"] = df["nom"].str.cat(df["prenom"], sep=" ")
-    df = df.drop(columns=["nom", "prenom"])
-    # Mapping famille politique (optimisé)
-    mapping = load_json_mapping(
-        metadata_famille_politique,
-        key_field="nom",
-        value_field="famille_politique",
-        normalize=True
-    )
-    df["famille_politique"] = (
-        df["candidat"]
-        .astype(str)
-        .apply(normaliser)
-        .map(mapping)
-    )
-    # Renommage groupé
-    df = df.rename(columns={
-        "tour": "[president_sortant]tour",
-        "candidat": "[president_sortant]candidat",
-        "famille_politique": "[president_sortant]famille_politique"
-    })
-    df["code_departement"] = df["code_departement"].replace({
-        "ZA": "971",
-        "ZB": "972",
-        "ZC": "973",
-        "ZD": "974",
-        "ZM": "976",
-        "ZN": "988",
-        "ZP": "987",
-        "ZS": "975",
-        "ZT": "978",
-        "ZW": "986",
-        "ZX": "977",
-        "ZY": "977",
-    })
-    df = df[df.iloc[:, 0] != "ZZ"]
-    # Tri final optimisé
-    df = df.sort_values(
-        ["code_departement", "annee"],
-        kind="mergesort"
-    ).reset_index(drop=True)
-    return df
+    Tranches d'âge gérées :
+        - Y15T24 → [age_moyen]entre15et24
+        - Y25T54 → [age_moyen]entre25et54
+        - Y_GE55 → [age_moyen]plus55
+        - Y_GE15 : supprimé (agrégat, redondant)
+
+    Note Corse : les codes '2A' et '2B' sont remplacés par des entiers
+    fictifs (1000, 1001) pour permettre un tri numérique stable.
+
+    Args:
+        df (pd.DataFrame): DataFrame brut issu du fichier INSEE (format SDMX).
+
+    Returns:
+        pd.DataFrame: Données pivotées avec une colonne par tranche d'âge.
+    """
+    try:
+        # Supprime les colonnes de métadonnées inutiles pour l'analyse
+        df = df.drop(columns=["RP_MEASURE", "PCS", "SEX"], errors="ignore")
+        # Extraction du code département depuis le code géographique
+        # Format attendu : 'FR-DEP-75' → '75'
+        df["Code_departement"] = df["GEO"].str.rsplit("-", n=1).str[-1]
+        # Construction d'une série de tri numérique pour gérer la Corse
+        # (2A et 2B ne sont pas triables numériquement directement)
+        sort_series = (
+            df["Code_departement"]
+            .replace({"2A": "1000", "2B": "1001"})
+            .astype(int)
+        )
+        # Tri stable (mergesort) pour préserver l'ordre en cas d'égalité
+        df = (
+            df
+            .assign(_sort=sort_series)
+            .sort_values("_sort", kind="mergesort")
+            .drop(columns=["_sort", "GEO"])
+        )
+        # Renommage de la colonne temporelle
+        df = df.rename(columns={"TIME_PERIOD": "annee"})
+        # Pivot : transforme les lignes (une par tranche d'âge) en colonnes
+        df = (
+            df
+            .pivot_table(
+                index=["Code_departement", "annee"],
+                columns="AGE",
+                values="OBS_VALUE_NIVEAU",
+                aggfunc="first"  # Valeur unique attendue par cellule
+            )
+            .reset_index()
+        )
+        df.columns.name = None  # Supprime l'artefact "AGE" sur l'axe colonnes
+        # Renommage des tranches d'âge vers des noms lisibles + suppression agrégat
+        return df.rename(columns={
+            "Y15T24": "[age_moyen]entre15et24",
+            "Y25T54": "[age_moyen]entre25et54",
+            "Y_GE55": "[age_moyen]plus55"
+        }).drop(columns=["Y_GE15"], errors="ignore")
+    except Exception as e:
+        logger.error(f"clean_age_moyen() : erreur → {e}")
+        raise
+
+def clean_president_sortant(df: pd.DataFrame, metadata_famille_politique: str ) -> pd.DataFrame:
+    """
+    Extrait les informations sur les candidats des élections présidentielles
+    (T1 et T2) et les enrichit avec leur famille politique.
+
+    Logique métier :
+        - On décale l'année de -1 pour associer les résultats électoraux
+          à l'année précédant l'élection (utilisé comme variable explicative
+          pour les données de l'année suivante).
+        - La famille politique est mappée via un fichier JSON externe.
+
+    Colonnes produites :
+        - code_departement
+        - annee (année élection - 1)
+        - [president_sortant]tour
+        - [president_sortant]candidat
+        - [president_sortant]famille_politique
+
+    Args:
+        df (pd.DataFrame): Données brutes électorales.
+        metadata_famille_politique (str): Chemin vers le JSON de mapping
+                                          candidat → famille politique.
+
+    Returns:
+        pd.DataFrame: Données candidates nettoyées et enrichies.
+    """
+    try:
+        # Filtre uniquement les élections présidentielles (T1 et T2)
+        mask = df["id_election"].str.contains("pres_t", na=False)
+        df = df.loc[mask].copy()
+        # Extraction de l'année et du tour depuis l'identifiant d'élection
+        # Format : '2022_pres_t1' → année='2022', tour='t1'
+        df[["annee", "tour"]] = df["id_election"].str.extract(
+            r"(\d{4})_pres_(t[12])",
+            expand=True
+        )
+        # Décalage temporel : on associe les candidats à l'année N-1
+        df["annee"] = df["annee"].astype(int) - 1
+        # Suppression des colonnes sans valeur analytique
+        df = df.drop(
+            columns=[
+                "id_election", "id_brut_miom", "code_commune", "code_bv",
+                "nuance", "sexe", "no_panneau",
+                "ratio_voix_inscrits", "ratio_voix_exprimes",
+                "libelle_abrege_liste", "nom_tete_liste",
+                "binome", "liste", "libelle_etendu_liste", "voix"
+            ],
+            errors="ignore"
+        )
+        # Sélection des colonnes utiles
+        df = df[["code_departement", "annee", "tour", "nom", "prenom"]]
+        # Dédoublonnage avant fusion (une ligne par candidat par département)
+        df = df.drop_duplicates(ignore_index=True)
+        # Construction du nom complet du candidat (vectorisé, sans boucle)
+        df["candidat"] = df["nom"].str.cat(df["prenom"], sep=" ")
+        df = df.drop(columns=["nom", "prenom"])
+        # Chargement du mapping candidat → famille politique depuis JSON
+        mapping = load_json_mapping(
+            metadata_famille_politique,
+            key_field="nom",
+            value_field="famille_politique",
+            normalize=True  # Comparaison insensible aux accents/casse
+        )
+        # Application du mapping (normalisation préalable du candidat)
+        df["famille_politique"] = (
+            df["candidat"]
+            .astype(str)
+            .apply(normaliser)
+            .map(mapping)
+        )
+        # Renommage des colonnes avec préfixe source
+        df = df.rename(columns={
+            "tour": "[president_sortant]tour",
+            "candidat": "[president_sortant]candidat",
+            "famille_politique": "[president_sortant]famille_politique"
+        })
+        # Harmonisation des codes DOM-TOM (format lettré → numérique INSEE)
+        df["code_departement"] = df["code_departement"].replace({
+            "ZA": "971",  # Guadeloupe
+            "ZB": "972",  # Martinique
+            "ZC": "973",  # Guyane
+            "ZD": "974",  # La Réunion
+            "ZM": "976",  # Mayotte
+            "ZN": "988",  # Nouvelle-Calédonie
+            "ZP": "987",  # Polynésie française
+            "ZS": "975",  # Saint-Pierre-et-Miquelon
+            "ZT": "978",  # Saint-Martin / Saint-Barthélemy
+            "ZW": "986",  # Wallis-et-Futuna
+            "ZX": "977",  # Saint-Barthélemy
+            "ZY": "977",  # Saint-Martin (fusionné avec ZX → 977)
+        })
+        # Suppression des votes de l'étranger (ZZ) non rattachés à un département
+        df = df[df.iloc[:, 0] != "ZZ"]
+        # Tri final par département puis année (stable)
+        df = df.sort_values(
+            ["code_departement", "annee"],
+            kind="mergesort"
+        ).reset_index(drop=True)
+        return df
+    except Exception as e:
+        logger.error(f"clean_president_sortant() : erreur → {e}")
+        raise
 
 def clean_population_active(df: pd.DataFrame, metadata_population_active: str) -> pd.DataFrame:
-    # Extraction code département + année
-    df["Code_departement"] = df["GEO"].str.rsplit("-", n=1).str[-1]
-    df["annee"] = pd.to_numeric(df["TIME_PERIOD"], errors="coerce") - 1
-    # Suppression colonnes inutiles
-    df = df.drop(
-        columns=["SEX", "FREQ", "RP_MEASURE", "GEO", "TIME_PERIOD", "EDUC"],
-        errors="ignore"
-    )
-    # Tri optimisé avec gestion Corse
-    sort_series = (
-        df["Code_departement"]
-        .replace({"2A": "1000", "2B": "1001"})
-        .astype(int)
-    )
-    df = (
-        df
-        .assign(_sort=sort_series)
-        .sort_values("_sort", kind="mergesort")
-        .drop(columns="_sort")
-    )
-    # Pivot sécurisé
-    df = (
-        df
-        .pivot_table(
-            index=["Code_departement", "annee", "EMPSTA_ENQ"],
-            columns="AGE",
-            values="OBS_VALUE_NIVEAU",
-            aggfunc="first"   # plus rapide si pas de doublons
-        )
-        .reset_index()
-    )
-    df.columns.name = None
-    # Drop + renommage groupé
-    df = df.rename(columns={
-        "Y15T24": "[population_active]entre15et24",
-        "Y25T54": "[population_active]entre25et54",
-        "Y55T64": "[population_active]entre55et64"
-    }).drop(columns=["Y15T64", "Y_GE15"], errors="ignore")
-    # Mapping statut emploi (optimisé)
-    mapping = load_json_mapping(
-        metadata_population_active,
-        key_field="EMPSTA_ENQ",
-        value_field="Statut_emploi",
-        normalize=True
-    )
-    df["Statut_emploi"] = (
-        df["EMPSTA_ENQ"]
-        .astype(str)
-        .apply(normaliser)
-        .map(mapping)
-    )
-    # Réorganisation finale
-    df = (
-        df
-        .drop(columns="EMPSTA_ENQ")
-        .loc[:, [
-            "Code_departement",
-            "annee",
-            "Statut_emploi",
-            "[population_active]entre15et24",
-            "[population_active]entre25et54",
-            "[population_active]entre55et64",
-        ]]
-        .fillna(0)
-        .reset_index(drop=True)
-    )
-    return df
+    """
+    Nettoie les données de population active par département, tranche d'âge
+    et statut d'emploi, issues de l'INSEE (format SDMX/Eurostat).
 
-def clean_categorie_professionnelle(df: pd.DataFrame, metadata_categorie_professionnelle: str) -> pd.DataFrame:
-    # Suppression colonnes inutiles
-    df = df.drop(
-        columns=[
-            'IMMI', 'EEC_MEASURE', 'SEX', 'EDUC', 'UNDEREMP',
-            'EMPFORM', 'UNEMPDUR', 'COMPOHALO', 'EMPSTA',
-            'WKTIME', 'ACTIVITY', 'AGE', 'OBS_STATUS',
-            'UNIT_MULT', 'UNIT_MEASURE'
-        ],
-        errors="ignore"
-    )
-    # Conversion année + tri
-    df["TIME_PERIOD"] = pd.to_numeric(df["TIME_PERIOD"], errors="coerce")
-    df = df.sort_values("TIME_PERIOD", kind="mergesort")
-    # Suppression des totaux (_T)
-    df = df[~df["PCS"].str.contains("_T", na=False)]
-    # Chargement mapping JSON
-    with open(metadata_categorie_professionnelle, "r", encoding="utf-8") as f:
-        mapping = {
-            normaliser(item["code"]): item["libelle"]
-            for item in json.load(f)
-        }
-    # Application mapping
-    df["PCS"] = (
-        df["PCS"]
-        .astype(str)
-        .apply(normaliser)
-        .map(mapping)
-    )
-    # Pivot
-    df = (
-        df
-        .pivot_table(
-            index="TIME_PERIOD",
-            columns="PCS",
-            values="OBS_VALUE_NIVEAU",
-            aggfunc="sum"
+    Décalage temporel :
+        L'année est décalée de -1 (TIME_PERIOD - 1) pour aligner les données
+        sur l'année électorale précédente.
+
+    Colonnes produites :
+        - Code_departement
+        - annee
+        - Statut_emploi (libellé mappé depuis JSON)
+        - [population_active]entre15et24
+        - [population_active]entre25et54
+        - [population_active]entre55et64
+
+    Args:
+        df (pd.DataFrame): Données brutes INSEE format SDMX.
+        metadata_population_active (str): Chemin vers le JSON de mapping
+                                          EMPSTA_ENQ → libellé statut emploi.
+
+    Returns:
+        pd.DataFrame: Population active structurée par dept/année/statut.
+    """
+    try:
+        # Extraction du code département depuis la colonne géographique
+        df["Code_departement"] = df["GEO"].str.rsplit("-", n=1).str[-1]
+
+        # Décalage temporel : on associe à l'année N-1
+        df["annee"] = pd.to_numeric(df["TIME_PERIOD"], errors="coerce") - 1
+
+        # Suppression des colonnes de métadonnées inutiles
+        df = df.drop(
+            columns=["SEX", "FREQ", "RP_MEASURE", "GEO", "TIME_PERIOD", "EDUC"],
+            errors="ignore"
         )
-        .reset_index()
-    )
-    df.columns.name = None
-    # Renommage final
-    df = df.rename(columns={"TIME_PERIOD": "annee"})
-    df.columns = [
-        col if col == "annee"
-        else f"[categorie_professionnelle] {col}"
-        for col in df.columns
-    ]
-    return df.reset_index(drop=True)
+
+        # Tri numérique stable avec gestion de la Corse
+        sort_series = (
+            df["Code_departement"]
+            .replace({"2A": "1000", "2B": "1001"})
+            .astype(int)
+        )
+        df = (
+            df
+            .assign(_sort=sort_series)
+            .sort_values("_sort", kind="mergesort")
+            .drop(columns="_sort")
+        )
+
+        # Pivot : une colonne par tranche d'âge
+        df = (
+            df
+            .pivot_table(
+                index=["Code_departement", "annee", "EMPSTA_ENQ"],
+                columns="AGE",
+                values="OBS_VALUE_NIVEAU",
+                aggfunc="first"
+            )
+            .reset_index()
+        )
+        df.columns.name = None
+
+        # Renommage des tranches + suppression des agrégats
+        df = df.rename(columns={
+            "Y15T24": "[population_active]entre15et24",
+            "Y25T54": "[population_active]entre25et54",
+            "Y55T64": "[population_active]entre55et64"
+        }).drop(columns=["Y15T64", "Y_GE15"], errors="ignore")
+
+        # Mapping du statut d'emploi (code → libellé)
+        mapping = load_json_mapping(
+            metadata_population_active,
+            key_field="EMPSTA_ENQ",
+            value_field="Statut_emploi",
+            normalize=True
+        )
+        df["Statut_emploi"] = (
+            df["EMPSTA_ENQ"]
+            .astype(str)
+            .apply(normaliser)
+            .map(mapping)
+        )
+
+        # Réorganisation des colonnes dans l'ordre final
+        df = (
+            df
+            .drop(columns="EMPSTA_ENQ")
+            .loc[:, [
+                "Code_departement",
+                "annee",
+                "Statut_emploi",
+                "[population_active]entre15et24",
+                "[population_active]entre25et54",
+                "[population_active]entre55et64",
+            ]]
+            .fillna(0)     # Les valeurs manquantes représentent 0 actifs
+            .reset_index(drop=True)
+        )
+
+        return df
+
+    except Exception as e:
+        logger.error(f"clean_population_active() : erreur → {e}")
+        raise
+
+def clean_categorie_professionnelle(
+    df: pd.DataFrame,
+    metadata_categorie_professionnelle: str
+) -> pd.DataFrame:
+    """
+    Nettoie et pivote les données de catégorie socio-professionnelle (PCS)
+    issues de l'INSEE (format SDMX/Eurostat).
+
+    Particularités :
+        - Les lignes avec PCS '_T' (total) sont supprimées pour éviter
+          les doubles comptes lors de l'agrégation.
+        - Les données ne sont pas filtrées par département (table nationale).
+
+    Colonnes produites :
+        - annee
+        - [categorie_professionnelle] <libellé PCS> : une colonne par CSP
+
+    Args:
+        df (pd.DataFrame): Données brutes INSEE format SDMX.
+        metadata_categorie_professionnelle (str): Chemin vers le JSON
+                                                   code PCS → libellé.
+
+    Returns:
+        pd.DataFrame: Données pivotées par année et catégorie professionnelle.
+    """
+    try:
+        # Suppression des colonnes de métadonnées sans valeur analytique
+        df = df.drop(
+            columns=[
+                'IMMI', 'EEC_MEASURE', 'SEX', 'EDUC', 'UNDEREMP',
+                'EMPFORM', 'UNEMPDUR', 'COMPOHALO', 'EMPSTA',
+                'WKTIME', 'ACTIVITY', 'AGE', 'OBS_STATUS',
+                'UNIT_MULT', 'UNIT_MEASURE'
+            ],
+            errors="ignore"
+        )
+        # Conversion en numérique et tri chronologique
+        df["TIME_PERIOD"] = pd.to_numeric(df["TIME_PERIOD"], errors="coerce")
+        df = df.sort_values("TIME_PERIOD", kind="mergesort")
+        # Suppression des lignes de total PCS ('_T' = agrégat de toutes les CSP)
+        # Ces totaux provoqueraient des doubles comptes dans les aggrégations
+        df = df[~df["PCS"].str.contains("_T", na=False)]
+        # Chargement du mapping code PCS → libellé depuis JSON
+        with open(metadata_categorie_professionnelle, "r", encoding="utf-8") as f:
+            mapping = {
+                normaliser(item["code"]): item["libelle"]
+                for item in json.load(f)
+            }
+        # Application du mapping (normalisation préalable)
+        df["PCS"] = (
+            df["PCS"]
+            .astype(str)
+            .apply(normaliser)
+            .map(mapping)
+        )
+        # Pivot : une ligne par année, une colonne par catégorie PCS
+        df = (
+            df
+            .pivot_table(
+                index="TIME_PERIOD",
+                columns="PCS",
+                values="OBS_VALUE_NIVEAU",
+                aggfunc="sum"    # Somme des effectifs par PCS/année
+            )
+            .reset_index()
+        )
+        df.columns.name = None
+        # Renommage de l'index temporel
+        df = df.rename(columns={"TIME_PERIOD": "annee"})
+        # Ajout du préfixe source sur toutes les colonnes sauf 'annee'
+        df.columns = [
+            col if col == "annee"
+            else f"[categorie_professionnelle] {col}"
+            for col in df.columns
+        ]
+        return df.reset_index(drop=True)
+    except FileNotFoundError:
+        logger.error(
+            f"clean_categorie_professionnelle() : JSON introuvable → "
+            f"{metadata_categorie_professionnelle}"
+        )
+        raise
+    except Exception as e:
+        logger.error(f"clean_categorie_professionnelle() : erreur → {e}")
+        raise
 
 def clean_equipement_sportif(df: pd.DataFrame) -> pd.DataFrame:
-    # Colonnes utiles uniquement
-    df = df[[
-        "dep_code",
-        "equip_service_date",
-        "equip_service_periode",
-        "inst_hs_bool",
-        "inst_date_etat"
-    ]].copy()
-    # Détermination année mise en service
-    df["equip_service_date"] = pd.to_datetime(df["equip_service_date"], errors="coerce")
-    annee_date = df["equip_service_date"].dt.year
-    annees = (
-        df["equip_service_periode"]
-        .str.extract(r"(\d{4})(?:-(\d{4}))?")
-        .astype(float)
-    )
-    annee_periode = annees[1].fillna(annees[0])
-    df["equip_service_annee"] = (
-        annee_date.fillna(annee_periode)
-        .astype("Int64")
-    )
-    # Détermination année fin de service
-    annee_actuelle = pd.Timestamp.now().year
-    df["inst_date_etat"] = pd.to_datetime(df["inst_date_etat"], errors="coerce")
-    annee_etat = df["inst_date_etat"].dt.year
-    df["dern_inst_date"] = annee_actuelle
-    df.loc[df["inst_hs_bool"] == True, "dern_inst_date"] = annee_etat
-    df["dern_inst_date"] = df["dern_inst_date"].astype("Int64")
-    # Construction des deltas
-    df = df[["dep_code", "equip_service_annee", "dern_inst_date"]]
-    debut = (
-        df.groupby(["dep_code", "equip_service_annee"])
-        .size()
-        .reset_index(name="delta")
-        .rename(columns={"equip_service_annee": "annee"})
-    )
-    fin = (
-        df.groupby(["dep_code", "dern_inst_date"])
-        .size()
-        .reset_index(name="delta")
-        .rename(columns={"dern_inst_date": "annee"})
-    )
-    fin["annee"] += 1
-    fin["delta"] *= -1
-    variations = pd.concat([debut, fin], ignore_index=True)
-    # Construction grille complète
-    annee_min = df["equip_service_annee"].min()
-    annee_max = df["dern_inst_date"].max()
-    base = (
-        pd.MultiIndex.from_product(
-            [df["dep_code"].unique(), range(annee_min, annee_max + 1)],
-            names=["dep_code", "annee"]
+    """
+    Calcule le nombre d'équipements sportifs actifs par département et par année,
+    en utilisant une approche basée sur les deltas (entrées/sorties).
+
+    Algorithme :
+        1. Détermine l'année de mise en service de chaque équipement.
+        2. Détermine l'année de fin de service (hors-service ou aujourd'hui).
+        3. Calcule les variations nettes (+1 à l'entrée, -1 à la sortie).
+        4. Cumule ces variations pour obtenir le stock actif année par année.
+
+    Avantage : évite de stocker une ligne par équipement par année,
+    réduit drastiquement la mémoire nécessaire.
+
+    Colonnes produites :
+        - Code_departement
+        - annee
+        - [equipement_sportif]nb_equipements : stock actif en fin d'année
+
+    Args:
+        df (pd.DataFrame): Données brutes du Recensement des Équipements Sportifs (RES).
+
+    Returns:
+        pd.DataFrame: Stock annuel d'équipements par département depuis 1950.
+    """
+    try:
+        # Sélection des colonnes nécessaires au calcul
+        df = df[[
+            "dep_code",
+            "equip_service_date",     # Date précise de mise en service
+            "equip_service_periode",  # Période approximative si pas de date
+            "inst_hs_bool",           # Booléen : équipement hors-service ?
+            "inst_date_etat"          # Date de mise hors-service
+        ]].copy()
+        # ── Calcul de l'année de mise en service ────────────────────────────
+        df["equip_service_date"] = pd.to_datetime(df["equip_service_date"], errors="coerce")
+        annee_date = df["equip_service_date"].dt.year
+        # Extraction des années depuis la période (format : '1985' ou '1985-1990')
+        # On prend la fin de la période si disponible, sinon le début
+        annees = (
+            df["equip_service_periode"]
+            .str.extract(r"(\d{4})(?:-(\d{4}))?")
+            .astype(float)
         )
-        .to_frame(index=False)
-        .merge(variations, on=["dep_code", "annee"], how="left")
-    )
-    base["delta"] = base["delta"].fillna(0)
-    # Cumul équipements actifs
-    base["nb_equipements"] = (
-        base.groupby("dep_code")["delta"]
-        .cumsum()
-    )
-    # Nettoyage final
-    base = (
-        base
-        .loc[lambda x: (x["annee"] >= 1950) & (x["nb_equipements"] > 0)]
-        .drop(columns="delta")
-        .rename(columns={
-            "dep_code": "Code_departement",
-            "nb_equipements": "[equipement_sportif]nb_equipements"
-        })
-        .sort_values(["annee", "Code_departement"], kind="mergesort")
-        .reset_index(drop=True)
-    )
-    return base
+        annee_periode = annees[1].fillna(annees[0])
+        # Priorité à la date précise, fallback sur la période
+        df["equip_service_annee"] = (
+            annee_date.fillna(annee_periode)
+            .astype("Int64")  # Entier nullable (supporte NaN)
+        )
+        # ── Calcul de l'année de fin de service ─────────────────────────────
+        annee_actuelle = pd.Timestamp.now().year
+        df["inst_date_etat"] = pd.to_datetime(df["inst_date_etat"], errors="coerce")
+        annee_etat = df["inst_date_etat"].dt.year
+        # Par défaut, on suppose que l'équipement est encore actif cette année
+        df["dern_inst_date"] = annee_actuelle
+        # Pour les équipements hors-service, on utilise la date de mise HS
+        df.loc[df["inst_hs_bool"] == True, "dern_inst_date"] = annee_etat
+        df["dern_inst_date"] = df["dern_inst_date"].astype("Int64")
+        # ── Construction des deltas entrée/sortie ───────────────────────────
+        df = df[["dep_code", "equip_service_annee", "dern_inst_date"]]
+        # Delta positif : +1 équipement l'année de mise en service
+        debut = (
+            df.groupby(["dep_code", "equip_service_annee"])
+            .size()
+            .reset_index(name="delta")
+            .rename(columns={"equip_service_annee": "annee"})
+        )
+        # Delta négatif : -1 équipement l'année APRÈS la fin de service
+        # (l'équipement compte encore pour sa dernière année d'activité)
+        fin = (
+            df.groupby(["dep_code", "dern_inst_date"])
+            .size()
+            .reset_index(name="delta")
+            .rename(columns={"dern_inst_date": "annee"})
+        )
+        fin["annee"] += 1      # Décalage d'un an
+        fin["delta"] *= -1     # Variation négative
+        # Fusion des deux séries de deltas
+        variations = pd.concat([debut, fin], ignore_index=True)
+        # ── Construction de la grille complète dept × année ─────────────────
+        annee_min = df["equip_service_annee"].min()
+        annee_max = df["dern_inst_date"].max()
+        # Produit cartésien : tous les départements × toutes les années
+        base = (
+            pd.MultiIndex.from_product(
+                [df["dep_code"].unique(), range(annee_min, annee_max + 1)],
+                names=["dep_code", "annee"]
+            )
+            .to_frame(index=False)
+            .merge(variations, on=["dep_code", "annee"], how="left")
+        )
+        # Les années sans variation ont un delta de 0
+        base["delta"] = base["delta"].fillna(0)
+        # ── Cumul des deltas → stock actif ───────────────────────────────────
+        base["nb_equipements"] = (
+            base.groupby("dep_code")["delta"]
+            .cumsum()  # Somme cumulée = stock à chaque instant
+        )
+        # ── Nettoyage final ──────────────────────────────────────────────────
+        base = (
+            base
+            # Filtre les années avant 1950 (données peu fiables) et les stocks nuls
+            .loc[lambda x: (x["annee"] >= 1950) & (x["nb_equipements"] > 0)]
+            .drop(columns="delta")
+            .rename(columns={
+                "dep_code": "Code_departement",
+                "nb_equipements": "[equipement_sportif]nb_equipements"
+            })
+            .sort_values(["annee", "Code_departement"], kind="mergesort")
+            .reset_index(drop=True)
+        )
+        return base
+    except Exception as e:
+        logger.error(f"clean_equipement_sportif() : erreur → {e}")
+        raise
 
 def clean_revenu_moyen(dfs: dict) -> pd.DataFrame:
-    # ── 8420 ──────────────────────────────────────────────────────────────────
-    dfs["8420"] = {k: v for k, v in dfs["8420"].items() if k.lower() != "notice"}
+    """
+    Consolide les données de revenus fiscaux moyens par département
+    sur une longue période (1984–2023), à partir de plusieurs fichiers
+    Excel de formats hétérogènes (DGFiP).
 
-    # 1984_1999
-    df = _set_header(dfs["8420"]["1984_1999"], skip_rows=7)
-    df = df.iloc[:, 1:].iloc[:, :-5].drop(columns=["Nom"])
-    df["[revenu_moyen]revenu_moyen_par_foyer"] = (
-        pd.to_numeric(df["Revenus nets imposables"], errors="coerce") /
-        pd.to_numeric(df["Nombre de foyers fiscaux"], errors="coerce")
-    )
-    df = df.drop(columns=["Revenus nets imposables", "Nombre de foyers fiscaux"])
-    # At this point columns are: [col0_dept, col1_annee, ..., revenu_moyen]
-    # Rename the first two positionally, keep the rest
-    df.columns = ["Code_departement", "annee"] + list(df.columns[2:])
-    df["Code_departement"] = df["Code_departement"].apply(fix_departement)
-    dfs["8420"]["1984_1999"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
+    Structure attendue du dictionnaire `dfs` :
+        - dfs["8420"] : dict de DataFrames clés '1984_1999', '2000_2017', '2018', '2019_2020'
+        - dfs["21"]   : dict avec clé 'Feuil1' (données 2021)
+        - dfs["22"]   : dict avec clé 'Feuil1' (données 2022)
+        - dfs["23"]   : dict avec clé 'ListeCommune' (données 2023)
 
-    # 2000_2017
-    df = _set_header(dfs["8420"]["2000_2017"], skip_rows=7)
-    df = df.iloc[:, 1:].iloc[:, :-7].drop(columns=["Nom"])
-    df["[revenu_moyen]revenu_moyen_par_foyer"] = (
-        pd.to_numeric(df["Revenu fiscal de référence"], errors="coerce") /
-        pd.to_numeric(df["Nombre de foyers fiscaux"], errors="coerce")
-    )
-    df = df.drop(columns=["Revenu fiscal de référence", "Nombre de foyers fiscaux"])
-    df.columns = ["Code_departement", "annee"] + list(df.columns[2:])  # ← rename FIRST
-    df = df[df["Code_departement"] != "B31"]                            # ← filter AFTER
-    df["Code_departement"] = df["Code_departement"].apply(fix_departement)
-    dfs["8420"]["2000_2017"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
+    Particularité 2021-2023 :
+        - Les données sont au niveau commune, agrégées par département.
+        - Les revenus sont en milliers d'euros (multiplication par 1000 nécessaire).
 
-    # 2018
-    df = _set_header(dfs["8420"]["2018"], skip_rows=7)
-    df.drop(df.tail(4).index, inplace=True)
-    df = df.iloc[:, 1:].iloc[:, :-9].drop(columns=["Nom"])
-    df["[revenu_moyen]revenu_moyen_par_foyer"] = (
-        pd.to_numeric(df["Revenu fiscal de référence"], errors="coerce") /
-        pd.to_numeric(df["Nombre de foyers fiscaux"], errors="coerce")
-    )
-    df = df.drop(columns=["Revenu fiscal de référence", "Nombre de foyers fiscaux"])
-    df.columns = ["Code_departement", "annee"] + list(df.columns[2:])  # ← rename FIRST
-    df = df[df["Code_departement"] != "B31"]                            # ← filter AFTER
-    df["Code_departement"] = df["Code_departement"].apply(fix_departement)
-    dfs["8420"]["2018"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
+    Colonne produite :
+        - [revenu_moyen]revenu_moyen_par_foyer : revenu fiscal de référence / nb foyers
 
-    # 2019_2020
-    df = _set_header(dfs["8420"]["2019_2020"], skip_rows=7)
-    df = df.iloc[:, 1:].iloc[:, :-7].drop(columns=["Nom"])
-    df["[revenu_moyen]revenu_moyen_par_foyer"] = (
-        pd.to_numeric(df["Revenu fiscal de référence"], errors="coerce") /
-        pd.to_numeric(df["Nombre de foyers fiscaux"], errors="coerce")
-    )
-    df = df.drop(columns=["Revenu fiscal de référence", "Nombre de foyers fiscaux"])
-    df.columns = ["Code_departement", "annee"] + list(df.columns[2:])  # ← rename FIRST
-    df = df[df["Code_departement"] != "B31"]                            # ← filter AFTER
-    df["Code_departement"] = df["Code_departement"].apply(fix_departement)
-    dfs["8420"]["2019_2020"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
+    Args:
+        dfs (dict): Dictionnaire structuré de DataFrames par source/période.
 
-    # ── 2021 ──────────────────────────────────────────────────────────────────
-    df = _set_header(dfs["21"]["Feuil1"], skip_rows=6)
-    df = df.iloc[:, 1:].iloc[:, :-7]
-    df = df[df.iloc[:, 3].astype(str).str.strip().str.lower() == "total"]
-    df = df[df.iloc[:, 0] != "B31"]
-    df.columns = ["Code_departement", "commune", "libelle_commune", "tranche", "nbr_foyer", "revenue_referance"]
-    df["nbr_foyer"] = _parse_numeric_col(df["nbr_foyer"])
-    df["revenue_referance"] = _parse_numeric_col(df["revenue_referance"])
-    df["[revenu_moyen]revenu_moyen_par_foyer"] = df["revenue_referance"] * 1000 / df["nbr_foyer"]
-    df["Code_departement"] = df["Code_departement"].apply(fix_departement)
-    df = df.groupby("Code_departement", as_index=False)["[revenu_moyen]revenu_moyen_par_foyer"].mean()
-    df["annee"] = 2021
-    dfs["21"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
-
-    # ── 2022 ──────────────────────────────────────────────────────────────────
-    df = dfs["22"]["Feuil1"]
-    df = df.iloc[4:]
-    df.columns = df.iloc[0]
-    df = df.iloc[2:].reset_index(drop=True)
-    df.drop(df.tail(2).index, inplace=True)
-    df.columns.name = None
-    df = df.iloc[:, :-7]
-    df = df[df.iloc[:, 3].astype(str).str.strip().str.lower() == "total"]
-    df["Revenu fiscal de référence des foyers fiscaux"] = _parse_numeric_col(df["Revenu fiscal de référence des foyers fiscaux"])
-    df["Nombre de foyers fiscaux"] = _parse_numeric_col(df["Nombre de foyers fiscaux"])
-    df["[revenu_moyen]revenu_moyen_par_foyer"] = (
-        df["Revenu fiscal de référence des foyers fiscaux"] * 1000 / df["Nombre de foyers fiscaux"]
-    )
-    df = df[df["Dép."] != "B31"]
-    df["Code_departement"] = df["Dép."].apply(fix_departement)
-    df["annee"] = 2022
-    dfs["22"] = df.groupby("Code_departement", as_index=False)["[revenu_moyen]revenu_moyen_par_foyer"].mean()
-    dfs["22"]["annee"] = 2022
-    dfs["22"] = dfs["22"][["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
-
-    # ── 2023 ──────────────────────────────────────────────────────────────────
-    df = dfs["23"]["ListeCommune"]
-    df = df.iloc[4:]
-    df.columns = df.iloc[0]
-    df = df.iloc[2:].reset_index(drop=True)
-    df.columns.name = None
-    df = df.iloc[:, :-7]
-    df = df[df.iloc[:, 3].astype(str).str.strip().str.lower() == "total"]
-    df["Revenu fiscal de référence des foyers fiscaux"] = _parse_numeric_col(df["Revenu fiscal de référence des foyers fiscaux"])
-    df["Nombre de foyers fiscaux"] = _parse_numeric_col(df["Nombre de foyers fiscaux"])
-    df["[revenu_moyen]revenu_moyen_par_foyer"] = (
-        df["Revenu fiscal de référence des foyers fiscaux"] * 1000 / df["Nombre de foyers fiscaux"]
-    )
-    df = df[df["Dép."] != "B31"]
-    df["Code_departement"] = df["Dép."].apply(fix_departement)
-    df = df.groupby("Code_departement", as_index=False)["[revenu_moyen]revenu_moyen_par_foyer"].mean()
-    df["annee"] = 2023
-    dfs["23"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
-
-    # ── Concat final ──────────────────────────────────────────────────────────
-    dfs["8420"] = pd.concat(dfs["8420"].values(), ignore_index=True)
-    return pd.concat([dfs["8420"], dfs["21"], dfs["22"], dfs["23"]], ignore_index=True)
+    Returns:
+        pd.DataFrame: Revenus moyens par département et par année, 1984–2023.
+    """
+    try:
+        # ── Préparation dfs["8420"] ───────────────────────────────────────────
+        # Suppression de la feuille "Notice" (documentation DGFiP, pas de données)
+        dfs["8420"] = {k: v for k, v in dfs["8420"].items() if k.lower() != "notice"}
+        # ── 1984–1999 ────────────────────────────────────────────────────────
+        df = _set_header(dfs["8420"]["1984_1999"], skip_rows=7)
+        # Suppression des colonnes d'index et des totaux nationaux (5 dernières)
+        df = df.iloc[:, 1:].iloc[:, :-5].drop(columns=["Nom"])
+        # Calcul du revenu moyen par foyer (ratio)
+        df["[revenu_moyen]revenu_moyen_par_foyer"] = (
+            pd.to_numeric(df["Revenus nets imposables"], errors="coerce") /
+            pd.to_numeric(df["Nombre de foyers fiscaux"], errors="coerce")
+        )
+        df = df.drop(columns=["Revenus nets imposables", "Nombre de foyers fiscaux"])
+        # Les 2 premières colonnes positionnelles = Code_departement, annee
+        df.columns = ["Code_departement", "annee"] + list(df.columns[2:])
+        df["Code_departement"] = df["Code_departement"].apply(fix_departement)
+        dfs["8420"]["1984_1999"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
+        # ── 2000–2017 ────────────────────────────────────────────────────────
+        df = _set_header(dfs["8420"]["2000_2017"], skip_rows=7)
+        df = df.iloc[:, 1:].iloc[:, :-7].drop(columns=["Nom"])
+        df["[revenu_moyen]revenu_moyen_par_foyer"] = (
+            pd.to_numeric(df["Revenu fiscal de référence"], errors="coerce") /
+            pd.to_numeric(df["Nombre de foyers fiscaux"], errors="coerce")
+        )
+        df = df.drop(columns=["Revenu fiscal de référence", "Nombre de foyers fiscaux"])
+        df.columns = ["Code_departement", "annee"] + list(df.columns[2:])
+        # 'B31' est un code fictif DGFiP pour les contribuables non résidents
+        df = df[df["Code_departement"] != "B31"]
+        df["Code_departement"] = df["Code_departement"].apply(fix_departement)
+        dfs["8420"]["2000_2017"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
+        # ── 2018 ─────────────────────────────────────────────────────────────
+        df = _set_header(dfs["8420"]["2018"], skip_rows=7)
+        df.drop(df.tail(4).index, inplace=True)  # Suppression des totaux en bas
+        df = df.iloc[:, 1:].iloc[:, :-9].drop(columns=["Nom"])
+        df["[revenu_moyen]revenu_moyen_par_foyer"] = (
+            pd.to_numeric(df["Revenu fiscal de référence"], errors="coerce") /
+            pd.to_numeric(df["Nombre de foyers fiscaux"], errors="coerce")
+        )
+        df = df.drop(columns=["Revenu fiscal de référence", "Nombre de foyers fiscaux"])
+        df.columns = ["Code_departement", "annee"] + list(df.columns[2:])
+        df = df[df["Code_departement"] != "B31"]
+        df["Code_departement"] = df["Code_departement"].apply(fix_departement)
+        dfs["8420"]["2018"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
+        # ── 2019–2020 ─────────────────────────────────────────────────────────
+        df = _set_header(dfs["8420"]["2019_2020"], skip_rows=7)
+        df = df.iloc[:, 1:].iloc[:, :-7].drop(columns=["Nom"])
+        df["[revenu_moyen]revenu_moyen_par_foyer"] = (
+            pd.to_numeric(df["Revenu fiscal de référence"], errors="coerce") /
+            pd.to_numeric(df["Nombre de foyers fiscaux"], errors="coerce")
+        )
+        df = df.drop(columns=["Revenu fiscal de référence", "Nombre de foyers fiscaux"])
+        df.columns = ["Code_departement", "annee"] + list(df.columns[2:])
+        df = df[df["Code_departement"] != "B31"]
+        df["Code_departement"] = df["Code_departement"].apply(fix_departement)
+        dfs["8420"]["2019_2020"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
+        # ── 2021 ─────────────────────────────────────────────────────────────
+        # Format différent : données au niveau commune, filtrées sur "total"
+        df = _set_header(dfs["21"]["Feuil1"], skip_rows=6)
+        df = df.iloc[:, 1:].iloc[:, :-7]
+        # Garde uniquement les lignes de total communal (tranche = "total")
+        df = df[df.iloc[:, 3].astype(str).str.strip().str.lower() == "total"]
+        df = df[df.iloc[:, 0] != "B31"]
+        df.columns = ["Code_departement", "commune", "libelle_commune", "tranche", "nbr_foyer", "revenue_referance"]
+        df["nbr_foyer"] = _parse_numeric_col(df["nbr_foyer"])
+        df["revenue_referance"] = _parse_numeric_col(df["revenue_referance"])
+        # Les montants 2021 sont en milliers d'euros → ×1000
+        df["[revenu_moyen]revenu_moyen_par_foyer"] = df["revenue_referance"] * 1000 / df["nbr_foyer"]
+        df["Code_departement"] = df["Code_departement"].apply(fix_departement)
+        # Agrégation commune → département (moyenne pondérée approximative)
+        df = df.groupby("Code_departement", as_index=False)["[revenu_moyen]revenu_moyen_par_foyer"].mean()
+        df["annee"] = 2021
+        dfs["21"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
+        # ── 2022 ─────────────────────────────────────────────────────────────
+        # Format encore légèrement différent : pas de skip_rows standard
+        df = dfs["22"]["Feuil1"]
+        df = df.iloc[4:]
+        df.columns = df.iloc[0]
+        df = df.iloc[2:].reset_index(drop=True)
+        df.drop(df.tail(2).index, inplace=True)
+        df.columns.name = None
+        df = df.iloc[:, :-7]
+        df = df[df.iloc[:, 3].astype(str).str.strip().str.lower() == "total"]
+        df["Revenu fiscal de référence des foyers fiscaux"] = _parse_numeric_col(
+            df["Revenu fiscal de référence des foyers fiscaux"]
+        )
+        df["Nombre de foyers fiscaux"] = _parse_numeric_col(df["Nombre de foyers fiscaux"])
+        df["[revenu_moyen]revenu_moyen_par_foyer"] = (
+            df["Revenu fiscal de référence des foyers fiscaux"] * 1000 / df["Nombre de foyers fiscaux"]
+        )
+        df = df[df["Dép."] != "B31"]
+        df["Code_departement"] = df["Dép."].apply(fix_departement)
+        df["annee"] = 2022
+        dfs["22"] = df.groupby("Code_departement", as_index=False)["[revenu_moyen]revenu_moyen_par_foyer"].mean()
+        dfs["22"]["annee"] = 2022
+        dfs["22"] = dfs["22"][["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
+        # ── 2023 ─────────────────────────────────────────────────────────────
+        df = dfs["23"]["ListeCommune"]
+        df = df.iloc[4:]
+        df.columns = df.iloc[0]
+        df = df.iloc[2:].reset_index(drop=True)
+        df.columns.name = None
+        df = df.iloc[:, :-7]
+        df = df[df.iloc[:, 3].astype(str).str.strip().str.lower() == "total"]
+        df["Revenu fiscal de référence des foyers fiscaux"] = _parse_numeric_col(
+            df["Revenu fiscal de référence des foyers fiscaux"]
+        )
+        df["Nombre de foyers fiscaux"] = _parse_numeric_col(df["Nombre de foyers fiscaux"])
+        df["[revenu_moyen]revenu_moyen_par_foyer"] = (
+            df["Revenu fiscal de référence des foyers fiscaux"] * 1000 / df["Nombre de foyers fiscaux"]
+        )
+        df = df[df["Dép."] != "B31"]
+        df["Code_departement"] = df["Dép."].apply(fix_departement)
+        df = df.groupby("Code_departement", as_index=False)["[revenu_moyen]revenu_moyen_par_foyer"].mean()
+        df["annee"] = 2023
+        dfs["23"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
+        # ── Concaténation finale de toutes les périodes ───────────────────────
+        dfs["8420"] = pd.concat(dfs["8420"].values(), ignore_index=True)
+        return pd.concat([dfs["8420"], dfs["21"], dfs["22"], dfs["23"]], ignore_index=True)
+    except KeyError as e:
+        logger.error(f"clean_revenu_moyen() : clé manquante dans dfs → {e}")
+        raise
+    except Exception as e:
+        logger.error(f"clean_revenu_moyen() : erreur → {e}")
+        raise
 
 def clean_etablissement_culturel(df: pd.DataFrame) -> pd.DataFrame:
-    # Suppression colonnes inutiles (sans crash si absentes)
-    df = df.drop(
-        columns=[
-            "pct_culturel",
-            "nombre_etablissements",
-            "libelle_geographique"
-        ],
-        errors="ignore"
-    )
-    # Vérification nombre colonnes restantes
-    if len(df.columns) < 3:
-        raise ValueError("Le DataFrame ne contient pas les colonnes attendues.")
-    # Renommage sécurisé basé sur position
-    df = df.rename(columns={
-        df.columns[0]: "annee",
-        df.columns[1]: "Code_departement",
-        df.columns[2]: "[etablissement_culturel]nombre_etablissements"
-    })
-    # Réorganisation propre
-    df = df.loc[:, [
-        "Code_departement",
-        "annee",
-        "[etablissement_culturel]nombre_etablissements"
-    ]]
-    return df.reset_index(drop=True)
+    """
+    Nettoie les données sur les établissements culturels par département et année.
+
+    Ce fichier contient déjà les données agrégées — le nettoyage consiste
+    principalement à supprimer les colonnes calculées redondantes et à
+    normaliser les noms de colonnes.
+
+    Colonnes supprimées :
+        - pct_culturel             : pourcentage calculé, recalculable
+        - nombre_etablissements    : doublon de la colonne renommée
+        - libelle_geographique     : libellé textuel, la clé suffit
+
+    Colonnes produites :
+        - Code_departement
+        - annee
+        - [etablissement_culturel]nombre_etablissements
+
+    Args:
+        df (pd.DataFrame): DataFrame brut des établissements culturels.
+
+    Returns:
+        pd.DataFrame: Données nettoyées et renommées.
+
+    Raises:
+        ValueError: Si le DataFrame résultant a moins de 3 colonnes.
+    """
+    try:
+        # Suppression des colonnes redondantes ou inutiles
+        df = df.drop(
+            columns=[
+                "pct_culturel",
+                "nombre_etablissements",
+                "libelle_geographique"
+            ],
+            errors="ignore"
+        )
+        # Vérification qu'il reste bien 3 colonnes (dept, année, nombre)
+        if len(df.columns) < 3:
+            raise ValueError(
+                f"Le DataFrame ne contient pas les colonnes attendues "
+                f"(seulement {len(df.columns)} colonnes après nettoyage)."
+            )
+        # Renommage basé sur la position (robuste aux changements de noms sources)
+        df = df.rename(columns={
+            df.columns[0]: "annee",
+            df.columns[1]: "Code_departement",
+            df.columns[2]: "[etablissement_culturel]nombre_etablissements"
+        })
+        # Réorganisation dans l'ordre standard (dept, année, valeur)
+        df = df.loc[:, [
+            "Code_departement",
+            "annee",
+            "[etablissement_culturel]nombre_etablissements"
+        ]]
+        return df.reset_index(drop=True)
+    except ValueError:
+        raise
+    except Exception as e:
+        logger.error(f"clean_etablissement_culturel() : erreur → {e}")
+        raise
 
 def clean_pouvoir_achat(df: pd.DataFrame) -> pd.DataFrame:
-    # Suppression des premières lignes inutiles
-    df = df.iloc[2:].copy()
-    # Définition des colonnes à partir de la première vraie ligne
-    df.columns = df.iloc[0]
-    df = df.iloc[1:].reset_index(drop=True)
-    df.columns.name = None
-    # Suppression des lignes totalement vides
-    df = df.dropna(how="all")
-    # Suppression des lignes non numériques en fin de fichier
-    df = df[pd.to_numeric(df.iloc[:, 0], errors="coerce").notna()]
-    # Suppression colonne inutile (sans crash)
-    df = df.drop(
-        columns=["Pouvoir d’achat du revenu disponible brut"],
-        errors="ignore"
-    )
-    # Renommage sécurisé basé sur position
-    if len(df.columns) < 2:
-        raise ValueError("Format inattendu pour le fichier pouvoir_achat")
-    df = df.rename(columns={
-        df.columns[0]: "annee",
-        df.columns[1]: "[pouvoir_achat]pourcentage_annee_precedente"
-    })
-    # Conversion numérique propre
-    df["annee"] = pd.to_numeric(df["annee"], errors="coerce")
-    df["[pouvoir_achat]pourcentage_annee_precedente"] = (
-        df["[pouvoir_achat]pourcentage_annee_precedente"]
-        .astype(str)
-        .str.replace(",", ".", regex=False)
-    )
-    df["[pouvoir_achat]pourcentage_annee_precedente"] = pd.to_numeric(
-        df["[pouvoir_achat]pourcentage_annee_precedente"],
-        errors="coerce"
-    )
-    return df.reset_index(drop=True)
+    """
+    Nettoie les données nationales de pouvoir d'achat du revenu disponible brut
+    (variation annuelle en %).
+
+    Problème d'entrée :
+        - Fichier Excel avec 2 lignes de titre en tête
+        - Virgule comme séparateur décimal
+        - Lignes non numériques (titres, notes) en fin de fichier
+
+    Colonnes produites :
+        - annee
+        - [pouvoir_achat]pourcentage_annee_precedente : variation % vs N-1
+
+    Args:
+        df (pd.DataFrame): DataFrame brut issu du fichier INSEE pouvoir d'achat.
+
+    Returns:
+        pd.DataFrame: Série temporelle des variations de pouvoir d'achat.
+
+    Raises:
+        ValueError: Si le DataFrame a moins de 2 colonnes après nettoyage.
+    """
+    try:
+        # Suppression des 2 premières lignes de titre
+        df = df.iloc[2:].copy()
+        # La première ligne utile devient l'en-tête
+        df.columns = df.iloc[0]
+        df = df.iloc[1:].reset_index(drop=True)
+        df.columns.name = None
+        # Suppression des lignes entièrement vides
+        df = df.dropna(how="all")
+        # Filtrage des lignes non numériques en fin de fichier (notes, sources)
+        df = df[pd.to_numeric(df.iloc[:, 0], errors="coerce").notna()]
+        # Suppression de la colonne de pouvoir d'achat brut
+        # (on garde uniquement la variation %)
+        df = df.drop(
+            columns=["Pouvoir d'achat du revenu disponible brut"],
+            errors="ignore"
+        )
+        # Vérification qu'il reste au moins 2 colonnes (année + valeur)
+        if len(df.columns) < 2:
+            raise ValueError(
+                "Format inattendu pour le fichier pouvoir_achat : "
+                f"seulement {len(df.columns)} colonne(s) après nettoyage."
+            )
+        # Renommage basé sur position
+        df = df.rename(columns={
+            df.columns[0]: "annee",
+            df.columns[1]: "[pouvoir_achat]pourcentage_annee_precedente"
+        })
+        # Conversion numérique propre
+        df["annee"] = pd.to_numeric(df["annee"], errors="coerce")
+        # Remplacement de la virgule décimale avant conversion en float
+        df["[pouvoir_achat]pourcentage_annee_precedente"] = (
+            df["[pouvoir_achat]pourcentage_annee_precedente"]
+            .astype(str)
+            .str.replace(",", ".", regex=False)
+        )
+        df["[pouvoir_achat]pourcentage_annee_precedente"] = pd.to_numeric(
+            df["[pouvoir_achat]pourcentage_annee_precedente"],
+            errors="coerce"
+        )
+        return df.reset_index(drop=True)
+    except ValueError:
+        raise
+    except Exception as e:
+        logger.error(f"clean_pouvoir_achat() : erreur → {e}")
+        raise
 
 def clean_niveau_etude(df: pd.DataFrame, metadata_niveau_etude: str) -> pd.DataFrame:
-    # Suppression colonnes inutiles
-    df = df.drop(
-        columns=[
-            'STUD_AREA', 'SEX', 'FREQ',
-            'RP_MEASURE', 'AGE', 'OBS_STATUS'
-        ],
-        errors="ignore"
-    )
-    # Harmonisation codes diplômes
-    df.loc[
-        df["EDUC"].isin(["001T100_RP", "001T200_RP"]),
-        "EDUC"
-    ] = "001T003_RP"
-    # Mapping diplôme
-    with open(metadata_niveau_etude, 'r', encoding='utf-8') as f:
-        mapping = {
-            normaliser(item['code']): item['libelle']
-            for item in json.load(f)
-        }
-    df["EDUC"] = (
-        df["EDUC"]
-        .astype(str)
-        .apply(normaliser)
-        .map(mapping)
-    )
-    # Normalisation département + année
-    df["Code_departement"] = df["GEO"].str.split("-").str[-1]
-    df["annee"] = (
-        pd.to_numeric(df["TIME_PERIOD"], errors="coerce") - 1
-    )
-    df = df.drop(columns=["GEO", "TIME_PERIOD"], errors="ignore")
-    # Renommage propre
-    df = df.rename(columns={
-        "EDUC": "[niveau_etude]diplome",
-        "OBS_VALUE_NIVEAU": "[niveau_etude]nombre_diplome"
-    })
-    df = df[[
-        "Code_departement",
-        "annee",
-        "[niveau_etude]diplome",
-        "[niveau_etude]nombre_diplome"
-    ]]
-    # Pivot sécurisé
-    df = (
-        df.pivot_table(
-            index=["Code_departement", "annee"],
-            columns="[niveau_etude]diplome",
-            values="[niveau_etude]nombre_diplome",
-            aggfunc="sum"
+    """
+    Nettoie et pivote les données de niveau d'étude (diplômes) par département
+    et par année, issues de l'INSEE (format SDMX).
+
+    Harmonisation des codes diplôme :
+        - '001T100_RP' et '001T200_RP' sont normalisés en '001T003_RP'
+          (agrégats redondants, ramenés à un code unique).
+
+    Décalage temporel :
+        L'année est décalée de -1 pour alignement sur l'année électorale.
+
+    Colonnes produites :
+        - Code_departement
+        - annee
+        - [niveau_etude]<libellé diplôme> : une colonne par diplôme
+
+    Args:
+        df (pd.DataFrame): Données brutes INSEE format SDMX.
+        metadata_niveau_etude (str): Chemin vers le JSON code diplôme → libellé.
+
+    Returns:
+        pd.DataFrame: Données pivotées par département, année et diplôme.
+    """
+    try:
+        # Suppression des colonnes de métadonnées inutiles
+        df = df.drop(
+            columns=[
+                'STUD_AREA', 'SEX', 'FREQ',
+                'RP_MEASURE', 'AGE', 'OBS_STATUS'
+            ],
+            errors="ignore"
         )
-        .fillna(0)
-    )
-    df.columns.name = None
-    # Ajout préfixe uniforme
-    df = df.rename(columns=lambda x: f"[niveau_etude]{x}")
-    return df.reset_index()
+        # Harmonisation des codes : deux codes agrégats → code unique
+        # Évite les doublons lors du pivot
+        df.loc[
+            df["EDUC"].isin(["001T100_RP", "001T200_RP"]),
+            "EDUC"
+        ] = "001T003_RP"
+        # Chargement du mapping code diplôme → libellé
+        with open(metadata_niveau_etude, 'r', encoding='utf-8') as f:
+            mapping = {
+                normaliser(item['code']): item['libelle']
+                for item in json.load(f)
+            }
+        # Application du mapping
+        df["EDUC"] = (
+            df["EDUC"]
+            .astype(str)
+            .apply(normaliser)
+            .map(mapping)
+        )
+        # Extraction du code département et décalage temporel
+        df["Code_departement"] = df["GEO"].str.split("-").str[-1]
+        df["annee"] = pd.to_numeric(df["TIME_PERIOD"], errors="coerce") - 1
+        df = df.drop(columns=["GEO", "TIME_PERIOD"], errors="ignore")
+        # Renommage des colonnes analytiques
+        df = df.rename(columns={
+            "EDUC": "[niveau_etude]diplome",
+            "OBS_VALUE_NIVEAU": "[niveau_etude]nombre_diplome"
+        })
+        # Sélection et réorganisation
+        df = df[[
+            "Code_departement",
+            "annee",
+            "[niveau_etude]diplome",
+            "[niveau_etude]nombre_diplome"
+        ]]
+        # Pivot : une colonne par diplôme
+        df = (
+            df.pivot_table(
+                index=["Code_departement", "annee"],
+                columns="[niveau_etude]diplome",
+                values="[niveau_etude]nombre_diplome",
+                aggfunc="sum"
+            )
+            .fillna(0)  # 0 diplômés si absent (pas NaN)
+        )
+        df.columns.name = None
+        # Ajout du préfixe source sur chaque colonne diplôme
+        df = df.rename(columns=lambda x: f"[niveau_etude]{x}")
+        return df.reset_index()
+    except FileNotFoundError:
+        logger.error(f"clean_niveau_etude() : JSON introuvable → {metadata_niveau_etude}")
+        raise
+    except Exception as e:
+        logger.error(f"clean_niveau_etude() : erreur → {e}")
+        raise
 
 def clean_abstention_votant(df: pd.DataFrame) -> pd.DataFrame:
-    # Filtre présidentielles
-    df = df[
-        df["id_election"]
-        .astype(str)
-        .str.contains(r"pres_t1|pres_t2", na=False)
-    ].copy()
-    # Extraction année + tour
-    df[["annee", "tour"]] = df["id_election"].str.extract(
-        r"(\d{4})_pres_(t[12])"
-    )
-    df["annee"] = pd.to_numeric(df["annee"], errors="coerce") - 1
-    df = df.drop(columns=["id_election"], errors="ignore")
-    # Suppression colonnes inutiles
-    df = df.drop(columns=[
-        'id_brut_miom', 'code_commune', 'libelle_canton',
-        'code_canton', 'libelle_departement',
-        'code_circonscription', 'libelle_commune',
-        'libelle_circonscription', 'code_bv',
-        'ratio_blancs_votants', 'ratio_nuls_inscrits',
-        'ratio_nuls_votants', 'ratio_exprimes_inscrits',
-        'ratio_exprimes_votants', 'ratio_abstentions_inscrits',
-        'ratio_votants_inscrits', 'ratio_blancs_inscrits',
-        'votants', 'exprimes'
-    ], errors="ignore")
-    # Sélection colonnes utiles
-    df = df[[
-        "code_departement",
-        "annee",
-        "tour",
-        "inscrits",
-        "abstentions",
-        "blancs",
-        "nuls"
-    ]]
-    df = df.fillna(0)
-    # Renommage
-    df = df.rename(columns={
-        "tour": "[abstention_votant]tour",
-        "inscrits": "[abstention_votant]inscrits",
-        "abstentions": "[abstention_votant]abstentions",
-        "blancs": "[abstention_votant]blancs",
-        "nuls": "[abstention_votant]nuls"
-    })
-    # Harmonisation DOM-TOM
-    mapping_dom = {
-        "ZA": "971", "ZB": "972", "ZC": "973",
-        "ZD": "974", "ZM": "976", "ZN": "988",
-        "ZP": "987", "ZS": "975", "ZT": "978",
-        "ZW": "986", "ZX": "977", "ZY": "977",
-    }
-    df["code_departement"] = df["code_departement"].replace(mapping_dom)
-    df = df[df["code_departement"] != "ZZ"]
-    # Agrégation département
-    df = (
-        df.groupby(
-            ["code_departement", "annee", "[abstention_votant]tour"],
-            as_index=False
-        )[[
-            "[abstention_votant]inscrits",
-            "[abstention_votant]abstentions",
-            "[abstention_votant]blancs",
-            "[abstention_votant]nuls"
+    """
+    Nettoie et agrège les données d'abstention et de participation aux
+    élections présidentielles (T1 et T2) par département.
+
+    Logique métier :
+        - Même décalage temporel que clean_president_sortant (année - 1).
+        - Agrégation des bureaux de vote au niveau département (sum).
+        - Les votes de l'étranger (code 'ZZ') sont exclus.
+
+    Colonnes produites :
+        - code_departement
+        - annee
+        - [abstention_votant]tour
+        - [abstention_votant]inscrits
+        - [abstention_votant]abstentions
+        - [abstention_votant]blancs
+        - [abstention_votant]nuls
+
+    Args:
+        df (pd.DataFrame): Données brutes des bureaux de vote (niveau BV).
+
+    Returns:
+        pd.DataFrame: Statistiques de participation agrégées par département et tour.
+    """
+    try:
+        # Filtre sur les élections présidentielles uniquement
+        df = df[
+            df["id_election"]
+            .astype(str)
+            .str.contains(r"pres_t1|pres_t2", na=False)
+        ].copy()
+        # Extraction de l'année et du tour
+        df[["annee", "tour"]] = df["id_election"].str.extract(
+            r"(\d{4})_pres_(t[12])"
+        )
+        # Décalage temporel : année élection → année précédente
+        df["annee"] = pd.to_numeric(df["annee"], errors="coerce") - 1
+        df = df.drop(columns=["id_election"], errors="ignore")
+        # Suppression de toutes les colonnes non nécessaires
+        df = df.drop(columns=[
+            'id_brut_miom', 'code_commune', 'libelle_canton',
+            'code_canton', 'libelle_departement',
+            'code_circonscription', 'libelle_commune',
+            'libelle_circonscription', 'code_bv',
+            'ratio_blancs_votants', 'ratio_nuls_inscrits',
+            'ratio_nuls_votants', 'ratio_exprimes_inscrits',
+            'ratio_exprimes_votants', 'ratio_abstentions_inscrits',
+            'ratio_votants_inscrits', 'ratio_blancs_inscrits',
+            'votants', 'exprimes'
+        ], errors="ignore")
+        # Sélection des colonnes utiles
+        df = df[[
+            "code_departement",
+            "annee",
+            "tour",
+            "inscrits",
+            "abstentions",
+            "blancs",
+            "nuls"
         ]]
-        .sum()
-        .sort_values(["code_departement", "annee"])
-        .reset_index(drop=True)
-    )
-    return df
+        # Remplissage des NaN par 0 (données manquantes = 0 votes dans cette catégorie)
+        df = df.fillna(0)
+        # Renommage avec préfixe source
+        df = df.rename(columns={
+            "tour": "[abstention_votant]tour",
+            "inscrits": "[abstention_votant]inscrits",
+            "abstentions": "[abstention_votant]abstentions",
+            "blancs": "[abstention_votant]blancs",
+            "nuls": "[abstention_votant]nuls"
+        })
+        # Harmonisation des codes DOM-TOM (même mapping que president_sortant)
+        mapping_dom = {
+            "ZA": "971", "ZB": "972", "ZC": "973",
+            "ZD": "974", "ZM": "976", "ZN": "988",
+            "ZP": "987", "ZS": "975", "ZT": "978",
+            "ZW": "986", "ZX": "977", "ZY": "977",
+        }
+        df["code_departement"] = df["code_departement"].replace(mapping_dom)
+        # Exclusion des votes de l'étranger (non rattachés à un département)
+        df = df[df["code_departement"] != "ZZ"]
+        # Agrégation BV → département (somme des effectifs)
+        df = (
+            df.groupby(
+                ["code_departement", "annee", "[abstention_votant]tour"],
+                as_index=False
+            )[[
+                "[abstention_votant]inscrits",
+                "[abstention_votant]abstentions",
+                "[abstention_votant]blancs",
+                "[abstention_votant]nuls"
+            ]]
+            .sum()
+            .sort_values(["code_departement", "annee"])
+            .reset_index(drop=True)
+        )
+        return df
+    except KeyError as e:
+        logger.error(f"clean_abstention_votant() : colonne manquante → {e}")
+        raise
+    except Exception as e:
+        logger.error(f"clean_abstention_votant() : erreur → {e}")
+        raise
