@@ -9,19 +9,19 @@ logger = logging.getLogger(__name__)
 # Desactivation du warning externe pour le certificat
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+"""
+Charge un dataframe depuis l'API melodi
+
+Parameters
+----------
+melodi_url : str
+		URL de l'API de melodi
+
+Returns
+-------
+pd.DataFrame
+"""
 def creer_dataframe_depuis_melodi_api_url(melodi_url: str) -> pd.DataFrame:
-	"""
-	Charge un dataframe depuis l'API melodi
-	
-	Parameters
-	----------
-	melodi_url : str
-			URL de l'API de melodi
-	
-	Returns
-	-------
-	pd.DataFrame
-	"""
 	logger.info("Telechargement des données depuis l'API MELODI")
 	
 	try:
@@ -75,7 +75,7 @@ def creer_dataframe_depuis_melodi_api_url(melodi_url: str) -> pd.DataFrame:
 		#Création d'un dataframe pandas
 		logger.debug("Création d'un dataframe pandas")
 		df = pd.DataFrame(extracted_data)
-		logger.info("retourne le dataframe depuis l'API MELODI")
+		logger.info("Retourne le dataframe depuis l'API MELODI")
 		return df
 	except Exception as e:
 		#On raise une erreur et on la LOG
