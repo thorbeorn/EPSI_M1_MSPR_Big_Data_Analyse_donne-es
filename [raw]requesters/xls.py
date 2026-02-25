@@ -1,6 +1,7 @@
 import pandas as pd
 import requests
 import tempfile
+import os
 
 def creer_dataframe_depuis_xls_url(xls_url: str, sheet_name: str) -> pd.DataFrame:
     """
@@ -21,10 +22,15 @@ def creer_dataframe_depuis_xls_url(xls_url: str, sheet_name: str) -> pd.DataFram
     r = requests.get(xls_url, verify=False)
     r.raise_for_status()
 
-    with tempfile.NamedTemporaryFile(suffix=".xlsx") as tmp_file:
+    tmp_file = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
+    
+    try:
         tmp_file.write(r.content)
-        tmp_file.flush()
+        tmp_file.close()
         
         df = pd.read_excel(tmp_file.name, sheet_name=sheet_name)
+    
+    finally:
+        os.remove(tmp_file.name)
 
     return df

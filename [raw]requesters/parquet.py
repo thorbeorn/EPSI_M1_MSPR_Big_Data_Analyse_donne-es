@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 from typing import Union
+import os
 import fastparquet
 import requests
 import tempfile
@@ -31,13 +32,18 @@ def creer_dataframe_depuis_parquet_url(parquet_url: str, metadata_json: Union[st
     r = requests.get(parquet_url, verify=False)
     r.raise_for_status()
 
-    with tempfile.NamedTemporaryFile(suffix=".parquet") as tmp_file:
+    # Important : delete=False pour Windows
+    tmp_file = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
+    try:
         tmp_file.write(r.content)
-        tmp_file.flush()
-        
+        tmp_file.close()  # fermer avant lecture
+
         df = pd.read_parquet(tmp_file.name)
 
-    # Ajouter les métadonnées au DataFrame
+    finally:
+        os.remove(tmp_file.name)  # nettoyage
+
+    # Ajouter les métadonnées
     df.attrs["metadata"] = metadata
 
     return df

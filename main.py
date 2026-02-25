@@ -32,36 +32,43 @@ URLS = {
     "president_sortant": "https://object.files.data.gouv.fr/data-pipeline-open/elections/candidats_results.parquet"
 }
 
+# print("================DATA delinquance================")
 # raw_delinquance_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["delinquance"], PATHS["metadata_delinquance"])
 # silver_delinquance_df = silver_dataframe_module.clean_delinquance(raw_delinquance_df)
 # print(silver_delinquance_df)
 
+# print("================DATA chommage================")
 # raw_taux_chommage_df = raw_xls_module.creer_dataframe_depuis_xls_url(URLS["taux_chommage"], "Département")
 # silver_taux_chommage_df = silver_dataframe_module.clean_taux_chomage(raw_taux_chommage_df)
 # print(silver_taux_chommage_df)
 
+# print("================DATA age_moyen================")
 # raw_age_moyen_df = raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["age_moyen"])
 # silver_age_moyen_df = silver_dataframe_module.clean_age_moyen(raw_age_moyen_df)
 # print(silver_age_moyen_df)
 
+# print("================DATA population_active================")
 # raw_population_active_df = raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["population_active"])
 # silver_population_active_df = silver_dataframe_module.clean_population_active(raw_population_active_df, PATHS["metadata_population_active"])
 # print(silver_population_active_df)
 
+# print("================DATA categorie_professionnelle================")
 # raw_categorie_professionnelle_df = raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["categorie_professionnelle"])
 # silver_categorie_professionnelle_df = silver_dataframe_module.clean_categorie_professionnelle(raw_categorie_professionnelle_df, PATHS["metadata_categorie_professionnelle"])
 # print(silver_categorie_professionnelle_df)
 
+# print("================DATA equipement_sportif================")
 # raw_equipement_sportif_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["equipement_sportif"], {})
 # silver_equipement_sportif_df = silver_dataframe_module.clean_equipement_sportif(raw_equipement_sportif_df)
 # print(silver_equipement_sportif_df)
 
+# print("================DATA revenu_moyen================")
 # raw_revenu_moyen_dfs = raw_mixed_xlsx_zip_module.creer_dataframe_depuis_multiple_url(URLS["revenu_moyen"])
 # silver_revenu_moyen_df = silver_dataframe_module.clean_revenu_moyen(raw_revenu_moyen_dfs)
 # print(silver_revenu_moyen_df)
 
 
-
+# print("================DATA president_sortant================")
 # raw_president_sortant_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["president_sortant"], {})
 # silver_president_sortant_df = silver_dataframe_module.clean_president_sortant(raw_president_sortant_df, PATHS["metadata_famille_politique"])
 # print(silver_president_sortant_df)
