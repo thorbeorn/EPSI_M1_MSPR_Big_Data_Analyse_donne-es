@@ -698,3 +698,38 @@ def clean_revenu_moyen(dfs: dict) -> pd.DataFrame:
   )
 
   return df_final
+
+def clean_etablissement_culturel(df: pd.DataFrame) -> pd.DataFrame:
+  """
+  Nettoie les données du revenu moyen par département.
+  - supprime les colonnes non utile
+  - Renomme les colonnes
+
+  Parameters
+  ----------
+  df : pd.DataFrame
+  
+  Returns
+  -------
+  pd.DataFrame
+  """
+
+  # Suppression des colones inutile
+  df = df.drop(columns=['pct_culturel', 'nombre_etablissements', 'libelle_geographique'])
+
+  # Renomme les colonnes
+  df.columns = [
+    "annee",
+    "Code_departement",
+    "[etablissement_culturel]nombre_etablissements"
+  ]
+
+  df = df[
+    [
+        "Code_departement",
+        "annee",
+        "[etablissement_culturel]nombre_etablissements"
+    ]
+  ]
+
+  return df

@@ -29,6 +29,7 @@ URLS = {
         "22": "https://static.data.gouv.fr/resources/limpot-sur-le-revenu-par-collectivite-territoriale-ircom/20240610-082154/ircom-2023-revenus-2022.zip",
         "23": "https://static.data.gouv.fr/resources/limpot-sur-le-revenu-par-collectivite-territoriale-ircom/20250919-135242/ircom-2024-revenus-2023.zip"
     },
+    "etablissement_culturel": "https://data.culture.gouv.fr/api/explore/v2.1/catalog/datasets/entreprises-culturelles-par-departement/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
     "president_sortant": "https://object.files.data.gouv.fr/data-pipeline-open/elections/candidats_results.parquet"
 }
 
@@ -66,6 +67,11 @@ URLS = {
 # raw_revenu_moyen_dfs = raw_mixed_xlsx_zip_module.creer_dataframe_depuis_multiple_url(URLS["revenu_moyen"])
 # silver_revenu_moyen_df = silver_dataframe_module.clean_revenu_moyen(raw_revenu_moyen_dfs)
 # print(silver_revenu_moyen_df)
+
+# print("================DATA etablissement_culturel================")
+# raw_etablissement_culturel_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["etablissement_culturel"], {})
+# silver_etablissement_culturel_df = silver_dataframe_module.clean_etablissement_culturel(raw_etablissement_culturel_df)
+# print(silver_etablissement_culturel_df)
 
 
 # print("================DATA president_sortant================")
