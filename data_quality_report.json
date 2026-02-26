@@ -36,7 +36,7 @@
     },
     {
         "dataframe_name": "silver_taux_chommage_df",
-        "nb_rows": 4400,
+        "nb_rows": 4272,
         "nb_columns": 3,
         "duplicates": 0,
         "columns": {
@@ -55,13 +55,13 @@
             },
             "[taux_chomage]Taux_moyen": {
                 "dtype": "float64",
-                "missing_values": 128,
-                "missing_percent": 2.91,
+                "missing_values": 0,
+                "missing_percent": 0.0,
                 "unique_values": 610,
                 "negative_values": 0
             }
         },
-        "quality_score": 99.03
+        "quality_score": 100.0
     },
     {
         "dataframe_name": "silver_age_moyen_df",
@@ -263,7 +263,7 @@
                 "dtype": "float64",
                 "missing_values": 0,
                 "missing_percent": 0.0,
-                "unique_values": 3292,
+                "unique_values": 3288,
                 "negative_values": 0
             }
         },

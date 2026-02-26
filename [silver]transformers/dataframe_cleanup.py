@@ -354,6 +354,7 @@ def clean_taux_chomage(df: pd.DataFrame) -> pd.DataFrame:
 
         # Sécurisation numérique (les valeurs Excel peuvent être des strings)
         df["Taux"] = pd.to_numeric(df["Taux"], errors="coerce")
+        df = df.dropna(subset=["Taux"]).reset_index(drop=True)
         # Agrégation trimestrielle vers annuelle (moyenne des 4 trimestres)
         df = (
             df
