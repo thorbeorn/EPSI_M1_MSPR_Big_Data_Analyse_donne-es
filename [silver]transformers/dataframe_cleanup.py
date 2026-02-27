@@ -449,6 +449,7 @@ def clean_president_sortant(df: pd.DataFrame, metadata_famille_politique: str ) 
         - [president_sortant]tour
         - [president_sortant]candidat
         - [president_sortant]famille_politique
+        - [president_sortant]nombre_voix
 
     Args:
         df (pd.DataFrame): Données brutes électorales.
@@ -477,12 +478,12 @@ def clean_president_sortant(df: pd.DataFrame, metadata_famille_politique: str ) 
                 "nuance", "sexe", "no_panneau",
                 "ratio_voix_inscrits", "ratio_voix_exprimes",
                 "libelle_abrege_liste", "nom_tete_liste",
-                "binome", "liste", "libelle_etendu_liste", "voix"
+                "binome", "liste", "libelle_etendu_liste"
             ],
             errors="ignore"
         )
         # Sélection des colonnes utiles
-        df = df[["code_departement", "annee", "tour", "nom", "prenom"]]
+        df = df[["code_departement", "annee", "tour", "nom", "prenom", "voix"]]
         # Dédoublonnage avant fusion (une ligne par candidat par département)
         df = df.drop_duplicates(ignore_index=True)
         # Construction du nom complet du candidat (vectorisé, sans boucle)
@@ -506,7 +507,8 @@ def clean_president_sortant(df: pd.DataFrame, metadata_famille_politique: str ) 
         df = df.rename(columns={
             "tour": "[president_sortant]tour",
             "candidat": "[president_sortant]candidat",
-            "famille_politique": "[president_sortant]famille_politique"
+            "famille_politique": "[president_sortant]famille_politique",
+            "voix": "[president_sortant]nombre_voix"
         })
         # Harmonisation des codes DOM-TOM (format lettré → numérique INSEE)
         df["code_departement"] = df["code_departement"].replace({
