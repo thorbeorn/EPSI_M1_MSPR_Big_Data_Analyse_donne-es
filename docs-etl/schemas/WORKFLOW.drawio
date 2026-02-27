@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" version="29.4.0">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" version="29.5.5">
   <diagram name="Page-1" id="A2IpoRCXE7XsgzVpXBk7">
-    <mxGraphModel dx="1072" dy="586" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="none" math="0" shadow="0">
+    <mxGraphModel dx="476" dy="301" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -69,7 +69,7 @@
         <mxCell id="8q_-wOw1R_Q8SWp0B5A2-24" edge="1" parent="1" source="8q_-wOw1R_Q8SWp0B5A2-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="8q_-wOw1R_Q8SWp0B5A2-15">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="8q_-wOw1R_Q8SWp0B5A2-14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;dashed=1;opacity=50;fontFamily=Georgia;fontColor=#82B366;strokeWidth=2;" value="&lt;font&gt;loader.py&lt;/font&gt;&lt;div&gt;&lt;font&gt;Inserts data into the dwh&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font&gt;Extract data quality&lt;/font&gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="8q_-wOw1R_Q8SWp0B5A2-14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;dashed=1;opacity=50;fontFamily=Georgia;fontColor=#82B366;strokeWidth=2;" value="&lt;font&gt;[load]loaders/*.py&lt;/font&gt;&lt;div&gt;&lt;font&gt;Inserts data into the dwh&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font&gt;Extract data quality&lt;/font&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="60" width="180" x="380" y="400" as="geometry" />
         </mxCell>
         <mxCell id="8q_-wOw1R_Q8SWp0B5A2-15" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;opacity=50;dashed=1;fontFamily=Georgia;fontColor=#6C8EBF;strokeWidth=2;" value="&lt;span style=&quot;&quot;&gt;[gold]dashboards/*.py&lt;/span&gt;&lt;br&gt;&lt;div&gt;&lt;font&gt;Generate dashboards for data usage&lt;/font&gt;&lt;/div&gt;" vertex="1">
