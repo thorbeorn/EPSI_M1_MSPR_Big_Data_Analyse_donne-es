@@ -19,3 +19,4 @@ pytest-cov
 sqlalchemy
 pymysql
 minio
+pyarrow

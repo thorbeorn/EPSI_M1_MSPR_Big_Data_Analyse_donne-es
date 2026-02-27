@@ -1,12 +1,85 @@
 import pandas as pd
 from sqlalchemy import create_engine
+from io import BytesIO
+from datetime import datetime
+from minio import Minio
+from minio.error import S3Error
+import logging
+
+logger = logging.getLogger(__name__)
+
+engine = create_engine(
+    "mysql+pymysql://mspr-user:z9k5RYgeDr3457TV33tY2eLPgd36XE5y88LAcCpz@localhost:3306/mspr-db"
+)
+
+def upload_df_to_minio(
+    df: pd.DataFrame,
+    file_format: str,  # "csv" ou "parquet"
+    bucket_name="data-lake",
+    object_name=None,
+    endpoint="localhost:9000",
+    access_key="mspr-admin",
+    secret_key="4A724rhUh65XMHvVR9k73xumLhytHtm557VKC83G"
+):
+    """
+    Upload un DataFrame Pandas en CSV ou Parquet directement dans MinIO
+    sans création de fichier local.
+    """
+
+    if file_format not in ["csv", "parquet"]:
+        raise ValueError("file_format doit être 'csv' ou 'parquet'")
+
+    # Nom horodaté si non fourni
+    if object_name is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        object_name = f"gold_president_{timestamp}.{file_format}"
+
+    logger.debug(f"Préparation upload {bucket_name}/{object_name}")
+
+    try:
+        buffer = BytesIO()
+
+        # Conversion du DataFrame
+        if file_format == "csv":
+            df.to_csv(buffer, index=False)
+            content_type = "text/csv"
+
+        elif file_format == "parquet":
+            df.to_parquet(buffer, index=False, engine="pyarrow")
+            content_type = "application/octet-stream"
+
+        buffer.seek(0)
+
+        # Client MinIO
+        client = Minio(
+            endpoint,
+            access_key=access_key,
+            secret_key=secret_key,
+            secure=False
+        )
+
+        # Création bucket si nécessaire
+        if not client.bucket_exists(bucket_name):
+            client.make_bucket(bucket_name)
+            logger.info(f"Bucket créé : {bucket_name}")
+
+        # Upload
+        client.put_object(
+            bucket_name=bucket_name,
+            object_name=object_name,
+            data=buffer,
+            length=buffer.getbuffer().nbytes,
+            content_type=content_type
+        )
+
+        logger.info(f"Upload réussi : {bucket_name}/{object_name}")
+
+    except S3Error as err:
+        logger.error(f"Erreur MinIO : {err}")
+    except Exception as e:
+        logger.exception(f"Erreur inattendue : {e}")
 
 def create_gold_all_indicator_df():
-    # Création du moteur de connexion à la base MySQL
-    engine = create_engine(
-        "mysql+pymysql://mspr-user:z9k5RYgeDr3457TV33tY2eLPgd36XE5y88LAcCpz@localhost:3306/mspr-db"
-    )
-
     query = """ 
     SELECT 
         base.Code_departement,
@@ -137,6 +210,55 @@ def create_gold_all_indicator_df():
     """
 
     df = pd.read_sql(query, engine)
-    print(df)
+    
+    # Upload CSV
+    upload_df_to_minio(
+        df,
+        file_format="csv",
+        bucket_name="gold",
+        object_name="all_indicator.csv"
+    )
 
-create_gold_all_indicator_df()
+    # Upload Parquet
+    upload_df_to_minio(
+        df,
+        file_format="parquet",
+        bucket_name="gold",
+        object_name="all_indicator.parquet"
+    )
+
+def create_gold_all_president_df():
+    query = """ 
+    SELECT p.*
+    FROM president_sortant p
+    JOIN (
+        SELECT code_departement,
+            annee,
+            MAX(`[president_sortant]nombre_voix`) AS max_voix
+        FROM president_sortant
+        WHERE `[president_sortant]tour` = 't2'
+        GROUP BY code_departement, annee
+    ) m
+    ON p.code_departement = m.code_departement
+    AND p.annee = m.annee
+    AND p.`[president_sortant]nombre_voix` = m.max_voix
+    WHERE p.`[president_sortant]tour` = 't2';
+    """
+
+    df = pd.read_sql(query, engine)
+    
+    # Upload CSV
+    upload_df_to_minio(
+        df,
+        file_format="csv",
+        bucket_name="gold",
+        object_name="all_president.csv"
+    )
+
+    # Upload Parquet
+    upload_df_to_minio(
+        df,
+        file_format="parquet",
+        bucket_name="gold",
+        object_name="all_president.parquet"
+    )
