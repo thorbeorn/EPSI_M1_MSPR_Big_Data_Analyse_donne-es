@@ -20,3 +20,6 @@ python main.py
 pytest test_unitaire/test_cleaning_functions.py 
 python -m pytest --cov="[silver]transformers"
 python -m pytest --cov="[silver]transformers" --cov-report=term-missing
+
+
+REFAIRE LE DATALINEAGE APRES L'AJOUT DU GOLD
