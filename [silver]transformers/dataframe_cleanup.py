@@ -281,7 +281,8 @@ def clean_delinquance(df: pd.DataFrame) -> pd.DataFrame:
         missing = required_cols - set(df.columns)
         if missing:
             raise ValueError(f"Colonnes manquantes dans clean_delinquance : {missing}")
-
+        
+        df["annee"] = pd.to_numeric(df["annee"], errors="coerce").astype("int64")
         return (
             df
             .groupby(
@@ -419,6 +420,7 @@ def clean_age_moyen(df: pd.DataFrame) -> pd.DataFrame:
             )
             .reset_index()
         )
+        df["annee"] = pd.to_numeric(df["annee"], errors="coerce").astype("int64")
         df.columns.name = None  # Supprime l'artefact "AGE" sur l'axe colonnes
         # Renommage des tranches d'âge vers des noms lisibles + suppression agrégat
         return df.rename(columns={
@@ -715,6 +717,7 @@ def clean_categorie_professionnelle(
             else f"[categorie_professionnelle] {col}"
             for col in df.columns
         ]
+        df = df.rename(columns={"[categorie_professionnelle] Artisans, commerçants et chefs d’entreprise": "[categorie_professionnelle] Artisans, commerçants et patron", "[categorie_professionnelle] Cadres et professions intellectuelles supérieures": "[categorie_professionnelle] Cadres et professions supérieures"})
         return df.reset_index(drop=True)
     except FileNotFoundError:
         logger.error(
@@ -1049,6 +1052,8 @@ def clean_etablissement_culturel(df: pd.DataFrame) -> pd.DataFrame:
             "annee",
             "[etablissement_culturel]nombre_etablissements"
         ]]
+        df["annee"] = pd.to_numeric(df["annee"], errors="coerce").astype("int64")
+        df["[etablissement_culturel]nombre_etablissements"] = pd.to_numeric(df["[etablissement_culturel]nombre_etablissements"], errors="coerce").astype("int64")
         return df.reset_index(drop=True)
     except ValueError:
         raise
@@ -1207,6 +1212,8 @@ def clean_niveau_etude(df: pd.DataFrame, metadata_niveau_etude: str) -> pd.DataF
         df.columns.name = None
         # Ajout du préfixe source sur chaque colonne diplôme
         df = df.rename(columns=lambda x: f"[niveau_etude]{x}")
+        df = df.rename(columns={"[niveau_etude]Baccalauréat universitaire ou équivalent : Licence, licence pro, maîtrise, diplôme équivalent de niveau bac+3 ou bac+4": "[niveau_etude]Baccalauréat universitaire ou équivalent"})
+        df = df.rename(columns={"[niveau_etude]Enseignement supérieur de cycle court : BTS, DUT, Deug, Deust, diplôme de la santé ou du social de niveau bac+2, diplôme": "[niveau_etude]Enseignement supérieur de cycle court"})
         return df.reset_index()
     except FileNotFoundError:
         logger.error(f"clean_niveau_etude() : JSON introuvable → {metadata_niveau_etude}")

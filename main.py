@@ -15,6 +15,8 @@ raw_xls_module = getattr(__import__("[raw]requesters.xls"), "xls")
 raw_melodi_module = getattr(__import__("[raw]requesters.melodi"), "melodi")
 raw_mixed_xlsx_zip_module = getattr(__import__("[raw]requesters.mixedxlsxzip"), "mixedxlsxzip")
 silver_dataframe_module = getattr(__import__("[silver]transformers.dataframe_cleanup"), "dataframe_cleanup")
+load_quality_module = getattr(__import__("[load]loaders.quality"), "quality")
+load_save_module = getattr(__import__("[load]loaders.save"), "save")
 
 PATHS = {
     "metadata_delinquance": "[raw]requesters/metadata/DEP_Base_statistique_delinquance_police_gendarmerie.json",
@@ -43,141 +45,43 @@ URLS = {
     "president_sortant": "https://object.files.data.gouv.fr/data-pipeline-open/elections/candidats_results.parquet"
 }
 
+dataframes = {}
+
 print("================DATA delinquance================")
-raw_delinquance_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["delinquance"], PATHS["metadata_delinquance"])
-silver_delinquance_df = silver_dataframe_module.clean_delinquance(raw_delinquance_df)
-print(silver_delinquance_df.dtypes)
-print(silver_delinquance_df)
+dataframes["silver_delinquance_df"] = silver_dataframe_module.clean_delinquance(raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["delinquance"], PATHS["metadata_delinquance"]))
 
 print("================DATA chommage================")
-raw_taux_chommage_df = raw_xls_module.creer_dataframe_depuis_xls_url(URLS["taux_chommage"], "Département")
-silver_taux_chommage_df = silver_dataframe_module.clean_taux_chomage(raw_taux_chommage_df)
-print(silver_taux_chommage_df.dtypes)
-print(silver_taux_chommage_df)
+dataframes["silver_taux_chommage_df"] = silver_dataframe_module.clean_taux_chomage(raw_xls_module.creer_dataframe_depuis_xls_url(URLS["taux_chommage"], "Département"))
 
 print("================DATA age_moyen================")
-raw_age_moyen_df = raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["age_moyen"])
-silver_age_moyen_df = silver_dataframe_module.clean_age_moyen(raw_age_moyen_df)
-print(silver_age_moyen_df.dtypes)
-print(silver_age_moyen_df)
+dataframes["silver_age_moyen_df"] = silver_dataframe_module.clean_age_moyen(raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["age_moyen"]))
 
 print("================DATA population_active================")
-raw_population_active_df = raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["population_active"])
-silver_population_active_df = silver_dataframe_module.clean_population_active(raw_population_active_df, PATHS["metadata_population_active"])
-print(silver_population_active_df)
+dataframes["silver_population_active_df"] = silver_dataframe_module.clean_population_active(raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["population_active"]), PATHS["metadata_population_active"])
 
 print("================DATA categorie_professionnelle================")
-raw_categorie_professionnelle_df = raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["categorie_professionnelle"])
-silver_categorie_professionnelle_df = silver_dataframe_module.clean_categorie_professionnelle(raw_categorie_professionnelle_df, PATHS["metadata_categorie_professionnelle"])
-print(silver_categorie_professionnelle_df)
+dataframes["silver_categorie_professionnelle_df"] = silver_dataframe_module.clean_categorie_professionnelle(raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["categorie_professionnelle"]), PATHS["metadata_categorie_professionnelle"])
 
 print("================DATA equipement_sportif================")
-raw_equipement_sportif_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["equipement_sportif"], {})
-silver_equipement_sportif_df = silver_dataframe_module.clean_equipement_sportif(raw_equipement_sportif_df)
-print(silver_equipement_sportif_df)
+dataframes["silver_equipement_sportif_df"] = silver_dataframe_module.clean_equipement_sportif(raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["equipement_sportif"], {}))
 
 print("================DATA revenu_moyen================")
-raw_revenu_moyen_dfs = raw_mixed_xlsx_zip_module.creer_dataframe_depuis_multiple_url(URLS["revenu_moyen"])
-silver_revenu_moyen_df = silver_dataframe_module.clean_revenu_moyen(raw_revenu_moyen_dfs)
-print(silver_revenu_moyen_df)
+dataframes["silver_revenu_moyen_df"] = silver_dataframe_module.clean_revenu_moyen(raw_mixed_xlsx_zip_module.creer_dataframe_depuis_multiple_url(URLS["revenu_moyen"]))
 
 print("================DATA etablissement_culturel================")
-raw_etablissement_culturel_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["etablissement_culturel"], {})
-silver_etablissement_culturel_df = silver_dataframe_module.clean_etablissement_culturel(raw_etablissement_culturel_df)
-print(silver_etablissement_culturel_df)
+dataframes["silver_etablissement_culturel_df"] = silver_dataframe_module.clean_etablissement_culturel(raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["etablissement_culturel"], {}))
 
 print("================DATA pouvoir_achat================")
-raw_pouvoir_achat_df = raw_xls_module.creer_dataframe_depuis_xls_url(URLS["pouvoir_achat"], "Données")
-silver_pouvoir_achat_df = silver_dataframe_module.clean_pouvoir_achat(raw_pouvoir_achat_df)
-print(silver_pouvoir_achat_df)
+dataframes["silver_pouvoir_achat_df"] = silver_dataframe_module.clean_pouvoir_achat(raw_xls_module.creer_dataframe_depuis_xls_url(URLS["pouvoir_achat"], "Données"))
 
 print("================DATA niveau_etude================")
-raw_niveau_etude_df = raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["niveau_etude"])
-silver_niveau_etude_df = silver_dataframe_module.clean_niveau_etude(raw_niveau_etude_df, PATHS["metadata_niveau_etude"])
-print(silver_niveau_etude_df)
+dataframes["silver_niveau_etude_df"] = silver_dataframe_module.clean_niveau_etude(raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["niveau_etude"]), PATHS["metadata_niveau_etude"])
 
 print("================DATA abstention_votant================")
-raw_abstention_votant_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["abstention_votant"], {})
-silver_abstention_votant_df = silver_dataframe_module.clean_abstention_votant(raw_abstention_votant_df)
-print(silver_abstention_votant_df)
-
+dataframes["silver_abstention_votant_df"] = silver_dataframe_module.clean_abstention_votant(raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["abstention_votant"], {}))
 
 print("================DATA president_sortant================")
-raw_president_sortant_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["president_sortant"], {})
-silver_president_sortant_df = silver_dataframe_module.clean_president_sortant(raw_president_sortant_df, PATHS["metadata_famille_politique"])
-print(silver_president_sortant_df)
+dataframes["silver_president_sortant_df"] = silver_dataframe_module.clean_president_sortant(raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["president_sortant"], {}), PATHS["metadata_famille_politique"])
 
-
-# def audit_dataframe(df, df_name):
-#     report = {}
-    
-#     report["dataframe_name"] = df_name
-#     report["nb_rows"] = len(df)
-#     report["nb_columns"] = len(df.columns)
-#     report["duplicates"] = int(df.duplicated().sum())
-    
-#     report["columns"] = {}
-    
-#     total_missing_percent = 0
-#     numeric_columns_checked = 0
-    
-#     for col in df.columns:
-#         col_data = df[col]
-#         missing_count = col_data.isnull().sum()
-#         missing_percent = col_data.isnull().mean() * 100
-        
-#         column_report = {
-#             "dtype": str(col_data.dtype),
-#             "missing_values": int(missing_count),
-#             "missing_percent": round(float(missing_percent), 2),
-#             "unique_values": int(col_data.nunique())
-#         }
-        
-#         # Vérification valeurs négatives sur colonnes numériques
-#         if pd.api.types.is_numeric_dtype(col_data):
-#             numeric_columns_checked += 1
-#             negative_values = int((col_data < 0).sum())
-#             column_report["negative_values"] = negative_values
-            
-#         report["columns"][col] = column_report
-#         total_missing_percent += missing_percent
-
-#     avg_missing = total_missing_percent / len(df.columns) if len(df.columns) > 0 else 0
-#     duplicate_penalty = report["duplicates"] / len(df) * 100 if len(df) > 0 else 0
-    
-#     quality_score = 100 - avg_missing - duplicate_penalty
-#     quality_score = max(0, round(quality_score, 2))
-    
-#     report["quality_score"] = quality_score
-    
-#     return report
-# def audit_all_silver_dataframes(namespace, output_file="data_quality_report.json"):
-#     reports = []
-
-#     for var_name, var_value in namespace.items():
-#         if var_name.startswith("silver_") and isinstance(var_value, pd.DataFrame):
-#             print(f"Audit en cours : {var_name}")
-#             report = audit_dataframe(var_value, var_name)
-#             reports.append(report)
-
-#     with open(output_file, "w", encoding="utf-8") as f:
-#         json.dump(reports, f, indent=4, ensure_ascii=False)
-
-#     print(f"\nAudit terminé ✅ Rapport sauvegardé dans : {output_file}")
-#     return reports
-
-# dataframes = {
-#     "silver_delinquance_df": silver_delinquance_df,
-#     "silver_taux_chommage_df": silver_taux_chommage_df,
-#     "silver_age_moyen_df": silver_age_moyen_df,
-#     "silver_population_active_df": silver_population_active_df,
-#     "silver_categorie_professionnelle_df": silver_categorie_professionnelle_df,
-#     "silver_equipement_sportif_df": silver_equipement_sportif_df,
-#     "silver_revenu_moyen_df": silver_revenu_moyen_df,
-#     "silver_etablissement_culturel_df": silver_etablissement_culturel_df,
-#     "silver_pouvoir_achat_df": silver_pouvoir_achat_df,
-#     "silver_niveau_etude_df": silver_niveau_etude_df,
-#     "silver_abstention_votant_df": silver_abstention_votant_df
-# }
-
-# audit_reports = audit_all_silver_dataframes(globals())
+load_save_module.save_all_silver_dataframes(dataframes)
+# audit_reports = load_quality_module.audit_all_silver_dataframes(globals())

@@ -1,0 +1,910 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "name": "mspr-db (1).sql",
+  "sources": [
+    {
+      "id": "38adf2a2-cb57-458d-85d7-dd57d8f64563",
+      "name": "mspr-db (1).sql",
+      "kind": {
+        "kind": "SqlLocalFile",
+        "name": "mspr-db (1).sql",
+        "size": 7891,
+        "modified": 1772198195342
+      },
+      "content": [],
+      "tables": [
+        {
+          "schema": "",
+          "table": "abstention_votant",
+          "columns": [
+            {
+              "name": "code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[abstention_votant]tour",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[abstention_votant]inscrits",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[abstention_votant]abstentions",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[abstention_votant]blancs",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[abstention_votant]nuls",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "age_moyen",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[age_moyen]entre15et24",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[age_moyen]entre25et54",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[age_moyen]plus55",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "categorie_professionnelle",
+          "columns": [
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "commerçants",
+              "type": "et patron` double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[categorie_professionnelle]",
+              "type": "Professions intermédiaires` double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "delinquance",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[delinquance]nombre",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[delinquance]taux_pour_mille",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "equipement_sportif",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[equipement_sportif]nb_equipements",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "etablissement_culturel",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[etablissement_culturel]nombre_etablissements",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "indicateur",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "niveau_etude",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL, `annee` bigint(20)"
+            },
+            {
+              "name": "`[niveau_etude]Diplôme",
+              "type": "universitaire 2e ou 3e cycle` double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[niveau_etude]Enseignement",
+              "type": "supérieur de cycle court` double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "population_active",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "Statut_emploi",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[population_active]entre15et24",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[population_active]entre25et54",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[population_active]entre55et64",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "pouvoir_achat",
+          "columns": [
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[pouvoir_achat]pourcentage_annee_precedente",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`Pouvoir",
+              "type": "d’achat du revenu disponible brut` double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "president_sortant",
+          "columns": [
+            {
+              "name": "code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[president_sortant]tour",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[president_sortant]candidat",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[president_sortant]famille_politique",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "revenu_moyen",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[revenu_moyen]revenu_moyen_par_foyer",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "taux_chommage",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[taux_chomage]Taux_moyen",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        }
+      ],
+      "relations": [],
+      "createdAt": 1772198219731,
+      "updatedAt": 1772198219731
+    },
+    {
+      "id": "b13193c4-d943-42a5-b697-87da58757961",
+      "name": "additional relations",
+      "kind": {
+        "kind": "AmlEditor"
+      },
+      "content": [
+        "rel president_sortant(annee) -> indicateur(annee)",
+        "rel president_sortant(code_departement) -> indicateur(Code_departement)",
+        "rel revenu_moyen(annee) -> indicateur(annee)",
+        "rel revenu_moyen(Code_departement) -> indicateur(Code_departement)",
+        "rel taux_chommage(annee) -> indicateur(annee)",
+        "rel taux_chommage(Code_departement) -> indicateur(Code_departement)",
+        "rel abstention_votant(annee) -> indicateur(annee)",
+        "rel abstention_votant(code_departement) -> indicateur(Code_departement)",
+        "rel pouvoir_achat(annee) -> indicateur(annee)",
+        "rel population_active(Code_departement) -> indicateur(Code_departement)",
+        "rel population_active(annee) -> indicateur(annee)",
+        "rel niveau_etude(Code_departement) -> indicateur(Code_departement)",
+        "rel etablissement_culturel(annee) -> indicateur(annee)",
+        "rel etablissement_culturel(Code_departement) -> indicateur(Code_departement)",
+        "rel equipement_sportif(annee) -> indicateur(annee)",
+        "rel equipement_sportif(Code_departement) -> indicateur(Code_departement)",
+        "rel delinquance(annee) -> indicateur(annee)",
+        "rel delinquance(Code_departement) -> indicateur(Code_departement)",
+        "rel categorie_professionnelle(annee) -> indicateur(annee)",
+        "rel age_moyen(annee) -> indicateur(annee)",
+        "rel age_moyen(Code_departement) -> indicateur(Code_departement)",
+        ""
+      ],
+      "tables": [],
+      "relations": [
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".president_sortant",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".president_sortant",
+            "column": "code_departement"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".revenu_moyen",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".revenu_moyen",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".taux_chommage",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".taux_chommage",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".abstention_votant",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".abstention_votant",
+            "column": "code_departement"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".pouvoir_achat",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".population_active",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".population_active",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".niveau_etude",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".etablissement_culturel",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".etablissement_culturel",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".equipement_sportif",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".equipement_sportif",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".delinquance",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".delinquance",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".categorie_professionnelle",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".age_moyen",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".age_moyen",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateur",
+            "column": "Code_departement"
+          }
+        }
+      ],
+      "createdAt": 1772198239748,
+      "updatedAt": 1772198309768
+    }
+  ],
+  "layouts": {
+    "initial layout": {
+      "tables": [
+        {
+          "id": ".abstention_votant",
+          "position": {
+            "left": 1390,
+            "top": 30
+          },
+          "size": {
+            "width": 283.8999938964844,
+            "height": 212.8000030517578
+          },
+          "color": "fuchsia",
+          "columns": [
+            "code_departement",
+            "annee",
+            "[abstention_votant]tour",
+            "[abstention_votant]inscrits",
+            "[abstention_votant]abstentions",
+            "[abstention_votant]blancs",
+            "[abstention_votant]nuls"
+          ]
+        },
+        {
+          "id": ".age_moyen",
+          "position": {
+            "left": 1730,
+            "top": 120
+          },
+          "size": {
+            "width": 257.4125061035156,
+            "height": 164.8000030517578
+          },
+          "color": "indigo",
+          "columns": [
+            "Code_departement",
+            "annee",
+            "[age_moyen]entre15et24",
+            "[age_moyen]entre25et54",
+            "[age_moyen]plus55"
+          ]
+        },
+        {
+          "id": ".categorie_professionnelle",
+          "position": {
+            "left": 1900,
+            "top": 340
+          },
+          "size": {
+            "width": 275.45001220703125,
+            "height": 116.80000305175781
+          },
+          "color": "rose",
+          "columns": [
+            "annee",
+            "commerçants",
+            "`[categorie_professionnelle]"
+          ]
+        },
+        {
+          "id": ".delinquance",
+          "position": {
+            "left": 1990,
+            "top": 600
+          },
+          "size": {
+            "width": 287.8999938964844,
+            "height": 140.8000030517578
+          },
+          "color": "blue",
+          "columns": [
+            "Code_departement",
+            "annee",
+            "[delinquance]nombre",
+            "[delinquance]taux_pour_mille"
+          ]
+        },
+        {
+          "id": ".equipement_sportif",
+          "position": {
+            "left": 1930,
+            "top": 900
+          },
+          "size": {
+            "width": 345.6625061035156,
+            "height": 116.80000305175781
+          },
+          "color": "indigo",
+          "columns": [
+            "Code_departement",
+            "annee",
+            "[equipement_sportif]nb_equipements"
+          ]
+        },
+        {
+          "id": ".etablissement_culturel",
+          "position": {
+            "left": 1740,
+            "top": 1140
+          },
+          "size": {
+            "width": 399.1000061035156,
+            "height": 116.80000305175781
+          },
+          "color": "orange",
+          "columns": [
+            "Code_departement",
+            "annee",
+            "[etablissement_culturel]nombre_etablissements"
+          ]
+        },
+        {
+          "id": ".indicateur",
+          "position": {
+            "left": 1420,
+            "top": 510
+          },
+          "size": {
+            "width": 210.16250610351562,
+            "height": 92.80000305175781
+          },
+          "color": "yellow",
+          "columns": [
+            "Code_departement",
+            "annee"
+          ]
+        },
+        {
+          "id": ".niveau_etude",
+          "position": {
+            "left": 1360,
+            "top": 1270
+          },
+          "size": {
+            "width": 288.82501220703125,
+            "height": 116.80000305175781
+          },
+          "color": "emerald",
+          "columns": [
+            "Code_departement",
+            "`[niveau_etude]Diplôme",
+            "`[niveau_etude]Enseignement"
+          ]
+        },
+        {
+          "id": ".population_active",
+          "position": {
+            "left": 980,
+            "top": 1100
+          },
+          "size": {
+            "width": 301.01251220703125,
+            "height": 188.8000030517578
+          },
+          "color": "purple",
+          "columns": [
+            "Code_departement",
+            "annee",
+            "Statut_emploi",
+            "[population_active]entre15et24",
+            "[population_active]entre25et54",
+            "[population_active]entre55et64"
+          ]
+        },
+        {
+          "id": ".pouvoir_achat",
+          "position": {
+            "left": 760,
+            "top": 900
+          },
+          "size": {
+            "width": 416.1125183105469,
+            "height": 116.80000305175781
+          },
+          "color": "amber",
+          "columns": [
+            "annee",
+            "[pouvoir_achat]pourcentage_annee_precedente",
+            "`Pouvoir"
+          ]
+        },
+        {
+          "id": ".president_sortant",
+          "position": {
+            "left": 760,
+            "top": 570
+          },
+          "size": {
+            "width": 323.70001220703125,
+            "height": 164.8000030517578
+          },
+          "color": "purple",
+          "columns": [
+            "code_departement",
+            "annee",
+            "[president_sortant]tour",
+            "[president_sortant]candidat",
+            "[president_sortant]famille_politique"
+          ]
+        },
+        {
+          "id": ".revenu_moyen",
+          "position": {
+            "left": 850,
+            "top": 340
+          },
+          "size": {
+            "width": 369.9750061035156,
+            "height": 116.80000305175781
+          },
+          "color": "sky",
+          "columns": [
+            "Code_departement",
+            "annee",
+            "[revenu_moyen]revenu_moyen_par_foyer"
+          ]
+        },
+        {
+          "id": ".taux_chommage",
+          "position": {
+            "left": 1040,
+            "top": 140
+          },
+          "size": {
+            "width": 279.6750183105469,
+            "height": 116.80000305175781
+          },
+          "color": "red",
+          "columns": [
+            "Code_departement",
+            "annee",
+            "[taux_chomage]Taux_moyen"
+          ]
+        }
+      ],
+      "createdAt": 1772198219731,
+      "updatedAt": 1772198369774
+    }
+  },
+  "createdAt": 1772198227870,
+  "updatedAt": 1772198227870,
+  "version": 2
+}

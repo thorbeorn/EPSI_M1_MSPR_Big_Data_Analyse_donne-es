@@ -1,0 +1,26 @@
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: mariadb
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: 2ty7YV2iA6gQ5EE9NQ8rDh4E52cCpw6u4F8gs4mU
+      MARIADB_DATABASE: mspr-db
+      MARIADB_USER: mspr-user
+      MARIADB_PASSWORD: z9k5RYgeDr3457TV33tY2eLPgd36XE5y88LAcCpz
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    depends_on:
+      - mariadb
+    environment:
+      PMA_HOST: mariadb
+      PMA_PORT: 3306
+    ports:
+      - "8080:80"
