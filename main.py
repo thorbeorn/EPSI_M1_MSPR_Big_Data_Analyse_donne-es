@@ -102,82 +102,82 @@ silver_abstention_votant_df = silver_dataframe_module.clean_abstention_votant(ra
 print(silver_abstention_votant_df)
 
 
-# print("================DATA president_sortant================")
-# raw_president_sortant_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["president_sortant"], {})
-# silver_president_sortant_df = silver_dataframe_module.clean_president_sortant(raw_president_sortant_df, PATHS["metadata_famille_politique"])
-# print(silver_president_sortant_df)
+print("================DATA president_sortant================")
+raw_president_sortant_df = raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["president_sortant"], {})
+silver_president_sortant_df = silver_dataframe_module.clean_president_sortant(raw_president_sortant_df, PATHS["metadata_famille_politique"])
+print(silver_president_sortant_df)
 
 
-def audit_dataframe(df, df_name):
-    report = {}
+# def audit_dataframe(df, df_name):
+#     report = {}
     
-    report["dataframe_name"] = df_name
-    report["nb_rows"] = len(df)
-    report["nb_columns"] = len(df.columns)
-    report["duplicates"] = int(df.duplicated().sum())
+#     report["dataframe_name"] = df_name
+#     report["nb_rows"] = len(df)
+#     report["nb_columns"] = len(df.columns)
+#     report["duplicates"] = int(df.duplicated().sum())
     
-    report["columns"] = {}
+#     report["columns"] = {}
     
-    total_missing_percent = 0
-    numeric_columns_checked = 0
+#     total_missing_percent = 0
+#     numeric_columns_checked = 0
     
-    for col in df.columns:
-        col_data = df[col]
-        missing_count = col_data.isnull().sum()
-        missing_percent = col_data.isnull().mean() * 100
+#     for col in df.columns:
+#         col_data = df[col]
+#         missing_count = col_data.isnull().sum()
+#         missing_percent = col_data.isnull().mean() * 100
         
-        column_report = {
-            "dtype": str(col_data.dtype),
-            "missing_values": int(missing_count),
-            "missing_percent": round(float(missing_percent), 2),
-            "unique_values": int(col_data.nunique())
-        }
+#         column_report = {
+#             "dtype": str(col_data.dtype),
+#             "missing_values": int(missing_count),
+#             "missing_percent": round(float(missing_percent), 2),
+#             "unique_values": int(col_data.nunique())
+#         }
         
-        # Vérification valeurs négatives sur colonnes numériques
-        if pd.api.types.is_numeric_dtype(col_data):
-            numeric_columns_checked += 1
-            negative_values = int((col_data < 0).sum())
-            column_report["negative_values"] = negative_values
+#         # Vérification valeurs négatives sur colonnes numériques
+#         if pd.api.types.is_numeric_dtype(col_data):
+#             numeric_columns_checked += 1
+#             negative_values = int((col_data < 0).sum())
+#             column_report["negative_values"] = negative_values
             
-        report["columns"][col] = column_report
-        total_missing_percent += missing_percent
+#         report["columns"][col] = column_report
+#         total_missing_percent += missing_percent
 
-    avg_missing = total_missing_percent / len(df.columns) if len(df.columns) > 0 else 0
-    duplicate_penalty = report["duplicates"] / len(df) * 100 if len(df) > 0 else 0
+#     avg_missing = total_missing_percent / len(df.columns) if len(df.columns) > 0 else 0
+#     duplicate_penalty = report["duplicates"] / len(df) * 100 if len(df) > 0 else 0
     
-    quality_score = 100 - avg_missing - duplicate_penalty
-    quality_score = max(0, round(quality_score, 2))
+#     quality_score = 100 - avg_missing - duplicate_penalty
+#     quality_score = max(0, round(quality_score, 2))
     
-    report["quality_score"] = quality_score
+#     report["quality_score"] = quality_score
     
-    return report
-def audit_all_silver_dataframes(namespace, output_file="data_quality_report.json"):
-    reports = []
+#     return report
+# def audit_all_silver_dataframes(namespace, output_file="data_quality_report.json"):
+#     reports = []
 
-    for var_name, var_value in namespace.items():
-        if var_name.startswith("silver_") and isinstance(var_value, pd.DataFrame):
-            print(f"Audit en cours : {var_name}")
-            report = audit_dataframe(var_value, var_name)
-            reports.append(report)
+#     for var_name, var_value in namespace.items():
+#         if var_name.startswith("silver_") and isinstance(var_value, pd.DataFrame):
+#             print(f"Audit en cours : {var_name}")
+#             report = audit_dataframe(var_value, var_name)
+#             reports.append(report)
 
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(reports, f, indent=4, ensure_ascii=False)
+#     with open(output_file, "w", encoding="utf-8") as f:
+#         json.dump(reports, f, indent=4, ensure_ascii=False)
 
-    print(f"\nAudit terminé ✅ Rapport sauvegardé dans : {output_file}")
-    return reports
+#     print(f"\nAudit terminé ✅ Rapport sauvegardé dans : {output_file}")
+#     return reports
 
-dataframes = {
-    "silver_delinquance_df": silver_delinquance_df,
-    "silver_taux_chommage_df": silver_taux_chommage_df,
-    "silver_age_moyen_df": silver_age_moyen_df,
-    "silver_population_active_df": silver_population_active_df,
-    "silver_categorie_professionnelle_df": silver_categorie_professionnelle_df,
-    "silver_equipement_sportif_df": silver_equipement_sportif_df,
-    "silver_revenu_moyen_df": silver_revenu_moyen_df,
-    "silver_etablissement_culturel_df": silver_etablissement_culturel_df,
-    "silver_pouvoir_achat_df": silver_pouvoir_achat_df,
-    "silver_niveau_etude_df": silver_niveau_etude_df,
-    "silver_abstention_votant_df": silver_abstention_votant_df
-}
+# dataframes = {
+#     "silver_delinquance_df": silver_delinquance_df,
+#     "silver_taux_chommage_df": silver_taux_chommage_df,
+#     "silver_age_moyen_df": silver_age_moyen_df,
+#     "silver_population_active_df": silver_population_active_df,
+#     "silver_categorie_professionnelle_df": silver_categorie_professionnelle_df,
+#     "silver_equipement_sportif_df": silver_equipement_sportif_df,
+#     "silver_revenu_moyen_df": silver_revenu_moyen_df,
+#     "silver_etablissement_culturel_df": silver_etablissement_culturel_df,
+#     "silver_pouvoir_achat_df": silver_pouvoir_achat_df,
+#     "silver_niveau_etude_df": silver_niveau_etude_df,
+#     "silver_abstention_votant_df": silver_abstention_votant_df
+# }
 
-audit_reports = audit_all_silver_dataframes(globals())
+# audit_reports = audit_all_silver_dataframes(globals())
