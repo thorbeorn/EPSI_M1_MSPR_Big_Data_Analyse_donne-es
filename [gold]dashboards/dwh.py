@@ -22,7 +22,7 @@ def upload_df_to_minio(
     object_name=None,
     endpoint="localhost:9000",
     access_key="mspr-admin",
-    secret_key="********"
+    secret_key="4A724rhUh65XMHvVR9k73xumLhytHtm557VKC83G"
 ):
     """
     Upload un DataFrame Pandas en CSV ou Parquet directement dans MinIO

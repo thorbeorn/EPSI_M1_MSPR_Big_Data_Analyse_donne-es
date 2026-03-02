@@ -46,7 +46,7 @@ URLS = {
     "president_sortant": "https://object.files.data.gouv.fr/data-pipeline-open/elections/candidats_results.parquet"
 }
 
-dataframes = {}
+# dataframes = {}
 # dataframes["silver_delinquance_df"] = silver_dataframe_module.clean_delinquance(raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["delinquance"], PATHS["metadata_delinquance"]))
 # dataframes["silver_taux_chommage_df"] = silver_dataframe_module.clean_taux_chomage(raw_xls_module.creer_dataframe_depuis_xls_url(URLS["taux_chommage"], "Département"))
 # dataframes["silver_age_moyen_df"] = silver_dataframe_module.clean_age_moyen(raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["age_moyen"]))
