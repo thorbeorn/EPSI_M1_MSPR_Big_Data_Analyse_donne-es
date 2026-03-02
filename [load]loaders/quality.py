@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 # Fonction : Upload JSON en mémoire vers MinIO
 def upload_json_to_minio(
     data,
-    bucket_name="data-quality",
+    bucket_name="silver",
     object_name=None,
     endpoint="localhost:9000",
     access_key="mspr-admin",
@@ -165,7 +165,7 @@ def audit_all_silver_dataframes(namespace):
     logger.debug("Envoi du rapport global vers MinIO")
     upload_json_to_minio(
         data=reports,
-        bucket_name="data-quality"
+        bucket_name="silver"
     )
 
     logger.info("Audit global terminé")
