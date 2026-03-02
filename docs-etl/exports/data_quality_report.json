@@ -1,0 +1,548 @@
+[
+    {
+        "dataframe_name": "silver_delinquance_df",
+        "nb_rows": 1010,
+        "nb_columns": 4,
+        "duplicates": 0,
+        "columns": {
+            "Code_departement": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 101
+            },
+            "annee": {
+                "dtype": "int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 10,
+                "negative_values": 0
+            },
+            "[delinquance]nombre": {
+                "dtype": "Int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 1001,
+                "negative_values": 0
+            },
+            "[delinquance]taux_pour_mille": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 1010,
+                "negative_values": 0
+            }
+        },
+        "quality_score": 100.0
+    },
+    {
+        "dataframe_name": "silver_taux_chommage_df",
+        "nb_rows": 4272,
+        "nb_columns": 3,
+        "duplicates": 0,
+        "columns": {
+            "Code_departement": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 100
+            },
+            "annee": {
+                "dtype": "int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 44,
+                "negative_values": 0
+            },
+            "[taux_chomage]Taux_moyen": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 610,
+                "negative_values": 0
+            }
+        },
+        "quality_score": 100.0
+    },
+    {
+        "dataframe_name": "silver_age_moyen_df",
+        "nb_rows": 300,
+        "nb_columns": 5,
+        "duplicates": 0,
+        "columns": {
+            "Code_departement": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 100
+            },
+            "annee": {
+                "dtype": "int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 3,
+                "negative_values": 0
+            },
+            "[age_moyen]entre15et24": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 300,
+                "negative_values": 0
+            },
+            "[age_moyen]entre25et54": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 300,
+                "negative_values": 0
+            },
+            "[age_moyen]plus55": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 300,
+                "negative_values": 0
+            }
+        },
+        "quality_score": 100.0
+    },
+    {
+        "dataframe_name": "silver_population_active_df",
+        "nb_rows": 1500,
+        "nb_columns": 6,
+        "duplicates": 0,
+        "columns": {
+            "Code_departement": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 100
+            },
+            "annee": {
+                "dtype": "int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 3,
+                "negative_values": 0
+            },
+            "Statut_emploi": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 5
+            },
+            "[population_active]entre15et24": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 1202,
+                "negative_values": 0
+            },
+            "[population_active]entre25et54": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 1500,
+                "negative_values": 0
+            },
+            "[population_active]entre55et64": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 1215,
+                "negative_values": 0
+            }
+        },
+        "quality_score": 100.0
+    },
+    {
+        "dataframe_name": "silver_categorie_professionnelle_df",
+        "nb_rows": 43,
+        "nb_columns": 11,
+        "duplicates": 0,
+        "columns": {
+            "annee": {
+                "dtype": "int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 43,
+                "negative_values": 0
+            },
+            "[categorie_professionnelle] Agriculteurs": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 43,
+                "negative_values": 0
+            },
+            "[categorie_professionnelle] Artisans, commerçants et patron": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 43,
+                "negative_values": 0
+            },
+            "[categorie_professionnelle] Autres": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 42,
+                "negative_values": 0
+            },
+            "[categorie_professionnelle] Cadres et professions supérieures": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 43,
+                "negative_values": 0
+            },
+            "[categorie_professionnelle] Employés": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 43,
+                "negative_values": 0
+            },
+            "[categorie_professionnelle] Employés peu qualifiés": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 43,
+                "negative_values": 0
+            },
+            "[categorie_professionnelle] Employés qualifiés": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 43,
+                "negative_values": 0
+            },
+            "[categorie_professionnelle] Ouvriers peu qualifiés": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 43,
+                "negative_values": 0
+            },
+            "[categorie_professionnelle] Ouvriers qualifiés": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 43,
+                "negative_values": 0
+            },
+            "[categorie_professionnelle] Professions intermédiaires": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 43,
+                "negative_values": 0
+            }
+        },
+        "quality_score": 100.0
+    },
+    {
+        "dataframe_name": "silver_equipement_sportif_df",
+        "nb_rows": 8191,
+        "nb_columns": 3,
+        "duplicates": 0,
+        "columns": {
+            "Code_departement": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 107
+            },
+            "annee": {
+                "dtype": "int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 77,
+                "negative_values": 0
+            },
+            "[equipement_sportif]nb_equipements": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 3275,
+                "negative_values": 0
+            }
+        },
+        "quality_score": 100.0
+    },
+    {
+        "dataframe_name": "silver_revenu_moyen_df",
+        "nb_rows": 4110,
+        "nb_columns": 3,
+        "duplicates": 0,
+        "columns": {
+            "Code_departement": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 101
+            },
+            "annee": {
+                "dtype": "object",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 40
+            },
+            "[revenu_moyen]revenu_moyen_par_foyer": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 4110,
+                "negative_values": 0
+            }
+        },
+        "quality_score": 100.0
+    },
+    {
+        "dataframe_name": "silver_etablissement_culturel_df",
+        "nb_rows": 700,
+        "nb_columns": 3,
+        "duplicates": 0,
+        "columns": {
+            "Code_departement": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 100
+            },
+            "annee": {
+                "dtype": "int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 7,
+                "negative_values": 0
+            },
+            "[etablissement_culturel]nombre_etablissements": {
+                "dtype": "int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 522,
+                "negative_values": 0
+            }
+        },
+        "quality_score": 100.0
+    },
+    {
+        "dataframe_name": "silver_pouvoir_achat_df",
+        "nb_rows": 65,
+        "nb_columns": 3,
+        "duplicates": 0,
+        "columns": {
+            "annee": {
+                "dtype": "int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 65,
+                "negative_values": 0
+            },
+            "[pouvoir_achat]pourcentage_annee_precedente": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 65,
+                "negative_values": 11
+            },
+            "Pouvoir d’achat du revenu disponible brut": {
+                "dtype": "object",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 63
+            }
+        },
+        "quality_score": 100.0
+    },
+    {
+        "dataframe_name": "silver_niveau_etude_df",
+        "nb_rows": 300,
+        "nb_columns": 12,
+        "duplicates": 0,
+        "columns": {
+            "Code_departement": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 100
+            },
+            "annee": {
+                "dtype": "int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 3,
+                "negative_values": 0
+            },
+            "[niveau_etude]Aucun diplôme": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 300,
+                "negative_values": 0
+            },
+            "[niveau_etude]BEPC, brevet élémentaire, brevet des collèges, DNB": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 201,
+                "negative_values": 0
+            },
+            "[niveau_etude]Baccalauréat universitaire ou équivalent": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 101,
+                "negative_values": 0
+            },
+            "[niveau_etude]Baccalauréat, brevet professionnel ou équivalent": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 300,
+                "negative_values": 0
+            },
+            "[niveau_etude]CAP, BEP ou diplôme de niveau équivalent": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 300,
+                "negative_values": 0
+            },
+            "[niveau_etude]CEP (certificat d’études primaires)": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 101,
+                "negative_values": 0
+            },
+            "[niveau_etude]Diplôme d'études supérieures": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 101,
+                "negative_values": 0
+            },
+            "[niveau_etude]Diplôme de niveau bac + 5 ou plus": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 101,
+                "negative_values": 0
+            },
+            "[niveau_etude]Diplôme universitaire 2e ou 3e cycle": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 101,
+                "negative_values": 0
+            },
+            "[niveau_etude]Enseignement supérieur de cycle court": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 201,
+                "negative_values": 0
+            }
+        },
+        "quality_score": 100.0
+    },
+    {
+        "dataframe_name": "silver_abstention_votant_df",
+        "nb_rows": 1038,
+        "nb_columns": 6,
+        "duplicates": 0,
+        "columns": {
+            "code_departement": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 106
+            },
+            "annee": {
+                "dtype": "int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 5,
+                "negative_values": 0
+            },
+            "[abstention_votant]tour": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 2
+            },
+            "[abstention_votant]inscrits": {
+                "dtype": "int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 1034,
+                "negative_values": 0
+            },
+            "[abstention_votant]abstentions": {
+                "dtype": "int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 1037,
+                "negative_values": 0
+            },
+            "[abstention_votant]blancs": {
+                "dtype": "float64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 422,
+                "negative_values": 0
+            }
+        },
+        "quality_score": 100.0
+    },
+    {
+        "dataframe_name": "silver_president_sortant_df",
+        "nb_rows": 855242,
+        "nb_columns": 6,
+        "duplicates": 0,
+        "columns": {
+            "code_departement": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 106
+            },
+            "annee": {
+                "dtype": "int64",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 5,
+                "negative_values": 0
+            },
+            "[president_sortant]tour": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 2
+            },
+            "[president_sortant]nombre_voix": {
+                "dtype": "int32",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 1350,
+                "negative_values": 0
+            },
+            "[president_sortant]candidat": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 47
+            },
+            "[president_sortant]famille_politique": {
+                "dtype": "str",
+                "missing_values": 0,
+                "missing_percent": 0.0,
+                "unique_values": 3
+            }
+        },
+        "quality_score": 100.0
+    }
+]
