@@ -20,3 +20,4 @@ sqlalchemy
 pymysql
 minio
 pyarrow
+scikit-learn
