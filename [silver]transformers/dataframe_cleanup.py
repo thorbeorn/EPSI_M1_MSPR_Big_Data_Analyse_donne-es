@@ -282,7 +282,7 @@ def clean_delinquance(df: pd.DataFrame) -> pd.DataFrame:
         if missing:
             raise ValueError(f"Colonnes manquantes dans clean_delinquance : {missing}")
         
-        df["annee"] = pd.to_numeric(df["annee"], errors="coerce").astype("int64")
+        df["annee"] = pd.to_numeric(df["annee"], errors="coerce").astype("int64") + 1  # Décalage temporel : on associe à l'année N-1
         return (
             df
             .groupby(
@@ -420,7 +420,8 @@ def clean_age_moyen(df: pd.DataFrame) -> pd.DataFrame:
             )
             .reset_index()
         )
-        df["annee"] = pd.to_numeric(df["annee"], errors="coerce").astype("int64")
+        df["annee"] = pd.to_numeric(df["annee"], errors="coerce").astype("int64") + 1  # Décalage temporel : on associe à l'année N-1
+        df.loc[df["annee"] == 2023, "annee"] = 2022  # Correction spécifique pour les données 2023 (si nécessaire)
         df.columns.name = None  # Supprime l'artefact "AGE" sur l'axe colonnes
         # Renommage des tranches d'âge vers des noms lisibles + suppression agrégat
         return df.rename(columns={
@@ -445,7 +446,6 @@ def clean_president_sortant(df: pd.DataFrame, metadata_famille_politique: str ) 
 
     Colonnes produites :
         - code_departement
-        - annee (année élection - 1)
         - [president_sortant]tour
         - [president_sortant]candidat
         - [president_sortant]famille_politique
@@ -470,7 +470,7 @@ def clean_president_sortant(df: pd.DataFrame, metadata_famille_politique: str ) 
             expand=True
         )
         # Décalage temporel : on associe les candidats à l'année N-1
-        df["annee"] = df["annee"].astype(int) - 1
+        df["annee"] = df["annee"].astype(int)
         # Suppression des colonnes sans valeur analytique
         df = df.drop(
             columns=[
@@ -542,10 +542,6 @@ def clean_population_active(df: pd.DataFrame, metadata_population_active: str) -
     Nettoie les données de population active par département, tranche d'âge
     et statut d'emploi, issues de l'INSEE (format SDMX/Eurostat).
 
-    Décalage temporel :
-        L'année est décalée de -1 (TIME_PERIOD - 1) pour aligner les données
-        sur l'année électorale précédente.
-
     Colonnes produites :
         - Code_departement
         - annee
@@ -567,7 +563,8 @@ def clean_population_active(df: pd.DataFrame, metadata_population_active: str) -
         df["Code_departement"] = df["GEO"].str.rsplit("-", n=1).str[-1]
 
         # Décalage temporel : on associe à l'année N-1
-        df["annee"] = pd.to_numeric(df["TIME_PERIOD"], errors="coerce") - 1
+        df["annee"] = pd.to_numeric(df["TIME_PERIOD"], errors="coerce") + 1 # Décalage temporel : on associe à l'année N-1
+        df.loc[df["annee"] == 2023, "annee"] = 2022  # Correction spécifique pour les données 2023 (si nécessaire)
 
         # Suppression des colonnes de métadonnées inutiles
         df = df.drop(
@@ -1187,7 +1184,8 @@ def clean_niveau_etude(df: pd.DataFrame, metadata_niveau_etude: str) -> pd.DataF
         )
         # Extraction du code département et décalage temporel
         df["Code_departement"] = df["GEO"].str.split("-").str[-1]
-        df["annee"] = pd.to_numeric(df["TIME_PERIOD"], errors="coerce") - 1
+        df["annee"] = pd.to_numeric(df["TIME_PERIOD"], errors="coerce") + 1 # Décalage de +1 pour alignement sur année électorale
+        df.loc[df["annee"] == 2023, "annee"] = 2022
         df = df.drop(columns=["GEO", "TIME_PERIOD"], errors="ignore")
         # Renommage des colonnes analytiques
         df = df.rename(columns={
@@ -1230,7 +1228,6 @@ def clean_abstention_votant(df: pd.DataFrame) -> pd.DataFrame:
     élections présidentielles (T1 et T2) par département.
 
     Logique métier :
-        - Même décalage temporel que clean_president_sortant (année - 1).
         - Agrégation des bureaux de vote au niveau département (sum).
         - Les votes de l'étranger (code 'ZZ') sont exclus.
 
@@ -1241,7 +1238,6 @@ def clean_abstention_votant(df: pd.DataFrame) -> pd.DataFrame:
         - [abstention_votant]inscrits
         - [abstention_votant]abstentions
         - [abstention_votant]blancs
-        - [abstention_votant]nuls
 
     Args:
         df (pd.DataFrame): Données brutes des bureaux de vote (niveau BV).
@@ -1261,7 +1257,7 @@ def clean_abstention_votant(df: pd.DataFrame) -> pd.DataFrame:
             r"(\d{4})_pres_(t[12])"
         )
         # Décalage temporel : année élection → année précédente
-        df["annee"] = pd.to_numeric(df["annee"], errors="coerce") - 1
+        df["annee"] = pd.to_numeric(df["annee"], errors="coerce")
         df = df.drop(columns=["id_election"], errors="ignore")
         # Suppression de toutes les colonnes non nécessaires
         df = df.drop(columns=[
@@ -1282,8 +1278,7 @@ def clean_abstention_votant(df: pd.DataFrame) -> pd.DataFrame:
             "tour",
             "inscrits",
             "abstentions",
-            "blancs",
-            "nuls"
+            "blancs"
         ]]
         # Remplissage des NaN par 0 (données manquantes = 0 votes dans cette catégorie)
         df = df.fillna(0)
@@ -1292,8 +1287,7 @@ def clean_abstention_votant(df: pd.DataFrame) -> pd.DataFrame:
             "tour": "[abstention_votant]tour",
             "inscrits": "[abstention_votant]inscrits",
             "abstentions": "[abstention_votant]abstentions",
-            "blancs": "[abstention_votant]blancs",
-            "nuls": "[abstention_votant]nuls"
+            "blancs": "[abstention_votant]blancs"
         })
         # Harmonisation des codes DOM-TOM (même mapping que president_sortant)
         mapping_dom = {
@@ -1313,8 +1307,7 @@ def clean_abstention_votant(df: pd.DataFrame) -> pd.DataFrame:
             )[[
                 "[abstention_votant]inscrits",
                 "[abstention_votant]abstentions",
-                "[abstention_votant]blancs",
-                "[abstention_votant]nuls"
+                "[abstention_votant]blancs"
             ]]
             .sum()
             .sort_values(["code_departement", "annee"])

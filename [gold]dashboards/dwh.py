@@ -171,8 +171,7 @@ def create_gold_all_indicator_df():
         -- Abstention et votant
         av.`inscrits_total` AS `[abstention_votant]inscrits`,
         av.`abstentions_total` AS `[abstention_votant]abstentions`,
-        av.`blancs_total` AS `[abstention_votant]blancs`,
-        av.`nuls_total` AS `[abstention_votant]nuls`
+        av.`blancs_total` AS `[abstention_votant]blancs`
 
     FROM indicateurs base
 
@@ -229,13 +228,30 @@ def create_gold_all_indicator_df():
             annee,
             SUM(`[abstention_votant]inscrits`) AS inscrits_total,
             SUM(`[abstention_votant]abstentions`) AS abstentions_total,
-            SUM(`[abstention_votant]blancs`) AS blancs_total,
-            SUM(`[abstention_votant]nuls`) AS nuls_total
+            SUM(`[abstention_votant]blancs`) AS blancs_total
         FROM abstention_votant
+        WHERE `[abstention_votant]tour` = "t2"
         GROUP BY code_departement, annee
     ) av
     ON av.code_departement = base.Code_departement
-    AND av.annee = base.annee;
+    AND av.annee = base.annee
+   
+  WHERE
+    am.`[age_moyen]entre15et24` IS NOT NULL
+    AND am.`[age_moyen]entre25et54` IS NOT NULL
+    AND am.`[age_moyen]plus55` IS NOT NULL
+    AND d.`[delinquance]nombre` IS NOT NULL
+    AND d.`[delinquance]taux_pour_mille` IS NOT NULL
+    AND rm.`[revenu_moyen]revenu_moyen_par_foyer` IS NOT NULL
+    AND tc.`[taux_chomage]Taux_moyen` IS NOT NULL
+    AND es.`[equipement_sportif]nb_equipements` IS NOT NULL
+    AND ec.`[etablissement_culturel]nombre_etablissements` IS NOT NULL
+    AND pa.`[population_active]pop_15_24` IS NOT NULL
+    AND pa.`[population_active]pop_25_54` IS NOT NULL
+    AND pa.`[population_active]pop_55_64` IS NOT NULL
+    AND av.inscrits_total IS NOT NULL
+    AND av.abstentions_total IS NOT NULL
+    AND av.blancs_total IS NOT NULL;
     """
 
     try:
@@ -279,7 +295,9 @@ def create_gold_all_president_df():
     logger.info("Création dataset GOLD - all_president")
 
     query = """ 
-    SELECT p.*
+    SELECT p.annee,
+        p.code_departement,
+        p.`[president_sortant]famille_politique` AS `[president_sortant]famille_politique`
     FROM president_sortant p
     JOIN (
         SELECT code_departement,
