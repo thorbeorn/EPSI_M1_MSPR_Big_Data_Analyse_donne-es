@@ -1,0 +1,16 @@
+{
+    "dataset": "df_president",
+    "rows": 519,
+    "columns": 3,
+    "null_values": {
+        "annee": 0,
+        "code_departement": 0,
+        "[president_sortant]famille_politique": 0
+    },
+    "duplicate_rows": 0,
+    "dtypes": {
+        "annee": "int64",
+        "code_departement": "str",
+        "[president_sortant]famille_politique": "str"
+    }
+}
