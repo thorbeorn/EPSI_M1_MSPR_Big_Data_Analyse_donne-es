@@ -295,22 +295,39 @@ def create_gold_all_president_df():
     logger.info("Création dataset GOLD - all_president")
 
     query = """ 
-    SELECT p.annee,
+    SELECT 
+        p.annee,
         p.code_departement,
-        p.`[president_sortant]famille_politique` AS `[president_sortant]famille_politique`
+        p.`[president_sortant]tour` AS `[president_sortant]tour`,
+        p.`[president_sortant]famille_politique` AS `[president_sortant]famille_politique`,
+        ROUND(
+            100 * SUM(p.`[president_sortant]nombre_voix`) / t.total_voix,
+            2
+        ) AS `[president_sortant]pourcentage`
     FROM president_sortant p
     JOIN (
-        SELECT code_departement,
+        SELECT 
             annee,
-            MAX(`[president_sortant]nombre_voix`) AS max_voix
+            code_departement,
+            `[president_sortant]tour`,
+            SUM(`[president_sortant]nombre_voix`) AS total_voix
         FROM president_sortant
-        WHERE `[president_sortant]tour` = 't2'
-        GROUP BY code_departement, annee
-    ) m
-    ON p.code_departement = m.code_departement
-    AND p.annee = m.annee
-    AND p.`[president_sortant]nombre_voix` = m.max_voix
-    WHERE p.`[president_sortant]tour` = 't2';
+        GROUP BY annee, code_departement, `[president_sortant]tour`
+    ) t
+    ON p.annee = t.annee 
+    AND p.code_departement = t.code_departement
+    AND p.`[president_sortant]tour` = t.`[president_sortant]tour`
+    GROUP BY 
+        p.annee,
+        p.code_departement,
+        p.`[president_sortant]tour`,
+        p.`[president_sortant]famille_politique`,
+        t.total_voix
+    ORDER BY 
+        p.annee,
+        p.code_departement,
+        `[president_sortant]tour`,
+        `[president_sortant]famille_politique`;
     """
 
     try:
