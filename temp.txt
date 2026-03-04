@@ -1,0 +1,15 @@
+delinquance > 2026
+equipement_sportif > 2026
+taux_chommage > 2025
+age_moyen > 2025
+pouvoir_achat > 2025
+
+categorie_professionnelle > 2024
+
+revenu_moyen > 2023
+etablissement_culturel > 2022
+niveau_etude > 2022
+population_active > 2022
+
+
+- abstention_votant > 2022

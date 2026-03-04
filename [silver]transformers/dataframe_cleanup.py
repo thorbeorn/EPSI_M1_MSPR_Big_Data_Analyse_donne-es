@@ -372,12 +372,6 @@ def clean_age_moyen(df: pd.DataFrame) -> pd.DataFrame:
     Nettoie les données d'âge moyen de la population active par tranche d'âge
     et par département, issues de l'INSEE (format Eurostat/SDMX).
 
-    Tranches d'âge gérées :
-        - Y15T24 → [age_moyen]entre15et24
-        - Y25T54 → [age_moyen]entre25et54
-        - Y_GE55 → [age_moyen]plus55
-        - Y_GE15 : supprimé (agrégat, redondant)
-
     Note Corse : les codes '2A' et '2B' sont remplacés par des entiers
     fictifs (1000, 1001) pour permettre un tri numérique stable.
 
@@ -389,10 +383,14 @@ def clean_age_moyen(df: pd.DataFrame) -> pd.DataFrame:
     """
     try:
         # Supprime les colonnes de métadonnées inutiles pour l'analyse
-        df = df.drop(columns=["RP_MEASURE", "PCS", "SEX"], errors="ignore")
+        df = df.drop(columns=["dep_l", "newreg", "newreg_l"], errors="ignore")
+        # On supprime la distinction sexe et on agrège.
+        df = (
+            df.groupby(["dep", "trage", "annee"], as_index=False)
+            .agg(pop_totale=("pop", "sum"))
+        )
         # Extraction du code département depuis le code géographique
-        # Format attendu : 'FR-DEP-75' → '75'
-        df["Code_departement"] = df["GEO"].str.rsplit("-", n=1).str[-1]
+        df["Code_departement"] = df["dep"]
         # Construction d'une série de tri numérique pour gérer la Corse
         # (2A et 2B ne sont pas triables numériquement directement)
         sort_series = (
@@ -405,30 +403,31 @@ def clean_age_moyen(df: pd.DataFrame) -> pd.DataFrame:
             df
             .assign(_sort=sort_series)
             .sort_values("_sort", kind="mergesort")
-            .drop(columns=["_sort", "GEO"])
+            .drop(columns=["_sort", "dep"])
         )
-        # Renommage de la colonne temporelle
-        df = df.rename(columns={"TIME_PERIOD": "annee"})
         # Pivot : transforme les lignes (une par tranche d'âge) en colonnes
         df = (
             df
             .pivot_table(
                 index=["Code_departement", "annee"],
-                columns="AGE",
-                values="OBS_VALUE_NIVEAU",
+                columns="trage",
+                values="pop_totale",
                 aggfunc="first"  # Valeur unique attendue par cellule
             )
             .reset_index()
         )
-        df["annee"] = pd.to_numeric(df["annee"], errors="coerce").astype("int64") + 1  # Décalage temporel : on associe à l'année N-1
-        df.loc[df["annee"] == 2023, "annee"] = 2022  # Correction spécifique pour les données 2023 (si nécessaire)
+        df["annee"] = pd.to_numeric(df["annee"], errors="coerce").astype("int64")
         df.columns.name = None  # Supprime l'artefact "AGE" sur l'axe colonnes
-        # Renommage des tranches d'âge vers des noms lisibles + suppression agrégat
-        return df.rename(columns={
-            "Y15T24": "[age_moyen]entre15et24",
-            "Y25T54": "[age_moyen]entre25et54",
-            "Y_GE55": "[age_moyen]plus55"
-        }).drop(columns=["Y_GE15"], errors="ignore")
+        # Colonnes à exclure
+        colonnes_fixes = ["Code_departement", "annee"]
+        # Renommer automatiquement toutes les autres colonnes
+        return df.rename(
+            columns={
+                col: f"[age_moyen]{col}"
+                for col in df.columns
+                if col not in colonnes_fixes
+            }
+        )
     except Exception as e:
         logger.error(f"clean_age_moyen() : erreur → {e}")
         raise
@@ -1088,41 +1087,40 @@ def clean_pouvoir_achat(df: pd.DataFrame) -> pd.DataFrame:
         df = df.iloc[2:].copy()
         # La première ligne utile devient l'en-tête
         df.columns = df.iloc[0]
-        df = df.iloc[1:].reset_index(drop=True)
+        df = df.iloc[2:].reset_index(drop=True)
         df.columns.name = None
         # Suppression des lignes entièrement vides
         df = df.dropna(how="all")
         # Filtrage des lignes non numériques en fin de fichier (notes, sources)
-        df = df[pd.to_numeric(df.iloc[:, 0], errors="coerce").notna()]
-        # Suppression de la colonne de pouvoir d'achat brut
-        # (on garde uniquement la variation %)
-        df = df.drop(
-            columns=["Pouvoir d'achat du revenu disponible brut"],
-            errors="ignore"
+        df = df.iloc[:-6].copy()
+        # Calcul annuel
+        df["Pouvoir d'achat du RDB"] = (
+            df["Pouvoir d'achat du RDB"]
+            .astype(str)              # force en string
+            .str.replace(",", ".", regex=False)  # remplace virgule par point
+            .str.strip()              # enlève espaces
         )
-        # Vérification qu'il reste au moins 2 colonnes (année + valeur)
-        if len(df.columns) < 2:
-            raise ValueError(
-                "Format inattendu pour le fichier pouvoir_achat : "
-                f"seulement {len(df.columns)} colonne(s) après nettoyage."
-            )
+        df["Pouvoir d'achat du RDB"] = pd.to_numeric(df["Pouvoir d'achat du RDB"], errors="coerce")
+        df["Revenu disponible brut (RDB)"] = (
+            df["Revenu disponible brut (RDB)"]
+            .astype(str)              # force en string
+            .str.replace(",", ".", regex=False)  # remplace virgule par point
+            .str.strip()              # enlève espaces
+        )
+        df["Revenu disponible brut (RDB)"] = pd.to_numeric(df["Revenu disponible brut (RDB)"], errors="coerce")
+        df["annee"] = df["Trimestre"].str[:4]
+        df = df.groupby("annee").agg({
+            "Pouvoir d'achat du RDB": "mean",
+            "Revenu disponible brut (RDB)": "mean"
+        }).reset_index()
         # Renommage basé sur position
         df = df.rename(columns={
             df.columns[0]: "annee",
-            df.columns[1]: "[pouvoir_achat]pourcentage_annee_precedente"
+            df.columns[1]: "[pouvoir_achat]Pouvoir d'achat du RDB",
+            df.columns[2]: "[pouvoir_achat]Revenu disponible brut (RDB)"
         })
         # Conversion numérique propre
         df["annee"] = pd.to_numeric(df["annee"], errors="coerce")
-        # Remplacement de la virgule décimale avant conversion en float
-        df["[pouvoir_achat]pourcentage_annee_precedente"] = (
-            df["[pouvoir_achat]pourcentage_annee_precedente"]
-            .astype(str)
-            .str.replace(",", ".", regex=False)
-        )
-        df["[pouvoir_achat]pourcentage_annee_precedente"] = pd.to_numeric(
-            df["[pouvoir_achat]pourcentage_annee_precedente"],
-            errors="coerce"
-        )
         return df.reset_index(drop=True)
     except ValueError:
         raise
