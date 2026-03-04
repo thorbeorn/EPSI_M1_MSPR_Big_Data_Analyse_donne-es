@@ -5,7 +5,7 @@ cd ..
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirement.txt
-python main.py
+python etl.py
 
 Windows
 cd "[docker]conf"
