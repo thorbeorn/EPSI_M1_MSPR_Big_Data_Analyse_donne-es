@@ -15,6 +15,7 @@ import pandas as pd
 import json
 import unicodedata
 import logging
+from functools import reduce
 
 # ─── Logger ──────────────────────────────────────────────────────────────────
 logger = logging.getLogger(__name__)
@@ -806,7 +807,7 @@ def clean_equipement_sportif(df: pd.DataFrame) -> pd.DataFrame:
         logger.error(f"clean_equipement_sportif() : erreur → {e}")
         raise
 
-def clean_revenu_moyen(dfs: dict) -> pd.DataFrame:
+def clean_professionnels_sante(dfs: dict) -> pd.DataFrame:
     """
     Consolide les données de revenus fiscaux moyens par département
     sur une longue période (1984–2023), à partir de plusieurs fichiers
@@ -832,124 +833,44 @@ def clean_revenu_moyen(dfs: dict) -> pd.DataFrame:
         pd.DataFrame: Revenus moyens par département et par année, 1984–2023.
     """
     try:
-        # ── Préparation dfs["8420"] ───────────────────────────────────────────
-        # Suppression de la feuille "Notice" (documentation DGFiP, pas de données)
-        dfs["8420"] = {k: v for k, v in dfs["8420"].items() if k.lower() != "notice"}
-        # ── 1984–1999 ────────────────────────────────────────────────────────
-        df = _set_header(dfs["8420"]["1984_1999"], skip_rows=7)
-        # Suppression des colonnes d'index et des totaux nationaux (5 dernières)
-        df = df.iloc[:, 1:].iloc[:, :-5].drop(columns=["Nom"])
-        # Calcul du revenu moyen par foyer (ratio)
-        df["[revenu_moyen]revenu_moyen_par_foyer"] = (
-            pd.to_numeric(df["Revenus nets imposables"], errors="coerce") /
-            pd.to_numeric(df["Nombre de foyers fiscaux"], errors="coerce")
-        )
-        df = df.drop(columns=["Revenus nets imposables", "Nombre de foyers fiscaux"])
-        # Les 2 premières colonnes positionnelles = Code_departement, annee
-        df.columns = ["Code_departement", "annee"] + list(df.columns[2:])
-        df["Code_departement"] = df["Code_departement"].apply(fix_departement)
-        dfs["8420"]["1984_1999"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
-        # ── 2000–2017 ────────────────────────────────────────────────────────
-        df = _set_header(dfs["8420"]["2000_2017"], skip_rows=7)
-        df = df.iloc[:, 1:].iloc[:, :-7].drop(columns=["Nom"])
-        df["[revenu_moyen]revenu_moyen_par_foyer"] = (
-            pd.to_numeric(df["Revenu fiscal de référence"], errors="coerce") /
-            pd.to_numeric(df["Nombre de foyers fiscaux"], errors="coerce")
-        )
-        df = df.drop(columns=["Revenu fiscal de référence", "Nombre de foyers fiscaux"])
-        df.columns = ["Code_departement", "annee"] + list(df.columns[2:])
-        # 'B31' est un code fictif DGFiP pour les contribuables non résidents
-        df = df[df["Code_departement"] != "B31"]
-        df["Code_departement"] = df["Code_departement"].apply(fix_departement)
-        dfs["8420"]["2000_2017"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
-        # ── 2018 ─────────────────────────────────────────────────────────────
-        df = _set_header(dfs["8420"]["2018"], skip_rows=7)
-        df.drop(df.tail(4).index, inplace=True)  # Suppression des totaux en bas
-        df = df.iloc[:, 1:].iloc[:, :-9].drop(columns=["Nom"])
-        df["[revenu_moyen]revenu_moyen_par_foyer"] = (
-            pd.to_numeric(df["Revenu fiscal de référence"], errors="coerce") /
-            pd.to_numeric(df["Nombre de foyers fiscaux"], errors="coerce")
-        )
-        df = df.drop(columns=["Revenu fiscal de référence", "Nombre de foyers fiscaux"])
-        df.columns = ["Code_departement", "annee"] + list(df.columns[2:])
-        df = df[df["Code_departement"] != "B31"]
-        df["Code_departement"] = df["Code_departement"].apply(fix_departement)
-        dfs["8420"]["2018"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
-        # ── 2019–2020 ─────────────────────────────────────────────────────────
-        df = _set_header(dfs["8420"]["2019_2020"], skip_rows=7)
-        df = df.iloc[:, 1:].iloc[:, :-7].drop(columns=["Nom"])
-        df["[revenu_moyen]revenu_moyen_par_foyer"] = (
-            pd.to_numeric(df["Revenu fiscal de référence"], errors="coerce") /
-            pd.to_numeric(df["Nombre de foyers fiscaux"], errors="coerce")
-        )
-        df = df.drop(columns=["Revenu fiscal de référence", "Nombre de foyers fiscaux"])
-        df.columns = ["Code_departement", "annee"] + list(df.columns[2:])
-        df = df[df["Code_departement"] != "B31"]
-        df["Code_departement"] = df["Code_departement"].apply(fix_departement)
-        dfs["8420"]["2019_2020"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
-        # ── 2021 ─────────────────────────────────────────────────────────────
-        # Format différent : données au niveau commune, filtrées sur "total"
-        df = _set_header(dfs["21"]["Feuil1"], skip_rows=6)
-        df = df.iloc[:, 1:].iloc[:, :-7]
-        # Garde uniquement les lignes de total communal (tranche = "total")
-        df = df[df.iloc[:, 3].astype(str).str.strip().str.lower() == "total"]
-        df = df[df.iloc[:, 0] != "B31"]
-        df.columns = ["Code_departement", "commune", "libelle_commune", "tranche", "nbr_foyer", "revenue_referance"]
-        df["nbr_foyer"] = _parse_numeric_col(df["nbr_foyer"])
-        df["revenue_referance"] = _parse_numeric_col(df["revenue_referance"])
-        # Les montants 2021 sont en milliers d'euros → ×1000
-        df["[revenu_moyen]revenu_moyen_par_foyer"] = df["revenue_referance"] * 1000 / df["nbr_foyer"]
-        df["Code_departement"] = df["Code_departement"].apply(fix_departement)
-        # Agrégation commune → département (moyenne pondérée approximative)
-        df = df.groupby("Code_departement", as_index=False)["[revenu_moyen]revenu_moyen_par_foyer"].mean()
-        df["annee"] = 2021
-        dfs["21"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
-        # ── 2022 ─────────────────────────────────────────────────────────────
-        # Format encore légèrement différent : pas de skip_rows standard
-        df = dfs["22"]["Feuil1"]
-        df = df.iloc[4:]
-        df.columns = df.iloc[0]
-        df = df.iloc[2:].reset_index(drop=True)
-        df.drop(df.tail(2).index, inplace=True)
-        df.columns.name = None
-        df = df.iloc[:, :-7]
-        df = df[df.iloc[:, 3].astype(str).str.strip().str.lower() == "total"]
-        df["Revenu fiscal de référence des foyers fiscaux"] = _parse_numeric_col(
-            df["Revenu fiscal de référence des foyers fiscaux"]
-        )
-        df["Nombre de foyers fiscaux"] = _parse_numeric_col(df["Nombre de foyers fiscaux"])
-        df["[revenu_moyen]revenu_moyen_par_foyer"] = (
-            df["Revenu fiscal de référence des foyers fiscaux"] * 1000 / df["Nombre de foyers fiscaux"]
-        )
-        df = df[df["Dép."] != "B31"]
-        df["Code_departement"] = df["Dép."].apply(fix_departement)
-        df["annee"] = 2022
-        dfs["22"] = df.groupby("Code_departement", as_index=False)["[revenu_moyen]revenu_moyen_par_foyer"].mean()
-        dfs["22"]["annee"] = 2022
-        dfs["22"] = dfs["22"][["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
-        # ── 2023 ─────────────────────────────────────────────────────────────
-        df = dfs["23"]["ListeCommune"]
-        df = df.iloc[4:]
-        df.columns = df.iloc[0]
-        df = df.iloc[2:].reset_index(drop=True)
-        df.columns.name = None
-        df = df.iloc[:, :-7]
-        df = df[df.iloc[:, 3].astype(str).str.strip().str.lower() == "total"]
-        df["Revenu fiscal de référence des foyers fiscaux"] = _parse_numeric_col(
-            df["Revenu fiscal de référence des foyers fiscaux"]
-        )
-        df["Nombre de foyers fiscaux"] = _parse_numeric_col(df["Nombre de foyers fiscaux"])
-        df["[revenu_moyen]revenu_moyen_par_foyer"] = (
-            df["Revenu fiscal de référence des foyers fiscaux"] * 1000 / df["Nombre de foyers fiscaux"]
-        )
-        df = df[df["Dép."] != "B31"]
-        df["Code_departement"] = df["Dép."].apply(fix_departement)
-        df = df.groupby("Code_departement", as_index=False)["[revenu_moyen]revenu_moyen_par_foyer"].mean()
-        df["annee"] = 2023
-        dfs["23"] = df[["Code_departement", "annee", "[revenu_moyen]revenu_moyen_par_foyer"]]
-        # ── Concaténation finale de toutes les périodes ───────────────────────
-        dfs["8420"] = pd.concat(dfs["8420"].values(), ignore_index=True)
-        return pd.concat([dfs["8420"], dfs["21"], dfs["22"], dfs["23"]], ignore_index=True)
+        dfs_annees = []
+        for annee, dict_df in dfs.items():
+            df_temp_annee = {}
+            for source, df in dict_df.items():
+                if source != "Lisez moi" and source != "Nomenclature des PS" and source != "Psychologues":
+                    #Selectionne les colone voulu
+                    df = df[[
+                        "DEPARTEMENT",
+                        "EFFECTIF",
+                        "DENSITE /100 000 hab."
+                    ]].copy()
+                    # extraire uniquement le numéro du département
+                    df["DEPARTEMENT"] = df["DEPARTEMENT"].str.extract(r'^([0-9A-Z]+)')
+                    # supprimer les lignes TOTAL si elles existent
+                    df = df[~df["DEPARTEMENT"].str.contains("TOTAL", na=False)]
+                    # somme par département
+                    df = df.groupby("DEPARTEMENT")[["EFFECTIF", "DENSITE /100 000 hab."]].sum().reset_index()
+                    # Renomme les colones
+                    df = df.rename(columns={"EFFECTIF": f"[{source}]EFFECTIF"})
+                    df = df.rename(columns={"DENSITE /100 000 hab.": f"[{source}]DENSITE /100 000 hab."})
+                    df_temp_annee[source] = df
+            # fusion des sources
+            df_final_annee = reduce(
+                lambda left, right: pd.merge(left, right, on="DEPARTEMENT", how="outer"),
+                df_temp_annee.values()
+            )
+            # ajouter l'année
+            df_final_annee["annee"] = annee
+            dfs_annees.append(df_final_annee)
+        # concaténer toutes les années
+        df_final = pd.concat(dfs_annees, ignore_index=True)
+        # ordre des colonnes
+        cols = ["DEPARTEMENT", "annee"] + [c for c in df_final.columns if c not in ["annee","DEPARTEMENT"]]
+        df_final = df_final[cols]
+        # Renomme la colone departement
+        df_final = df_final.rename(columns={"DEPARTEMENT": "Code_departement"})
+        df_final["annee"] = pd.to_numeric(df_final["annee"], errors="coerce").astype("int64")
+        return df_final
     except KeyError as e:
         logger.error(f"clean_revenu_moyen() : clé manquante dans dfs → {e}")
         raise

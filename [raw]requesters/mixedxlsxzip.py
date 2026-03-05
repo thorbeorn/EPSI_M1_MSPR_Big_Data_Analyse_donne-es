@@ -79,7 +79,7 @@ def creer_dataframe_depuis_multiple_url(multiple_path: dict) -> dict:
                     f.write(chunk)
 
             # Cas 1 : fichier Excel direct (.xlsx)
-            if filename.endswith(".xlsx"):
+            if filename.endswith(".xls"):
                 logger.debug(f"Fichier Excel détecté pour {year}")
 
                 sheets = pd.read_excel(filename, sheet_name=None)

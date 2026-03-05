@@ -46,11 +46,16 @@ URLS = {
     "compte_publique": "https://data.ofgl.fr/api/explore/v2.1/catalog/datasets/ofgl-base-departements-fonctionnelle/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
     "categorie_professionnelle": "https://api.insee.fr/melodi/data/DD_EEC_SERIES?UNIT_MEASURE=_Z&SEX=_T&AGE=_T&EDUC=_T&WKTIME=_T&UNDEREMP=_T",
     "equipement_sportif": "https://data.education.gouv.fr/api/explore/v2.1/catalog/datasets/fr-en-data-es-base-de-donnees/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
-    "revenu_moyen": {
-        "8420": "https://static.data.gouv.fr/resources/limpot-sur-le-revenu-par-collectivite-territoriale-ircom/20230228-115014/impotrevenudep-1984-2020.xlsx",
-        "21": "https://static.data.gouv.fr/resources/limpot-sur-le-revenu-par-collectivite-territoriale-ircom/20230608-145433/ircom-2022-revenus-2021.zip",
-        "22": "https://static.data.gouv.fr/resources/limpot-sur-le-revenu-par-collectivite-territoriale-ircom/20240610-082154/ircom-2023-revenus-2022.zip",
-        "23": "https://static.data.gouv.fr/resources/limpot-sur-le-revenu-par-collectivite-territoriale-ircom/20250919-135242/ircom-2024-revenus-2023.zip"
+    "professionnels_sante": {
+        "16": "https://www.assurance-maladie.ameli.fr/sites/default/files/2016_effectif-densite-de-professionnels-de-sante-liberaux-par-departement_serie-annuelle.xls",
+        "17": "https://www.assurance-maladie.ameli.fr/sites/default/files/2017_effectif-densite-de-professionnels-de-sante-liberaux-par-departement_serie-annuelle.xls",
+        "18": "https://www.assurance-maladie.ameli.fr/sites/default/files/2018_effectif-densite-de-professionnels-de-sante-liberaux-par-departement_serie-annuelle.xls",
+        "19": "https://www.assurance-maladie.ameli.fr/sites/default/files/2019_effectif-densite-des-professionnels-de-sante-liberaux-par-departement_serie-annuelle.xls",
+        "20": "https://www.assurance-maladie.ameli.fr/sites/default/files/2020_effectif-densite-des-professionnels-de-sante-liberaux-par-departement_serie-annuelle.xls",
+        "21": "https://www.assurance-maladie.ameli.fr/sites/default/files/2021_effectif-densite-des-professionnels-de-sante-liberaux-par-departement_serie-annuelle.xls",
+        "22": "https://www.assurance-maladie.ameli.fr/sites/default/files/2022_effectif-densite-des-professionnels-de-sante-liberaux-par-departement_serie-annuelle.xls",
+        "23": "https://www.assurance-maladie.ameli.fr/sites/default/files/2023_effectif-densite-des-professionnels-de-sante-liberaux-par-departement_serie-annuelle.xls",
+        "24": "https://www.assurance-maladie.ameli.fr/sites/default/files/2024_effectif-densite-des-professionnels-de-sante-liberaux-par-departement_serie-annuelle.xls"
     },
     "etablissement_culturel": "https://data.culture.gouv.fr/api/explore/v2.1/catalog/datasets/entreprises-culturelles-par-departement/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
     "etablissement_culturel_2024": "https://www.insee.fr/fr/statistiques/fichier/8217527/DS_BPE_SPORT_CULTURE_CSV_FR.zip",
@@ -116,11 +121,11 @@ try:
     # )
     # log_dataframe_info("silver_equipement_sportif_df", dataframes["silver_equipement_sportif_df"])
 
-    # logger.debug("Traitement : revenu_moyen")
-    # dataframes["silver_revenu_moyen_df"] = silver_dataframe_module.clean_revenu_moyen(
-    #     raw_mixed_xlsx_zip_module.creer_dataframe_depuis_multiple_url(URLS["revenu_moyen"])
+    # logger.debug("Traitement : professionnels_sante")
+    # dataframes["silver_professionnels_sante_df"] = silver_dataframe_module.clean_professionnels_sante(
+    #     raw_mixed_xlsx_zip_module.creer_dataframe_depuis_multiple_url(URLS["professionnels_sante"])
     # )
-    # log_dataframe_info("silver_revenu_moyen_df", dataframes["silver_revenu_moyen_df"])
+    # log_dataframe_info("silver_professionnels_sante_df", dataframes["silver_professionnels_sante_df"])
 
     # logger.debug("Traitement : etablissement_culturel")
     # dataframes["silver_etablissement_culturel_df"] = silver_dataframe_module.clean_etablissement_culturel(
