@@ -111,147 +111,131 @@ def create_gold_all_indicator_df():
 
     query = """ 
     SELECT 
-        base.Code_departement,
-        base.annee,
+    base.Code_departement,
+    base.annee,
 
-        -- Age
-        am.`[age_moyen]entre15et24`,
-        am.`[age_moyen]entre25et54`,
-        am.`[age_moyen]plus55`,
-         
-        -- Délinquance
-        d.`[delinquance]nombre`,
-        d.`[delinquance]taux_pour_mille`,
+    -- Age (toutes les tranches)
+    am.`[age_moyen]0 à 4 ans`,
+    am.`[age_moyen]5 à 9 ans`,
+    am.`[age_moyen]10 à 14 ans`,
+    am.`[age_moyen]15 à 19 ans`,
+    am.`[age_moyen]20 à 24 ans`,
+    am.`[age_moyen]25 à 29 ans`,
+    am.`[age_moyen]30 à 34 ans`,
+    am.`[age_moyen]35 à 39 ans`,
+    am.`[age_moyen]40 à 44 ans`,
+    am.`[age_moyen]45 à 49 ans`,
+    am.`[age_moyen]50 à 54 ans`,
+    am.`[age_moyen]55 à 59 ans`,
+    am.`[age_moyen]60 à 64 ans`,
+    am.`[age_moyen]65 à 69 ans`,
+    am.`[age_moyen]70 à 74 ans`,
+    am.`[age_moyen]75 à 79 ans`,
+    am.`[age_moyen]80 ans et plus`,
 
-        -- Revenu
-        rm.`[revenu_moyen]revenu_moyen_par_foyer`,
+    -- Délinquance
+    d.`[delinquance]nombre`,
+    d.`[delinquance]taux_pour_mille`,
 
-        -- Chômage
-        tc.`[taux_chomage]Taux_moyen`,
+    -- Chômage
+    tc.`[taux_chomage]Taux_moyen`,
 
-        -- Equipements
-        es.`[equipement_sportif]nb_equipements`,
+    -- Equipements
+    es.`[equipement_sportif]nb_equipements`,
 
-        -- Culture
-        ec.`[etablissement_culturel]nombre_etablissements`,
+    -- Culture
+    ec.`[etablissement_culturel]nombre_etablissements`,
 
-        -- Niveau d'étude
-        ne.`[niveau_etude]Aucun diplôme`,
-        ne.`[niveau_etude]BEPC, brevet élémentaire, brevet des collèges, DNB`,
-        ne.`[niveau_etude]Baccalauréat universitaire ou équivalent`,
-        ne.`[niveau_etude]Baccalauréat, brevet professionnel ou équivalent`,
-        ne.`[niveau_etude]CAP, BEP ou diplôme de niveau équivalent`,
-        ne.`[niveau_etude]CEP (certificat d’études primaires)`,
-        ne.`[niveau_etude]Diplôme d'études supérieures`,
-        ne.`[niveau_etude]Diplôme de niveau bac + 5 ou plus`,
-        ne.`[niveau_etude]Diplôme universitaire 2e ou 3e cycle`,
-        ne.`[niveau_etude]Enseignement supérieur de cycle court`,
+    -- Niveau d'étude
+    ne.`[niveau_etude]Aucun diplôme, CEP`,
+    ne.`[niveau_etude]Brevet des collèges`,
+    ne.`[niveau_etude]CAP, BEP ou équivalent`,
+    ne.`[niveau_etude]Baccalauréat ou équivalent`,
+    ne.`[niveau_etude]Diplôme de niveau bac+2`,
+    ne.`[niveau_etude]Diplôme de niveau bac+3 ou bac+4`,
+    ne.`[niveau_etude]Diplôme de niveau bac+5 ou plus`,
 
-        -- Population active cumulée
-        pa.`[population_active]pop_15_24`,
-        pa.`[population_active]pop_25_54`,
-        pa.`[population_active]pop_55_64`,
+    -- Catégorie professionnelle
+    cp.`[categorie_professionnelle] Agriculteurs`,
+    cp.`[categorie_professionnelle] Artisans, commerçants et patron`,
+    cp.`[categorie_professionnelle] Autres`,
+    cp.`[categorie_professionnelle] Cadres et professions supérieures`,
+    cp.`[categorie_professionnelle] Employés`,
+    cp.`[categorie_professionnelle] Employés peu qualifiés`,
+    cp.`[categorie_professionnelle] Employés qualifiés`,
+    cp.`[categorie_professionnelle] Ouvriers peu qualifiés`,
+    cp.`[categorie_professionnelle] Ouvriers qualifiés`,
+    cp.`[categorie_professionnelle] Professions intermédiaires`,
 
-        -- categorie_professionnelle
-        cp.`[categorie_professionnelle] Agriculteurs`,
-        cp.`[categorie_professionnelle] Artisans, commerçants et patron`,
-        cp.`[categorie_professionnelle] Autres`,
-        cp.`[categorie_professionnelle] Cadres et professions supérieures`,
-        cp.`[categorie_professionnelle] Employés`,
-        cp.`[categorie_professionnelle] Employés peu qualifiés`,
-        cp.`[categorie_professionnelle] Employés qualifiés`,
-        cp.`[categorie_professionnelle] Ouvriers peu qualifiés`,
-        cp.`[categorie_professionnelle] Ouvriers qualifiés`,
-        cp.`[categorie_professionnelle] Professions intermédiaires`,
+    -- Pouvoir d'achat
+    pa2.`[pouvoir_achat]Pouvoir d'achat du RDB`,
+    pa2.`[pouvoir_achat]Revenu disponible brut (RDB)`,
 
-        -- pouvoir_achat
-        pa2.`[pouvoir_achat]pourcentage_annee_precedente` AS `[pouvoir_achat]pourcentage_annee_precedente`,
-        pa2.`Pouvoir d’achat du revenu disponible brut` AS `[pouvoir_achat]Pouvoir d’achat du revenu disponible brut`,
+    -- Compte public
+    cp2.`[compte_publique]depenses`,
+    cp2.`[compte_publique]population`,
+    cp2.`[compte_publique]euros_par_habitant`,
 
-        -- Abstention et votant
-        av.`inscrits_total` AS `[abstention_votant]inscrits`,
-        av.`abstentions_total` AS `[abstention_votant]abstentions`,
-        av.`blancs_total` AS `[abstention_votant]blancs`
+    -- Professionnels de santé
+    ps.`[Spécialistes]EFFECTIF`,
+    ps.`[Spécialistes]DENSITE /100 000 hab.`,
+    ps.`[Généralistes et MEP]EFFECTIF`,
+    ps.`[Généralistes et MEP]DENSITE /100 000 hab.`,
+    ps.`[Auxiliaires médicaux]EFFECTIF`,
+    ps.`[Auxiliaires médicaux]DENSITE /100 000 hab.`,
+    ps.`[Sages-femmes]EFFECTIF`,
+    ps.`[Sages-femmes]DENSITE /100 000 hab.`,
+    ps.`[Dentistes et ODF]EFFECTIF`,
+    ps.`[Dentistes et ODF]DENSITE /100 000 hab.`,
+    ps.`[Laboratoires]EFFECTIF`,
+    ps.`[Laboratoires]DENSITE /100 000 hab.`
 
-    FROM indicateurs base
+FROM indicateurs base
 
-    LEFT JOIN age_moyen am 
-        ON am.Code_departement = base.Code_departement 
-        AND am.annee = base.annee
-    
-    LEFT JOIN delinquance d 
-        ON d.Code_departement = base.Code_departement 
-        AND d.annee = base.annee
+LEFT JOIN age_moyen am 
+    ON am.Code_departement = base.Code_departement 
+    AND am.annee = base.annee
 
-    LEFT JOIN revenu_moyen rm 
-        ON rm.Code_departement = base.Code_departement 
-        AND rm.annee = base.annee
+LEFT JOIN delinquance d 
+    ON d.Code_departement = base.Code_departement 
+    AND d.annee = base.annee
 
-    LEFT JOIN taux_chommage tc 
-        ON tc.Code_departement = base.Code_departement 
-        AND tc.annee = base.annee
+LEFT JOIN taux_chommage tc 
+    ON tc.Code_departement = base.Code_departement 
+    AND tc.annee = base.annee
 
-    LEFT JOIN equipement_sportif es 
-        ON es.Code_departement = base.Code_departement 
-        AND es.annee = base.annee
+LEFT JOIN equipement_sportif es 
+    ON es.Code_departement = base.Code_departement 
+    AND es.annee = base.annee
 
-    LEFT JOIN etablissement_culturel ec 
-        ON ec.Code_departement = base.Code_departement 
-        AND ec.annee = base.annee
+LEFT JOIN etablissement_culturel ec 
+    ON ec.Code_departement = base.Code_departement 
+    AND ec.annee = base.annee
 
-    LEFT JOIN niveau_etude ne 
-        ON ne.Code_departement = base.Code_departement 
-        AND ne.annee = base.annee
+LEFT JOIN niveau_etude ne 
+    ON ne.annee = base.annee
 
-    LEFT JOIN (
-        SELECT
-            Code_departement,
-            annee,
-            SUM(`[population_active]entre15et24`) AS `[population_active]pop_15_24`,
-            SUM(`[population_active]entre25et54`) AS `[population_active]pop_25_54`,
-            SUM(`[population_active]entre55et64`) AS `[population_active]pop_55_64`
-        FROM population_active
-        GROUP BY Code_departement, annee
-    ) pa
-    ON pa.Code_departement = base.Code_departement
-    AND pa.annee = base.annee
+LEFT JOIN categorie_professionnelle cp 
+    ON cp.annee = base.annee
 
-    LEFT JOIN categorie_professionnelle cp 
-        ON cp.annee = base.annee
+LEFT JOIN pouvoir_achat pa2
+    ON pa2.annee = base.annee
 
-    LEFT JOIN pouvoir_achat pa2
-        ON pa2.annee = base.annee
+LEFT JOIN compte_publique cp2
+    ON cp2.Code_departement = base.Code_departement
+    AND cp2.annee = base.annee
 
-    LEFT JOIN (
-        SELECT
-            code_departement,
-            annee,
-            SUM(`[abstention_votant]inscrits`) AS inscrits_total,
-            SUM(`[abstention_votant]abstentions`) AS abstentions_total,
-            SUM(`[abstention_votant]blancs`) AS blancs_total
-        FROM abstention_votant
-        WHERE `[abstention_votant]tour` = "t2"
-        GROUP BY code_departement, annee
-    ) av
-    ON av.code_departement = base.Code_departement
-    AND av.annee = base.annee
-   
-  WHERE
-    am.`[age_moyen]entre15et24` IS NOT NULL
-    AND am.`[age_moyen]entre25et54` IS NOT NULL
-    AND am.`[age_moyen]plus55` IS NOT NULL
+LEFT JOIN professionnels_sante ps
+    ON ps.Code_departement = base.Code_departement
+    AND ps.annee = base.annee
+
+WHERE
+    am.`[age_moyen]0 à 4 ans` IS NOT NULL
     AND d.`[delinquance]nombre` IS NOT NULL
     AND d.`[delinquance]taux_pour_mille` IS NOT NULL
-    AND rm.`[revenu_moyen]revenu_moyen_par_foyer` IS NOT NULL
     AND tc.`[taux_chomage]Taux_moyen` IS NOT NULL
     AND es.`[equipement_sportif]nb_equipements` IS NOT NULL
-    AND ec.`[etablissement_culturel]nombre_etablissements` IS NOT NULL
-    AND pa.`[population_active]pop_15_24` IS NOT NULL
-    AND pa.`[population_active]pop_25_54` IS NOT NULL
-    AND pa.`[population_active]pop_55_64` IS NOT NULL
-    AND av.inscrits_total IS NOT NULL
-    AND av.abstentions_total IS NOT NULL
-    AND av.blancs_total IS NOT NULL;
+    AND ec.`[etablissement_culturel]nombre_etablissements` IS NOT NULL;
     """
 
     try:

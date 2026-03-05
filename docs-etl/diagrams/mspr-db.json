@@ -1,0 +1,907 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "name": "mspr-db.sql",
+  "sources": [
+    {
+      "id": "5726636c-59aa-4556-a8c4-53a3e9167564",
+      "name": "mspr-db.sql",
+      "kind": {
+        "kind": "SqlLocalFile",
+        "name": "mspr-db.sql",
+        "size": 8412,
+        "modified": 1772733166051
+      },
+      "content": [],
+      "tables": [
+        {
+          "schema": "",
+          "table": "age_moyen",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]0",
+              "type": "à 4 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]10",
+              "type": "à 14 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]15",
+              "type": "à 19 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]20",
+              "type": "à 24 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]25",
+              "type": "à 29 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]30",
+              "type": "à 34 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]35",
+              "type": "à 39 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]40",
+              "type": "à 44 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]45",
+              "type": "à 49 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]5",
+              "type": "à 9 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]50",
+              "type": "à 54 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]55",
+              "type": "à 59 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]60",
+              "type": "à 64 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]65",
+              "type": "à 69 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]70",
+              "type": "à 74 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]75",
+              "type": "à 79 ans` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[age_moyen]80",
+              "type": "ans et plus` bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "categorie_professionnelle",
+          "columns": [
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "commerçants",
+              "type": "et patron` double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[categorie_professionnelle]",
+              "type": "Professions intermédiaires` double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "compte_publique",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "int(11)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[compte_publique]depenses",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[compte_publique]population",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[compte_publique]euros_par_habitant",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "delinquance",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[delinquance]nombre",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[delinquance]taux_pour_mille",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "equipement_sportif",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[equipement_sportif]nb_equipements",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "etablissement_culturel",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[etablissement_culturel]nombre_etablissements",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "indicateurs",
+          "columns": [
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "pouvoir_achat",
+          "columns": [
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL, `[pouvoir_achat]Pouvoir d'achat du RDB` double"
+            },
+            {
+              "name": "`[pouvoir_achat]Revenu",
+              "type": "disponible brut (RDB)` double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "president_sortant",
+          "columns": [
+            {
+              "name": "code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[president_sortant]tour",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[president_sortant]nombre_voix",
+              "type": "int(11)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[president_sortant]candidat",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[president_sortant]famille_politique",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "professionnels_sante",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[Spécialistes]EFFECTIF",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[Spécialistes]DENSITE",
+              "type": "/100 000 hab.` double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[Généralistes",
+              "type": "et MEP]DENSITE /100 000 hab.` double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[Auxiliaires",
+              "type": "médicaux]DENSITE /100 000 hab.` double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[Sages-femmes]EFFECTIF",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[Sages-femmes]DENSITE",
+              "type": "/100 000 hab.` double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[Dentistes",
+              "type": "et ODF]DENSITE /100 000 hab.` double",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[Laboratoires]EFFECTIF",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "`[Laboratoires]DENSITE",
+              "type": "/100 000 hab.` double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        },
+        {
+          "schema": "",
+          "table": "taux_chommage",
+          "columns": [
+            {
+              "name": "Code_departement",
+              "type": "text",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "annee",
+              "type": "bigint(20)",
+              "nullable": true,
+              "default": "NULL"
+            },
+            {
+              "name": "[taux_chomage]Taux_moyen",
+              "type": "double",
+              "nullable": true,
+              "default": "NULL"
+            }
+          ]
+        }
+      ],
+      "relations": [],
+      "createdAt": 1772733175265,
+      "updatedAt": 1772733175265
+    },
+    {
+      "id": "84dd0633-e7e0-409f-beeb-d3fb660d0bd8",
+      "name": "additional relations",
+      "kind": {
+        "kind": "AmlEditor"
+      },
+      "content": [
+        "rel taux_chommage(Code_departement) -> indicateurs(Code_departement)",
+        "rel taux_chommage(annee) -> indicateurs(annee)",
+        "rel professionnels_sante(Code_departement) -> indicateurs(Code_departement)",
+        "rel professionnels_sante(annee) -> indicateurs(annee)",
+        "rel president_sortant(code_departement) -> indicateurs(Code_departement)",
+        "rel president_sortant(annee) -> indicateurs(annee)",
+        "rel pouvoir_achat(annee) -> indicateurs(annee)",
+        "rel etablissement_culturel(Code_departement) -> indicateurs(Code_departement)",
+        "rel etablissement_culturel(annee) -> indicateurs(annee)",
+        "rel equipement_sportif(annee) -> indicateurs(annee)",
+        "rel equipement_sportif(Code_departement) -> indicateurs(Code_departement)",
+        "rel delinquance(annee) -> indicateurs(annee)",
+        "rel delinquance(Code_departement) -> indicateurs(Code_departement)",
+        "rel compte_publique(annee) -> indicateurs(annee)",
+        "rel compte_publique(Code_departement) -> indicateurs(Code_departement)",
+        "rel categorie_professionnelle(annee) -> indicateurs(annee)",
+        "rel age_moyen(annee) -> indicateurs(Code_departement)",
+        "rel age_moyen(Code_departement) -> indicateurs(Code_departement)",
+        ""
+      ],
+      "tables": [],
+      "relations": [
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".taux_chommage",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".taux_chommage",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".professionnels_sante",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".professionnels_sante",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".president_sortant",
+            "column": "code_departement"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".president_sortant",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".pouvoir_achat",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".etablissement_culturel",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".etablissement_culturel",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".equipement_sportif",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".equipement_sportif",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".delinquance",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".delinquance",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".compte_publique",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".compte_publique",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".categorie_professionnelle",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "annee"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".age_moyen",
+            "column": "annee"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "Code_departement"
+          }
+        },
+        {
+          "name": "virtual relation",
+          "src": {
+            "table": ".age_moyen",
+            "column": "Code_departement"
+          },
+          "ref": {
+            "table": ".indicateurs",
+            "column": "Code_departement"
+          }
+        }
+      ],
+      "createdAt": 1772733234671,
+      "updatedAt": 1772733344654
+    }
+  ],
+  "layouts": {
+    "initial layout": {
+      "tables": [
+        {
+          "id": ".age_moyen",
+          "position": {
+            "left": 1300,
+            "top": 70
+          },
+          "size": {
+            "width": 316.5625,
+            "height": 429
+          },
+          "color": "indigo",
+          "columns": [
+            "Code_departement",
+            "annee",
+            "`[age_moyen]0",
+            "`[age_moyen]10",
+            "`[age_moyen]15",
+            "`[age_moyen]20",
+            "`[age_moyen]25",
+            "`[age_moyen]30",
+            "`[age_moyen]35",
+            "`[age_moyen]40",
+            "`[age_moyen]45",
+            "`[age_moyen]5",
+            "`[age_moyen]50",
+            "`[age_moyen]55",
+            "`[age_moyen]60"
+          ]
+        },
+        {
+          "id": ".categorie_professionnelle",
+          "position": {
+            "left": 1830,
+            "top": 280
+          },
+          "size": {
+            "width": 289.828125,
+            "height": 117
+          },
+          "color": "rose",
+          "columns": [
+            "annee",
+            "commerçants",
+            "`[categorie_professionnelle]"
+          ]
+        },
+        {
+          "id": ".compte_publique",
+          "position": {
+            "left": 1810,
+            "top": 480
+          },
+          "size": {
+            "width": 362.8046875,
+            "height": 165
+          },
+          "color": "orange",
+          "columns": [
+            "Code_departement",
+            "annee",
+            "[compte_publique]depenses",
+            "[compte_publique]population",
+            "[compte_publique]euros_par_habitant"
+          ]
+        },
+        {
+          "id": ".delinquance",
+          "position": {
+            "left": 1840,
+            "top": 770
+          },
+          "size": {
+            "width": 298.9921875,
+            "height": 141
+          },
+          "color": "blue",
+          "columns": [
+            "Code_departement",
+            "annee",
+            "[delinquance]nombre",
+            "[delinquance]taux_pour_mille"
+          ]
+        },
+        {
+          "id": ".equipement_sportif",
+          "position": {
+            "left": 1680,
+            "top": 1060
+          },
+          "size": {
+            "width": 358.015625,
+            "height": 117
+          },
+          "color": "indigo",
+          "columns": [
+            "Code_departement",
+            "annee",
+            "[equipement_sportif]nb_equipements"
+          ]
+        },
+        {
+          "id": ".etablissement_culturel",
+          "position": {
+            "left": 1240,
+            "top": 1220
+          },
+          "size": {
+            "width": 415.203125,
+            "height": 117
+          },
+          "color": "orange",
+          "columns": [
+            "Code_departement",
+            "annee",
+            "[etablissement_culturel]nombre_etablissements"
+          ]
+        },
+        {
+          "id": ".indicateurs",
+          "position": {
+            "left": 1270,
+            "top": 620
+          },
+          "size": {
+            "width": 218.5390625,
+            "height": 93
+          },
+          "color": "sky",
+          "columns": [
+            "annee",
+            "Code_departement"
+          ]
+        },
+        {
+          "id": ".pouvoir_achat",
+          "position": {
+            "left": 920,
+            "top": 1080
+          },
+          "size": {
+            "width": 259.2265625,
+            "height": 93
+          },
+          "color": "amber",
+          "columns": [
+            "annee",
+            "`[pouvoir_achat]Revenu"
+          ]
+        },
+        {
+          "id": ".president_sortant",
+          "position": {
+            "left": 760,
+            "top": 850
+          },
+          "size": {
+            "width": 337.359375,
+            "height": 189
+          },
+          "color": "purple",
+          "columns": [
+            "code_departement",
+            "annee",
+            "[president_sortant]tour",
+            "[president_sortant]nombre_voix",
+            "[president_sortant]candidat",
+            "[president_sortant]famille_politique"
+          ]
+        },
+        {
+          "id": ".professionnels_sante",
+          "position": {
+            "left": 760,
+            "top": 500
+          },
+          "size": {
+            "width": 277.609375,
+            "height": 309
+          },
+          "color": "rose",
+          "columns": [
+            "Code_departement",
+            "annee",
+            "[Spécialistes]EFFECTIF",
+            "`[Spécialistes]DENSITE",
+            "`[Généralistes",
+            "`[Auxiliaires",
+            "[Sages-femmes]EFFECTIF",
+            "`[Sages-femmes]DENSITE",
+            "`[Dentistes",
+            "[Laboratoires]EFFECTIF",
+            "`[Laboratoires]DENSITE"
+          ]
+        },
+        {
+          "id": ".taux_chommage",
+          "position": {
+            "left": 820,
+            "top": 350
+          },
+          "size": {
+            "width": 293.3437476518909,
+            "height": 117.0000056926319
+          },
+          "color": "red",
+          "columns": [
+            "Code_departement",
+            "annee",
+            "[taux_chomage]Taux_moyen"
+          ]
+        }
+      ],
+      "createdAt": 1772733175265,
+      "updatedAt": 1772733364654
+    }
+  },
+  "createdAt": 1772733184601,
+  "updatedAt": 1772733184601,
+  "version": 2
+}

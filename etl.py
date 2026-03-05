@@ -4,7 +4,7 @@ import logging
 import numpy as np
 
 # CONFIGURATION DU LOGGING
-LOG_LEVEL = logging.INFO
+LOG_LEVEL = logging.DEBUG
 
 logging.basicConfig(
     level=LOG_LEVEL,
@@ -78,111 +78,111 @@ logger.debug("Début étape SILVER")
 dataframes = {}
 
 try:
-    # logger.debug("Traitement : delinquance")
-    # dataframes["silver_delinquance_df"] = silver_dataframe_module.clean_delinquance(
-    #     raw_parquet_module.creer_dataframe_depuis_parquet_url(
-    #         URLS["delinquance"],
-    #         PATHS["metadata_delinquance"]
-    #     )
-    # )
-    # log_dataframe_info("silver_delinquance_df", dataframes["silver_delinquance_df"])
+    logger.debug("Traitement : delinquance")
+    dataframes["silver_delinquance_df"] = silver_dataframe_module.clean_delinquance(
+        raw_parquet_module.creer_dataframe_depuis_parquet_url(
+            URLS["delinquance"],
+            PATHS["metadata_delinquance"]
+        )
+    )
+    log_dataframe_info("silver_delinquance_df", dataframes["silver_delinquance_df"])
 
-    # logger.debug("Traitement : taux_chommage")
-    # dataframes["silver_taux_chommage_df"] = silver_dataframe_module.clean_taux_chomage(
-    #     raw_xls_module.creer_dataframe_depuis_xls_url(
-    #         URLS["taux_chommage"],
-    #         "Département"
-    #     )
-    # )
-    # log_dataframe_info("silver_taux_chommage_df", dataframes["silver_taux_chommage_df"])
+    logger.debug("Traitement : taux_chommage")
+    dataframes["silver_taux_chommage_df"] = silver_dataframe_module.clean_taux_chomage(
+        raw_xls_module.creer_dataframe_depuis_xls_url(
+            URLS["taux_chommage"],
+            "Département"
+        )
+    )
+    log_dataframe_info("silver_taux_chommage_df", dataframes["silver_taux_chommage_df"])
 
-    # logger.debug("Traitement : age_moyen")
-    # dataframes["silver_age_moyen_df"] = silver_dataframe_module.clean_age_moyen(
-    #     raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["age_moyen"], {})
-    # )
-    # log_dataframe_info("silver_age_moyen_df", dataframes["silver_age_moyen_df"])
+    logger.debug("Traitement : age_moyen")
+    dataframes["silver_age_moyen_df"] = silver_dataframe_module.clean_age_moyen(
+        raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["age_moyen"], {})
+    )
+    log_dataframe_info("silver_age_moyen_df", dataframes["silver_age_moyen_df"])
 
-    # logger.debug("Traitement : compte_publique")
-    # dataframes["silver_compte_publique_df"] = silver_dataframe_module.clean_compte_publique(
-    #     raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["compte_publique"], {})
-    # )
-    # log_dataframe_info("silver_compte_publique_df", dataframes["silver_compte_publique_df"])
+    logger.debug("Traitement : compte_publique")
+    dataframes["silver_compte_publique_df"] = silver_dataframe_module.clean_compte_publique(
+        raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["compte_publique"], {})
+    )
+    log_dataframe_info("silver_compte_publique_df", dataframes["silver_compte_publique_df"])
 
-    # logger.debug("Traitement : categorie_professionnelle")
-    # dataframes["silver_categorie_professionnelle_df"] = silver_dataframe_module.clean_categorie_professionnelle(
-    #     raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["categorie_professionnelle"]),
-    #     PATHS["metadata_categorie_professionnelle"]
-    # )
-    # log_dataframe_info("silver_categorie_professionnelle_df", dataframes["silver_categorie_professionnelle_df"])
+    logger.debug("Traitement : categorie_professionnelle")
+    dataframes["silver_categorie_professionnelle_df"] = silver_dataframe_module.clean_categorie_professionnelle(
+        raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["categorie_professionnelle"]),
+        PATHS["metadata_categorie_professionnelle"]
+    )
+    log_dataframe_info("silver_categorie_professionnelle_df", dataframes["silver_categorie_professionnelle_df"])
 
-    # logger.debug("Traitement : equipement_sportif")
-    # dataframes["silver_equipement_sportif_df"] = silver_dataframe_module.clean_equipement_sportif(
-    #     raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["equipement_sportif"], {})
-    # )
-    # log_dataframe_info("silver_equipement_sportif_df", dataframes["silver_equipement_sportif_df"])
+    logger.debug("Traitement : equipement_sportif")
+    dataframes["silver_equipement_sportif_df"] = silver_dataframe_module.clean_equipement_sportif(
+        raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["equipement_sportif"], {})
+    )
+    log_dataframe_info("silver_equipement_sportif_df", dataframes["silver_equipement_sportif_df"])
 
-    # logger.debug("Traitement : professionnels_sante")
-    # dataframes["silver_professionnels_sante_df"] = silver_dataframe_module.clean_professionnels_sante(
-    #     raw_mixed_xlsx_zip_module.creer_dataframe_depuis_multiple_url(URLS["professionnels_sante"])
-    # )
-    # log_dataframe_info("silver_professionnels_sante_df", dataframes["silver_professionnels_sante_df"])
+    logger.debug("Traitement : professionnels_sante")
+    dataframes["silver_professionnels_sante_df"] = silver_dataframe_module.clean_professionnels_sante(
+        raw_mixed_xlsx_zip_module.creer_dataframe_depuis_multiple_url(URLS["professionnels_sante"])
+    )
+    log_dataframe_info("silver_professionnels_sante_df", dataframes["silver_professionnels_sante_df"])
 
-    # logger.debug("Traitement : etablissement_culturel")
-    # dataframes["silver_etablissement_culturel_df"] = silver_dataframe_module.clean_etablissement_culturel(
-    #     raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["etablissement_culturel"], {}),
-    #     raw_csv_module.creer_dataframe_depuis_csv_url(URLS["etablissement_culturel_2024"])
-    # )
-    # log_dataframe_info("silver_etablissement_culturel_df", dataframes["silver_etablissement_culturel_df"])
+    logger.debug("Traitement : etablissement_culturel")
+    dataframes["silver_etablissement_culturel_df"] = silver_dataframe_module.clean_etablissement_culturel(
+        raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["etablissement_culturel"], {}),
+        raw_csv_module.creer_dataframe_depuis_csv_url(URLS["etablissement_culturel_2024"])
+    )
+    log_dataframe_info("silver_etablissement_culturel_df", dataframes["silver_etablissement_culturel_df"])
 
-    # logger.debug("Traitement : pouvoir_achat")
-    # dataframes["silver_pouvoir_achat_df"] = silver_dataframe_module.clean_pouvoir_achat(
-    #     raw_xls_module.creer_dataframe_depuis_xls_url(URLS["pouvoir_achat"], "Données")
-    # )
-    # log_dataframe_info("silver_pouvoir_achat_df", dataframes["silver_pouvoir_achat_df"])
+    logger.debug("Traitement : pouvoir_achat")
+    dataframes["silver_pouvoir_achat_df"] = silver_dataframe_module.clean_pouvoir_achat(
+        raw_xls_module.creer_dataframe_depuis_xls_url(URLS["pouvoir_achat"], "Données")
+    )
+    log_dataframe_info("silver_pouvoir_achat_df", dataframes["silver_pouvoir_achat_df"])
 
-    # logger.debug("Traitement : niveau_etude")
-    # dataframes["silver_niveau_etude_df"] = silver_dataframe_module.clean_niveau_etude(
-    #     raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["niveau_etude"]),
-    #     raw_xls_module.creer_dataframe_depuis_xls_url(URLS["niveau_etude_2024"], "Figure 1"),
-    #     PATHS["metadata_niveau_etude"]
-    # )
-    # log_dataframe_info("silver_niveau_etude_df", dataframes["silver_niveau_etude_df"])
+    logger.debug("Traitement : niveau_etude")
+    dataframes["silver_niveau_etude_df"] = silver_dataframe_module.clean_niveau_etude(
+        raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["niveau_etude"]),
+        raw_xls_module.creer_dataframe_depuis_xls_url(URLS["niveau_etude_2024"], "Figure 1"),
+        PATHS["metadata_niveau_etude"]
+    )
+    log_dataframe_info("silver_niveau_etude_df", dataframes["silver_niveau_etude_df"])
 
-    # logger.debug("Traitement : president_sortant")
-    # dataframes["silver_president_sortant_df"] = silver_dataframe_module.clean_president_sortant(
-    #     raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["president_sortant"], {}),
-    #     PATHS["metadata_famille_politique"]
-    # )
-    # log_dataframe_info("silver_president_sortant_df", dataframes["silver_president_sortant_df"])
+    logger.debug("Traitement : president_sortant")
+    dataframes["silver_president_sortant_df"] = silver_dataframe_module.clean_president_sortant(
+        raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["president_sortant"], {}),
+        PATHS["metadata_famille_politique"]
+    )
+    log_dataframe_info("silver_president_sortant_df", dataframes["silver_president_sortant_df"])
     
 except Exception as e:
     logger.exception("Erreur durant l'étape SILVER")
     raise
 
-# logger.debug("Fin étape SILVER")
+logger.debug("Fin étape SILVER")
 
-# # ETAPE LOAD
-# try:
-#     logger.debug("Sauvegarde des dataframes SILVER")
-#     load_save_module.save_all_silver_dataframes(dataframes)
+# ETAPE LOAD
+try:
+    logger.debug("Sauvegarde des dataframes SILVER")
+    load_save_module.save_all_silver_dataframes(dataframes)
 
-#     logger.debug("Audit qualité des dataframes SILVER")
-#     load_quality_module.audit_all_silver_dataframes(dataframes)
+    logger.debug("Audit qualité des dataframes SILVER")
+    load_quality_module.audit_all_silver_dataframes(dataframes)
 
-# except Exception:
-#     logger.exception("Erreur durant l'étape LOAD")
-#     raise
+except Exception:
+    logger.exception("Erreur durant l'étape LOAD")
+    raise
 
-# # ETAPE GOLD
-# try:
-#     logger.debug("Création GOLD - indicateurs")
-#     gold_dwh_module.create_gold_all_indicator_df()
+# ETAPE GOLD
+try:
+    logger.debug("Création GOLD - indicateurs")
+    gold_dwh_module.create_gold_all_indicator_df()
 
-#     logger.debug("Création GOLD - président")
-#     gold_dwh_module.create_gold_all_president_df()
+    logger.debug("Création GOLD - président")
+    gold_dwh_module.create_gold_all_president_df()
 
-# except Exception:
-#     logger.exception("Erreur durant l'étape GOLD")
-#     raise
+except Exception:
+    logger.exception("Erreur durant l'étape GOLD")
+    raise
 
-# logger.info("Pipeline ETL terminé avec succès")
+logger.info("Pipeline ETL terminé avec succès")
