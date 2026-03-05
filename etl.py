@@ -136,11 +136,11 @@ try:
     # log_dataframe_info("silver_pouvoir_achat_df", dataframes["silver_pouvoir_achat_df"])
 
     # logger.debug("Traitement : niveau_etude")
-    dataframes["silver_niveau_etude_df"] = silver_dataframe_module.clean_niveau_etude(
-        raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["niveau_etude"]),
-        raw_xls_module.creer_dataframe_depuis_xls_url(URLS["niveau_etude_2024"], "Figure 1"),
-        PATHS["metadata_niveau_etude"]
-    )
+    # dataframes["silver_niveau_etude_df"] = silver_dataframe_module.clean_niveau_etude(
+    #     raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["niveau_etude"]),
+    #     raw_xls_module.creer_dataframe_depuis_xls_url(URLS["niveau_etude_2024"], "Figure 1"),
+    #     PATHS["metadata_niveau_etude"]
+    # )
     # log_dataframe_info("silver_niveau_etude_df", dataframes["silver_niveau_etude_df"])
 
     # logger.debug("Traitement : president_sortant")

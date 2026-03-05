@@ -1274,11 +1274,10 @@ def clean_niveau_etude(df: pd.DataFrame, df_2024: pd.DataFrame, metadata_niveau_
         df_2024 = df_2024.rename(columns={"Baccalauréat ou équivalent": "[niveau_etude]Baccalauréat ou équivalent"})
         df_2024 = df_2024.rename(columns={"Diplôme de niveau bac+5 ou plus       ": "[niveau_etude]Diplôme de niveau bac+5 ou plus"})
         df_2024 = df_2024.rename(columns={"Diplôme de niveau bac+2": "[niveau_etude]Diplôme de niveau bac+2"})
-        df_2024 = df_2024.rename(columns={"Diplôme de niveau bac+3 ou bac+4   ": "[niveau_etude]Diplôme de niveau bac+3 ou bac+4  "})
+        df_2024 = df_2024.rename(columns={"Diplôme de niveau bac+3 ou bac+4   ": "[niveau_etude]Diplôme de niveau bac+3 ou bac+4"})
         # Concaténer les DataFrames
         df_final = pd.concat([df, df_2024], ignore_index=True)
-        print(df_final)
-        return df.reset_index()
+        return df_final.reset_index()
     except FileNotFoundError:
         logger.error(f"clean_niveau_etude() : JSON introuvable → {metadata_niveau_etude}")
         raise
