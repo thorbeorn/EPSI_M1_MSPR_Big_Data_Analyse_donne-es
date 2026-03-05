@@ -6,10 +6,9 @@ pouvoir_achat > 2025
 
 categorie_professionnelle > 2024
 etablissement_culturel > 2024
+compte_publique > 2024
 
 revenu_moyen > 2023
 niveau_etude > 2022
-population_active > 2022
-
 
 - abstention_votant > 2022

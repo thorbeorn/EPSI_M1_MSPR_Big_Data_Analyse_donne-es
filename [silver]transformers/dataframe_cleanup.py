@@ -536,103 +536,65 @@ def clean_president_sortant(df: pd.DataFrame, metadata_famille_politique: str ) 
         logger.error(f"clean_president_sortant() : erreur → {e}")
         raise
 
-def clean_population_active(df: pd.DataFrame, metadata_population_active: str) -> pd.DataFrame:
+def clean_compte_publique(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Nettoie les données de population active par département, tranche d'âge
-    et statut d'emploi, issues de l'INSEE (format SDMX/Eurostat).
+    Nettoie les données de des comptes publique par département.
 
     Colonnes produites :
         - Code_departement
         - annee
-        - Statut_emploi (libellé mappé depuis JSON)
-        - [population_active]entre15et24
-        - [population_active]entre25et54
-        - [population_active]entre55et64
+        - Compte
 
     Args:
-        df (pd.DataFrame): Données brutes INSEE format SDMX.
-        metadata_population_active (str): Chemin vers le JSON de mapping
-                                          EMPSTA_ENQ → libellé statut emploi.
+        df (pd.DataFrame): Données brutes.
 
     Returns:
         pd.DataFrame: Population active structurée par dept/année/statut.
     """
     try:
-        # Extraction du code département depuis la colonne géographique
-        df["Code_departement"] = df["GEO"].str.rsplit("-", n=1).str[-1]
-
-        # Décalage temporel : on associe à l'année N-1
-        df["annee"] = pd.to_numeric(df["TIME_PERIOD"], errors="coerce") + 1 # Décalage temporel : on associe à l'année N-1
-        df.loc[df["annee"] == 2023, "annee"] = 2022  # Correction spécifique pour les données 2023 (si nécessaire)
-
         # Suppression des colonnes de métadonnées inutiles
         df = df.drop(
-            columns=["SEX", "FREQ", "RP_MEASURE", "GEO", "TIME_PERIOD", "EDUC"],
+            columns=["outre_mer", "reg_code", "reg_name", "dep_tranche_population", "dep_status", "dep_name", "categ", "siren", "ident", "lbudg", "type_de_budget", "nomen", "agregat", "classement_fonctionnel_2", "fonction2", "cbudg", "nom_fonction", "fonction", "fonctionnelle_1", "niveau_hierarchique", "ptot_n"],
+            errors="ignore"
+        )
+        # Extraction du code département depuis la colonne géographique
+        df["exer"] = pd.to_datetime(df["exer"])
+        df["annee"] = df["exer"].dt.year
+        # Suppression des colonnes inutiles
+        df = df.drop(
+            columns=["exer"],
             errors="ignore"
         )
 
-        # Tri numérique stable avec gestion de la Corse
-        sort_series = (
-            df["Code_departement"]
-            .replace({"2A": "1000", "2B": "1001"})
-            .astype(int)
-        )
         df = (
-            df
-            .assign(_sort=sort_series)
-            .sort_values("_sort", kind="mergesort")
-            .drop(columns="_sort")
+            df.groupby(["annee", "dep_code"], as_index=False)
+            .agg({
+                "montant": "sum",
+                "ptot": "sum",
+                "euros_par_habitant": "mean"
+            })
         )
-
-        # Pivot : une colonne par tranche d'âge
-        df = (
-            df
-            .pivot_table(
-                index=["Code_departement", "annee", "EMPSTA_ENQ"],
-                columns="AGE",
-                values="OBS_VALUE_NIVEAU",
-                aggfunc="first"
-            )
-            .reset_index()
-        )
-        df.columns.name = None
-
-        # Renommage des tranches + suppression des agrégats
+        # Renommage des colonnes
         df = df.rename(columns={
-            "Y15T24": "[population_active]entre15et24",
-            "Y25T54": "[population_active]entre25et54",
-            "Y55T64": "[population_active]entre55et64"
-        }).drop(columns=["Y15T64", "Y_GE15"], errors="ignore")
-
-        # Mapping du statut d'emploi (code → libellé)
-        mapping = load_json_mapping(
-            metadata_population_active,
-            key_field="EMPSTA_ENQ",
-            value_field="Statut_emploi",
-            normalize=True
-        )
-        df["Statut_emploi"] = (
-            df["EMPSTA_ENQ"]
-            .astype(str)
-            .apply(normaliser)
-            .map(mapping)
-        )
-
+            "dep_code": "Code_departement",
+            "montant": "[compte_publique]depenses",
+            "ptot": "[compte_publique]population",
+            "euros_par_habitant": "[compte_publique]euros_par_habitant"
+        })
         # Réorganisation des colonnes dans l'ordre final
         df = (
             df
-            .drop(columns="EMPSTA_ENQ")
             .loc[:, [
                 "Code_departement",
                 "annee",
-                "Statut_emploi",
-                "[population_active]entre15et24",
-                "[population_active]entre25et54",
-                "[population_active]entre55et64",
+                "[compte_publique]depenses",
+                "[compte_publique]population",
+                "[compte_publique]euros_par_habitant"
             ]]
             .fillna(0)     # Les valeurs manquantes représentent 0 actifs
             .reset_index(drop=True)
         )
+        print(df)
 
         return df
 

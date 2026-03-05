@@ -43,7 +43,7 @@ URLS = {
     "delinquance": "https://object.files.data.gouv.fr/hydra-parquet/hydra-parquet/2b27a675-e3bf-41ef-a852-5fb9ab483967.parquet",
     "taux_chommage": "https://www.insee.fr/fr/statistiques/fichier/2012804/sl_etc_2025T3.xls",
     "age_moyen": "https://data.sports.gouv.fr/api/explore/v2.1/catalog/datasets/pop_dep_age_sexe/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
-    "population_active": "https://api.insee.fr/melodi/data/DS_RP_EMPLOI_LR_PRINC?SEX=_T&EDUC=_T&EMPSTA_ENQ=1&EMPSTA_ENQ=31&EMPSTA_ENQ=33&EMPSTA_ENQ=35&EMPSTA_ENQ=36&GEO=DEP",
+    "compte_publique": "https://data.ofgl.fr/api/explore/v2.1/catalog/datasets/ofgl-base-departements-fonctionnelle/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
     "categorie_professionnelle": "https://api.insee.fr/melodi/data/DD_EEC_SERIES?UNIT_MEASURE=_Z&SEX=_T&AGE=_T&EDUC=_T&WKTIME=_T&UNDEREMP=_T",
     "equipement_sportif": "https://data.education.gouv.fr/api/explore/v2.1/catalog/datasets/fr-en-data-es-base-de-donnees/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
     "revenu_moyen": {
@@ -97,12 +97,11 @@ try:
     # )
     # log_dataframe_info("silver_age_moyen_df", dataframes["silver_age_moyen_df"])
 
-    # logger.debug("Traitement : population_active")
-    # dataframes["silver_population_active_df"] = silver_dataframe_module.clean_population_active(
-    #     raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["population_active"]),
-    #     PATHS["metadata_population_active"]
+    # logger.debug("Traitement : compte_publique")
+    # dataframes["silver_compte_publique_df"] = silver_dataframe_module.clean_compte_publique(
+    #     raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["compte_publique"], {})
     # )
-    # log_dataframe_info("silver_population_active_df", dataframes["silver_population_active_df"])
+    # log_dataframe_info("silver_compte_publique_df", dataframes["silver_compte_publique_df"])
 
     # logger.debug("Traitement : categorie_professionnelle")
     # dataframes["silver_categorie_professionnelle_df"] = silver_dataframe_module.clean_categorie_professionnelle(
