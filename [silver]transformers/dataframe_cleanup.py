@@ -1275,6 +1275,12 @@ def clean_niveau_etude(df: pd.DataFrame, df_2024: pd.DataFrame, metadata_niveau_
         df_2024 = df_2024.rename(columns={"Diplôme de niveau bac+5 ou plus       ": "[niveau_etude]Diplôme de niveau bac+5 ou plus"})
         df_2024 = df_2024.rename(columns={"Diplôme de niveau bac+2": "[niveau_etude]Diplôme de niveau bac+2"})
         df_2024 = df_2024.rename(columns={"Diplôme de niveau bac+3 ou bac+4   ": "[niveau_etude]Diplôme de niveau bac+3 ou bac+4"})
+        # calcul du total par ligne (sans la colonne année)
+        df_pct = df.copy()
+        totaux = df.iloc[:, 1:].sum(axis=1)
+        # conversion en pourcentage
+        df_pct.iloc[:, 1:] = df.iloc[:, 1:].div(totaux, axis=0) * 100
+        df = df_pct
         # Concaténer les DataFrames
         df_final = pd.concat([df, df_2024], ignore_index=True)
         return df_final.reset_index()
