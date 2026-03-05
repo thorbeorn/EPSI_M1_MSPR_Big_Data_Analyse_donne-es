@@ -995,7 +995,7 @@ def clean_revenu_moyen(dfs: dict) -> pd.DataFrame:
         logger.error(f"clean_revenu_moyen() : erreur → {e}")
         raise
 
-def clean_etablissement_culturel(df: pd.DataFrame) -> pd.DataFrame:
+def clean_etablissement_culturel(df: pd.DataFrame, df_2024: pd.DataFrame) -> pd.DataFrame:
     """
     Nettoie les données sur les établissements culturels par département et année.
 
@@ -1014,7 +1014,8 @@ def clean_etablissement_culturel(df: pd.DataFrame) -> pd.DataFrame:
         - [etablissement_culturel]nombre_etablissements
 
     Args:
-        df (pd.DataFrame): DataFrame brut des établissements culturels.
+        df (pd.DataFrame): DataFrame brut des établissements culturels.,
+        df_2024 (pd.DataFrame): DataFrame brut des établissements culturels de 2025.
 
     Returns:
         pd.DataFrame: Données nettoyées et renommées.
@@ -1052,7 +1053,50 @@ def clean_etablissement_culturel(df: pd.DataFrame) -> pd.DataFrame:
         ]]
         df["annee"] = pd.to_numeric(df["annee"], errors="coerce").astype("int64")
         df["[etablissement_culturel]nombre_etablissements"] = pd.to_numeric(df["[etablissement_culturel]nombre_etablissements"], errors="coerce").astype("int64")
-        return df.reset_index(drop=True)
+        
+        #On conserve que les Departement
+        df_2024 = df_2024[df_2024["GEO_OBJECT"] == "DEP"].copy()
+        #On conserve que les Departement
+        df_2024 = df_2024[df_2024["TIME_PERIOD"] == 2024].copy()
+        # Suppression des colonnes redondantes ou inutiles
+        df_2024 = df_2024.drop(
+            columns=[
+                "GEO_OBJECT",
+                "FACILITY_SDOM",
+                "FACILITY_TYPE",
+                "BPE_MEASURE",
+                "INDOOR",
+                "LIGHTED",
+                "ERP_CATEGORY",
+                "PRACTICE_AREA_ACCESSIBILITY",
+                "SEASONAL_OPENING",
+                "MULTIPLEX_CINEMA",
+                "FACILITY_DOM",
+                "SANITARY_ACCESSIBILITY",
+                "LOCKER_ROOM_ACCESSIBILITY",
+                "FREE_ACCESS",
+                "SHOWER",
+                "SANITARY"
+            ],
+            errors="ignore"
+        )
+        # Renommage basé sur position
+        df_2024 = df_2024.rename(columns={
+            df_2024.columns[0]: "Code_departement",
+            df_2024.columns[1]: "annee",
+            df_2024.columns[2]: "[etablissement_culturel]nombre_etablissements"
+        })
+        # Toutes les valeurs d’un même département et même année sont additionnées.
+        df_2024 = (
+            df_2024.groupby(["Code_departement", "annee"], as_index=False)["[etablissement_culturel]nombre_etablissements"]
+            .sum()
+        )
+        # Normalisation des types de données
+        df["Code_departement"] = df["Code_departement"].astype("string")
+        df_2024["Code_departement"] = df_2024["Code_departement"].astype("string")
+        # Concaténer les DataFrames
+        df_final = pd.concat([df, df_2024], ignore_index=True)
+        return df_final.reset_index(drop=True)
     except ValueError:
         raise
     except Exception as e:

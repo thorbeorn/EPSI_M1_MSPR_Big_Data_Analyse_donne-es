@@ -19,6 +19,7 @@ logger.info("Démarrage du pipeline ETL")
 logger.debug("Chargement des modules dynamiques")
 
 raw_parquet_module = getattr(__import__("[raw]requesters.parquet"), "parquet")
+raw_csv_module = getattr(__import__("[raw]requesters.csv"), "csv")
 raw_xls_module = getattr(__import__("[raw]requesters.xls"), "xls")
 raw_melodi_module = getattr(__import__("[raw]requesters.melodi"), "melodi")
 raw_mixed_xlsx_zip_module = getattr(__import__("[raw]requesters.mixedxlsxzip"), "mixedxlsxzip")
@@ -52,6 +53,7 @@ URLS = {
         "23": "https://static.data.gouv.fr/resources/limpot-sur-le-revenu-par-collectivite-territoriale-ircom/20250919-135242/ircom-2024-revenus-2023.zip"
     },
     "etablissement_culturel": "https://data.culture.gouv.fr/api/explore/v2.1/catalog/datasets/entreprises-culturelles-par-departement/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
+    "etablissement_culturel_2024": "https://www.insee.fr/fr/statistiques/fichier/8217527/DS_BPE_SPORT_CULTURE_CSV_FR.zip",
     "pouvoir_achat": "https://www.insee.fr/fr/statistiques/fichier/2830166/reve-niv-vie-pouv-achat-trim.xlsx",
     "niveau_etude": "https://api.insee.fr/melodi/data/DS_RP_DIPLOMES_PRINC?SEX=_T&EDUC=001T100_RP&EDUC=001T003_RP&EDUC=001T200_RP&EDUC=100_RP&EDUC=200_RP&EDUC=300_RP&EDUC=700_RP&EDUC=600T702_RP&EDUC=600_RP&EDUC=500T702_RP&EDUC=350T351_RP&EDUC=500_RP&GEO=DEP",
     "abstention_votant": "https://object.files.data.gouv.fr/hydra-parquet/hydra-parquet/b8703c69-a18f-46ab-9e7f-3a8368dcb891.parquet",
@@ -123,7 +125,8 @@ try:
 
     # logger.debug("Traitement : etablissement_culturel")
     # dataframes["silver_etablissement_culturel_df"] = silver_dataframe_module.clean_etablissement_culturel(
-    #     raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["etablissement_culturel"], {})
+    #     raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["etablissement_culturel"], {}),
+    #     raw_csv_module.creer_dataframe_depuis_csv_url(URLS["etablissement_culturel_2024"])
     # )
     # log_dataframe_info("silver_etablissement_culturel_df", dataframes["silver_etablissement_culturel_df"])
 
