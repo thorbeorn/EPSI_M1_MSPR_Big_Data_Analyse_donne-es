@@ -1134,7 +1134,7 @@ def clean_pouvoir_achat(df: pd.DataFrame) -> pd.DataFrame:
         logger.error(f"clean_pouvoir_achat() : erreur → {e}")
         raise
 
-def clean_niveau_etude(df: pd.DataFrame, metadata_niveau_etude: str) -> pd.DataFrame:
+def clean_niveau_etude(df: pd.DataFrame, df_2024: pd.DataFrame, metadata_niveau_etude: str) -> pd.DataFrame:
     """
     Nettoie et pivote les données de niveau d'étude (diplômes) par département
     et par année, issues de l'INSEE (format SDMX).
@@ -1206,7 +1206,7 @@ def clean_niveau_etude(df: pd.DataFrame, metadata_niveau_etude: str) -> pd.DataF
         # Pivot : une colonne par diplôme
         df = (
             df.pivot_table(
-                index=["Code_departement", "annee"],
+                index=["annee"],
                 columns="[niveau_etude]diplome",
                 values="[niveau_etude]nombre_diplome",
                 aggfunc="sum"
@@ -1218,109 +1218,70 @@ def clean_niveau_etude(df: pd.DataFrame, metadata_niveau_etude: str) -> pd.DataF
         df = df.rename(columns=lambda x: f"[niveau_etude]{x}")
         df = df.rename(columns={"[niveau_etude]Baccalauréat universitaire ou équivalent : Licence, licence pro, maîtrise, diplôme équivalent de niveau bac+3 ou bac+4": "[niveau_etude]Baccalauréat universitaire ou équivalent"})
         df = df.rename(columns={"[niveau_etude]Enseignement supérieur de cycle court : BTS, DUT, Deug, Deust, diplôme de la santé ou du social de niveau bac+2, diplôme": "[niveau_etude]Enseignement supérieur de cycle court"})
+        # Harmonisation des nom pour le merge
+        df = df.rename(columns={"[niveau_etude]BEPC, brevet élémentaire, brevet des collèges, DNB": "[niveau_etude]Brevet des collèges"})
+        df = df.rename(columns={"[niveau_etude]CAP, BEP ou diplôme de niveau équivalent": "[niveau_etude]CAP, BEP ou équivalent"})
+        df = df.rename(columns={"[niveau_etude]Enseignement supérieur de cycle court": "[niveau_etude]Diplôme de niveau bac+2"})
+        df = df.rename(columns={"[niveau_etude]Diplôme universitaire 2e ou 3e cycle": "[niveau_etude]Diplôme de niveau bac+3 ou bac+4"})
+        df["[niveau_etude]Aucun diplôme, CEP"] = df["[niveau_etude]Aucun diplôme"] + df["[niveau_etude]CEP (certificat d’études primaires)"]
+        df = df.drop(columns=["[niveau_etude]Aucun diplôme", "[niveau_etude]CEP (certificat d’études primaires)"])
+        df["[niveau_etude]Baccalauréat ou équivalent"] = df["[niveau_etude]Baccalauréat, brevet professionnel ou équivalent"] + df["[niveau_etude]Baccalauréat universitaire ou équivalent"]
+        df = df.drop(columns=["[niveau_etude]Baccalauréat, brevet professionnel ou équivalent", "[niveau_etude]Baccalauréat universitaire ou équivalent"])
+        df["[niveau_etude]Diplôme de niveau bac+5 ou plus"] = df["[niveau_etude]Diplôme de niveau bac + 5 ou plus"] + df["[niveau_etude]Diplôme d'études supérieures"]
+        df = df.drop(columns=["[niveau_etude]Diplôme de niveau bac + 5 ou plus", "[niveau_etude]Diplôme d'études supérieures"])
+        df = df.groupby("annee").sum()
+        df = df.reset_index(drop=False)
+
+        # Suppression des 2 premières lignes de titre
+        df_2024 = df_2024.iloc[2:].copy()
+        # La première ligne utile devient l'en-tête
+        df_2024.columns = df_2024.iloc[0]
+        df_2024 = df_2024.iloc[1:].reset_index(drop=True)
+        df_2024.columns.name = None
+        # Suppression des lignes entièrement vides
+        df_2024 = df_2024.dropna(how="all")
+        # Filtrage des lignes non numériques en fin de fichier (notes, sources)
+        df_2024 = df_2024.iloc[:-6].copy()
+        #Nettoyer les noms de colonnes
+        df_2024.columns = df_2024.columns.str.strip()
+        #un seul pourcentage global (Femmes + Hommes)
+        df_2024["total"] = df_2024[[
+            "Femmes","Hommes"
+        ]].mean(axis=1)
+        # Suppression des colonnes inutiles
+        df_2024 = df_2024.drop(
+            columns=[
+                'Femmes', 'Hommes'
+            ],
+            errors="ignore"
+        )
+        #pivot la table
+        df_2024 = df_2024.rename(columns={df_2024.columns[0]: "niveau_diplome"})
+        df_2024 = df_2024.set_index("niveau_diplome").T.reset_index(drop=True)
+        df_2024.insert(0, "annee", 2024)
+        df_2024.columns.name = None
+        # Suppression des colonnes inutiles
+        df_2024 = df_2024.drop(
+            columns=[
+                "niveau_diplome"
+            ],
+            errors="ignore"
+        )
+        # Harmonisation des nom pour le merge
+        df_2024 = df_2024.rename(columns={"Aucun diplôme, certificat d’études primaires": "[niveau_etude]Aucun diplôme, CEP"})
+        df_2024 = df_2024.rename(columns={"Brevet des collèges              ": "[niveau_etude]Brevet des collèges"})
+        df_2024 = df_2024.rename(columns={"CAP, BEP ou équivalent": "[niveau_etude]CAP, BEP ou équivalent"})
+        df_2024 = df_2024.rename(columns={"Baccalauréat ou équivalent": "[niveau_etude]Baccalauréat ou équivalent"})
+        df_2024 = df_2024.rename(columns={"Diplôme de niveau bac+5 ou plus       ": "[niveau_etude]Diplôme de niveau bac+5 ou plus"})
+        df_2024 = df_2024.rename(columns={"Diplôme de niveau bac+2": "[niveau_etude]Diplôme de niveau bac+2"})
+        df_2024 = df_2024.rename(columns={"Diplôme de niveau bac+3 ou bac+4   ": "[niveau_etude]Diplôme de niveau bac+3 ou bac+4  "})
+        # Concaténer les DataFrames
+        df_final = pd.concat([df, df_2024], ignore_index=True)
+        print(df_final)
         return df.reset_index()
     except FileNotFoundError:
         logger.error(f"clean_niveau_etude() : JSON introuvable → {metadata_niveau_etude}")
         raise
     except Exception as e:
         logger.error(f"clean_niveau_etude() : erreur → {e}")
-        raise
-
-def clean_abstention_votant(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Nettoie et agrège les données d'abstention et de participation aux
-    élections présidentielles (T1 et T2) par département.
-
-    Logique métier :
-        - Agrégation des bureaux de vote au niveau département (sum).
-        - Les votes de l'étranger (code 'ZZ') sont exclus.
-
-    Colonnes produites :
-        - code_departement
-        - annee
-        - [abstention_votant]tour
-        - [abstention_votant]inscrits
-        - [abstention_votant]abstentions
-        - [abstention_votant]blancs
-
-    Args:
-        df (pd.DataFrame): Données brutes des bureaux de vote (niveau BV).
-
-    Returns:
-        pd.DataFrame: Statistiques de participation agrégées par département et tour.
-    """
-    try:
-        # Filtre sur les élections présidentielles uniquement
-        df = df[
-            df["id_election"]
-            .astype(str)
-            .str.contains(r"pres_t1|pres_t2", na=False)
-        ].copy()
-        # Extraction de l'année et du tour
-        df[["annee", "tour"]] = df["id_election"].str.extract(
-            r"(\d{4})_pres_(t[12])"
-        )
-        # Décalage temporel : année élection → année précédente
-        df["annee"] = pd.to_numeric(df["annee"], errors="coerce")
-        df = df.drop(columns=["id_election"], errors="ignore")
-        # Suppression de toutes les colonnes non nécessaires
-        df = df.drop(columns=[
-            'id_brut_miom', 'code_commune', 'libelle_canton',
-            'code_canton', 'libelle_departement',
-            'code_circonscription', 'libelle_commune',
-            'libelle_circonscription', 'code_bv',
-            'ratio_blancs_votants', 'ratio_nuls_inscrits',
-            'ratio_nuls_votants', 'ratio_exprimes_inscrits',
-            'ratio_exprimes_votants', 'ratio_abstentions_inscrits',
-            'ratio_votants_inscrits', 'ratio_blancs_inscrits',
-            'votants', 'exprimes'
-        ], errors="ignore")
-        # Sélection des colonnes utiles
-        df = df[[
-            "code_departement",
-            "annee",
-            "tour",
-            "inscrits",
-            "abstentions",
-            "blancs"
-        ]]
-        # Remplissage des NaN par 0 (données manquantes = 0 votes dans cette catégorie)
-        df = df.fillna(0)
-        # Renommage avec préfixe source
-        df = df.rename(columns={
-            "tour": "[abstention_votant]tour",
-            "inscrits": "[abstention_votant]inscrits",
-            "abstentions": "[abstention_votant]abstentions",
-            "blancs": "[abstention_votant]blancs"
-        })
-        # Harmonisation des codes DOM-TOM (même mapping que president_sortant)
-        mapping_dom = {
-            "ZA": "971", "ZB": "972", "ZC": "973",
-            "ZD": "974", "ZM": "976", "ZN": "988",
-            "ZP": "987", "ZS": "975", "ZT": "978",
-            "ZW": "986", "ZX": "977", "ZY": "977",
-        }
-        df["code_departement"] = df["code_departement"].replace(mapping_dom)
-        # Exclusion des votes de l'étranger (non rattachés à un département)
-        df = df[df["code_departement"] != "ZZ"]
-        # Agrégation BV → département (somme des effectifs)
-        df = (
-            df.groupby(
-                ["code_departement", "annee", "[abstention_votant]tour"],
-                as_index=False
-            )[[
-                "[abstention_votant]inscrits",
-                "[abstention_votant]abstentions",
-                "[abstention_votant]blancs"
-            ]]
-            .sum()
-            .sort_values(["code_departement", "annee"])
-            .reset_index(drop=True)
-        )
-        return df
-    except KeyError as e:
-        logger.error(f"clean_abstention_votant() : colonne manquante → {e}")
-        raise
-    except Exception as e:
-        logger.error(f"clean_abstention_votant() : erreur → {e}")
         raise

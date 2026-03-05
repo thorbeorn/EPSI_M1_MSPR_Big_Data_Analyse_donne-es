@@ -56,7 +56,7 @@ URLS = {
     "etablissement_culturel_2024": "https://www.insee.fr/fr/statistiques/fichier/8217527/DS_BPE_SPORT_CULTURE_CSV_FR.zip",
     "pouvoir_achat": "https://www.insee.fr/fr/statistiques/fichier/2830166/reve-niv-vie-pouv-achat-trim.xlsx",
     "niveau_etude": "https://api.insee.fr/melodi/data/DS_RP_DIPLOMES_PRINC?SEX=_T&EDUC=001T100_RP&EDUC=001T003_RP&EDUC=001T200_RP&EDUC=100_RP&EDUC=200_RP&EDUC=300_RP&EDUC=700_RP&EDUC=600T702_RP&EDUC=600_RP&EDUC=500T702_RP&EDUC=350T351_RP&EDUC=500_RP&GEO=DEP",
-    "abstention_votant": "https://object.files.data.gouv.fr/hydra-parquet/hydra-parquet/b8703c69-a18f-46ab-9e7f-3a8368dcb891.parquet",
+    "niveau_etude_2024": "https://www.insee.fr/fr/statistiques/fichier/8612520/FPORSOC25-F8.xlsx",
     "president_sortant": "https://object.files.data.gouv.fr/data-pipeline-open/elections/candidats_results.parquet"
 }
 
@@ -136,17 +136,12 @@ try:
     # log_dataframe_info("silver_pouvoir_achat_df", dataframes["silver_pouvoir_achat_df"])
 
     # logger.debug("Traitement : niveau_etude")
-    # dataframes["silver_niveau_etude_df"] = silver_dataframe_module.clean_niveau_etude(
-    #     raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["niveau_etude"]),
-    #     PATHS["metadata_niveau_etude"]
-    # )
+    dataframes["silver_niveau_etude_df"] = silver_dataframe_module.clean_niveau_etude(
+        raw_melodi_module.creer_dataframe_depuis_melodi_api_url(URLS["niveau_etude"]),
+        raw_xls_module.creer_dataframe_depuis_xls_url(URLS["niveau_etude_2024"], "Figure 1"),
+        PATHS["metadata_niveau_etude"]
+    )
     # log_dataframe_info("silver_niveau_etude_df", dataframes["silver_niveau_etude_df"])
-
-    # logger.debug("Traitement : abstention_votant")
-    # dataframes["silver_abstention_votant_df"] = silver_dataframe_module.clean_abstention_votant(
-    #     raw_parquet_module.creer_dataframe_depuis_parquet_url(URLS["abstention_votant"], {})
-    # )
-    # log_dataframe_info("silver_abstention_votant_df", dataframes["silver_abstention_votant_df"])
 
     # logger.debug("Traitement : president_sortant")
     # dataframes["silver_president_sortant_df"] = silver_dataframe_module.clean_president_sortant(
