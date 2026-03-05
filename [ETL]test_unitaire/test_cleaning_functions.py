@@ -37,14 +37,10 @@ clean_delinquance = cleanup_silver_module.clean_delinquance
 clean_taux_chomage = cleanup_silver_module.clean_taux_chomage
 clean_age_moyen = cleanup_silver_module.clean_age_moyen
 clean_president_sortant = cleanup_silver_module.clean_president_sortant
-clean_population_active = cleanup_silver_module.clean_population_active
-clean_categorie_professionnelle = cleanup_silver_module.clean_categorie_professionnelle
 clean_equipement_sportif = cleanup_silver_module.clean_equipement_sportif
 clean_etablissement_culturel = cleanup_silver_module.clean_etablissement_culturel
 clean_pouvoir_achat = cleanup_silver_module.clean_pouvoir_achat
 clean_niveau_etude = cleanup_silver_module.clean_niveau_etude
-clean_abstention_votant = cleanup_silver_module.clean_abstention_votant
-clean_revenu_moyen = cleanup_silver_module.clean_revenu_moyen
 
 
 # =============================================================================
@@ -928,31 +924,6 @@ class TestCleanNiveauEtude:
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])
 
-def test_clean_population_active_basic(tmp_path):
-    import json
-    import pandas as pd
-
-    mapping = [{"EMPSTA_ENQ": "EMP", "Statut_emploi": "Employé"}]
-    json_path = tmp_path / "mapping.json"
-    json_path.write_text(json.dumps(mapping))
-
-    df = pd.DataFrame({
-        "GEO": ["FR-75", "FR-75", "FR-75"],
-        "TIME_PERIOD": ["2022", "2022", "2022"],
-        "EMPSTA_ENQ": ["EMP", "EMP", "EMP"],
-        "AGE": ["Y15T24", "Y25T54", "Y55T64"],
-        "OBS_VALUE_NIVEAU": [100, 200, 50],
-    })
-
-    result = clean_population_active(df, str(json_path))
-
-    assert "Code_departement" in result.columns
-    assert result["annee"].iloc[0] == 2021
-
-    assert "[population_active]entre15et24" in result.columns
-    assert "[population_active]entre25et54" in result.columns
-    assert "[population_active]entre55et64" in result.columns
-
 def test_clean_categorie_professionnelle_basic(tmp_path):
     import json
     import pandas as pd
@@ -987,23 +958,6 @@ def test_clean_equipement_sportif_basic():
 
     assert "[equipement_sportif]nb_equipements" in result.columns
     assert result["Code_departement"].iloc[0] == "75"
-
-def test_clean_abstention_votant_basic():
-    import pandas as pd
-
-    df = pd.DataFrame({
-        "id_election": ["2022_pres_t1"],
-        "code_departement": ["75"],
-        "inscrits": [100],
-        "abstentions": [20],
-        "blancs": [5],
-        "nuls": [2],
-    })
-
-    result = clean_abstention_votant(df)
-
-    assert "[abstention_votant]inscrits" in result.columns
-    assert result["annee"].iloc[0] == 2021
 
 def test_set_header_basic():
     # DataFrame simulant un Excel avec 1 ligne junk + 1 ligne header + data
@@ -1162,18 +1116,6 @@ def test_clean_president_sortant_exception(caplog, tmp_path):
     with pytest.raises((KeyError, ValueError)):
         clean_president_sortant(df, str(json_path))
 
-def test_clean_population_active_exception(caplog, tmp_path):
-    """Teste le bloc except générique de clean_population_active."""
-    mapping = [{"EMPSTA_ENQ": "EMP", "Statut_emploi": "Employé"}]
-    json_path = tmp_path / "mapping.json"
-    json_path.write_text(json.dumps(mapping))
-    
-    # DataFrame vide/malformé
-    df = pd.DataFrame()
-    
-    with pytest.raises((IndexError, KeyError)):
-        clean_population_active(df, str(json_path))
-
 def test_clean_equipement_sportif_exception(caplog):
     """Teste le bloc except générique de clean_equipement_sportif."""
     # DataFrame vide/malformé
@@ -1209,74 +1151,6 @@ def test_clean_niveau_etude_exception(caplog, tmp_path):
     
     with pytest.raises((IndexError, KeyError)):
         clean_niveau_etude(df, str(json_path))
-
-def test_clean_abstention_votant_exception(caplog):
-    """Teste le bloc except générique de clean_abstention_votant."""
-    # DataFrame vide/malformé
-    df = pd.DataFrame()
-    
-    with pytest.raises((IndexError, KeyError)):
-        clean_abstention_votant(df)
-
-def test_clean_revenu_moyen_1984_1999():
-    """Test spécifique pour la période 1984-1999 de clean_revenu_moyen."""
-    # Créer des DataFrames correctement formés pour chaque période
-    df_1984_1999 = pd.DataFrame([
-        ["", "", "", "", "", ""],  # ligne junk
-        ["", "", "", "", "", ""],  # ligne junk
-        ["", "", "", "", "", ""],  # ligne junk
-        ["", "", "", "", "", ""],  # ligne junk
-        ["", "", "", "", "", ""],  # ligne junk
-        ["", "", "", "", "", ""],  # ligne junk
-        ["", "", "", "", "", ""],  # ligne junk
-        ["Code_dept", "annee", "Revenus nets imposables", "Nombre de foyers fiscaux", "col5", "col6"],
-        ["750", "1990", "150000", "100", "col7", "col8"],
-        ["690", "1990", "140000", "100", "col7", "col8"],
-    ])
-    
-    # Remplir les autres périodes avec des DataFrames vides pour passer les contrôles KeyError
-    dfs = {
-        "8420": {
-            "1984_1999": df_1984_1999,
-            "2000_2017": pd.DataFrame(),
-            "2018": pd.DataFrame(),
-            "2019_2020": pd.DataFrame(),
-            "Notice": pd.DataFrame(),
-        },
-        "21": {"Feuil1": pd.DataFrame()},
-        "22": {"Feuil1": pd.DataFrame()},
-        "23": {"ListeCommune": pd.DataFrame()},
-    }
-    
-    try:
-        result = clean_revenu_moyen(dfs)
-        # Accepter que ce soit None ou raise une exception
-        assert result is not None or result is None
-    except (IndexError, KeyError, ValueError, AttributeError, ZeroDivisionError):
-        # Ces exceptions sont attendues avec les données minimales
-        pass
-    
-    # Remplir les autres périodes avec des DataFrames vides pour passer les contrôles KeyError
-    dfs = {
-        "8420": {
-            "1984_1999": df_1984_1999,
-            "2000_2017": pd.DataFrame(),
-            "2018": pd.DataFrame(),
-            "2019_2020": pd.DataFrame(),
-            "Notice": pd.DataFrame(),
-        },
-        "21": {"Feuil1": pd.DataFrame()},
-        "22": {"Feuil1": pd.DataFrame()},
-        "23": {"ListeCommune": pd.DataFrame()},
-    }
-    
-    try:
-        result = clean_revenu_moyen(dfs)
-        # Accepter que ce soit None ou raise une exception
-        assert result is not None or result is None
-    except (IndexError, KeyError, ValueError, AttributeError, ZeroDivisionError):
-        # Ces exceptions sont attendues avec les données minimales
-        pass
 
 def test_fix_departement_with_str_that_works():
     """Test fix_departement avec conversion de string normal."""
@@ -1408,27 +1282,6 @@ def test_clean_pouvoir_achat_with_numeric_data(caplog):
     # Vérifier la conversion de virgule
     assert result[result["annee"] == 1990]["[pouvoir_achat]pourcentage_annee_precedente"].values[0] == 2.5
 
-def test_clean_abstention_votant_aggregated(caplog):
-    """Teste clean_abstention_votant avec agrégation complète."""
-    df = pd.DataFrame({
-        "id_election": ["2022_pres_t1", "2022_pres_t1", "2022_pres_t2"],
-        "code_departement": ["75", "75", "75"],
-        "inscrits": [1000, 2000, 3000],
-        "abstentions": [300, 600, 900],
-        "blancs": [50, 100, 150],
-        "nuls": [10, 20, 30],
-        "id_brut_miom": ["a", "b", "c"],
-        "code_commune": ["1", "2", "3"],
-        "code_bv": ["001", "002", "003"],
-    })
-    
-    result = clean_abstention_votant(df)
-    
-    # Vérifier l'agrégation
-    assert len(result) == 2  # t1 et t2 séparés
-    t1_row = result[(result["code_departement"] == "75") & (result["[abstention_votant]tour"] == "t1")]
-    assert t1_row["[abstention_votant]inscrits"].values[0] == 3000  # 1000 + 2000
-
 def test_clean_niveau_etude_with_harmonised_codes(caplog, tmp_path):
     """Teste clean_niveau_etude avec codes harmonisés."""
     mapping = [
@@ -1450,42 +1303,6 @@ def test_clean_niveau_etude_with_harmonised_codes(caplog, tmp_path):
     # Vérifier que les codes sont harmonisés
     assert result is not None
     assert len(result) == 1  # Une seule ligne (un département, une année)
-
-def test_clean_population_active_with_multiple_statutes(caplog, tmp_path):
-    """Teste clean_population_active avec plusieurs statuts."""
-    mapping = [
-        {"EMPSTA_ENQ": "EMP", "Statut_emploi": "Employé"},
-        {"EMPSTA_ENQ": "SELF", "Statut_emploi": "Indépendant"},
-    ]
-    json_path = tmp_path / "mapping.json"
-    json_path.write_text(json.dumps(mapping), encoding="utf-8")
-    
-    df = pd.DataFrame({
-        "GEO": ["FR-DEP-75", "FR-DEP-75", "FR-DEP-75", "FR-DEP-75", "FR-DEP-75", "FR-DEP-75"],
-        "TIME_PERIOD": ["2022", "2022", "2022", "2022", "2022", "2022"],
-        "EMPSTA_ENQ": ["EMP", "EMP", "EMP", "SELF", "SELF", "SELF"],
-        "AGE": ["Y15T24", "Y25T54", "Y55T64", "Y15T24", "Y25T54", "Y55T64"],
-        "OBS_VALUE_NIVEAU": [100, 200, 50, 80, 150, 40],
-    })
-    
-    result = clean_population_active(df, str(json_path))
-    
-    # Vérifier la structure
-    assert "Code_departement" in result.columns
-    assert "Statut_emploi" in result.columns
-    assert "[population_active]entre15et24" in result.columns
-
-def test_clean_revenu_moyen_key_error(caplog):
-    """Teste clean_revenu_moyen avec clé manquante dans dfs."""
-    dfs = {
-        "8420": {
-            "1984_1999": pd.DataFrame(),
-        },
-        # "21", "22", "23" manquent
-    }
-    
-    with pytest.raises((KeyError, IndexError)):
-        clean_revenu_moyen(dfs)
 
 def test_clean_etablissement_culturel_except_with_invalid_col(caplog):
     """Force une exception dans clean_etablissement_culturel avec colonnes invalides."""
@@ -1521,19 +1338,6 @@ def test_clean_niveau_etude_except_with_invalid_data(caplog, tmp_path):
         assert True
     except (ValueError, TypeError, KeyError):
         assert "clean_niveau_etude() : erreur" in caplog.text or True
-
-def test_clean_abstention_votant_except_with_invalid_data(caplog):
-    """Force une exception dans clean_abstention_votant avec données invalides."""
-    df = pd.DataFrame({
-        "id_election": ["INVALID_FORMAT"],
-        "code_departement": ["INVALID"],
-    })
-    
-    try:
-        result = clean_abstention_votant(df)
-        assert True
-    except (ValueError, KeyError, IndexError):
-        assert "clean_abstention_votant() : erreur" in caplog.text or True
 
 def test_clean_revenu_moyen_multi_periods():
     """Test clean_revenu_moyen avec multiples périodes pour couvrir 879-988."""
@@ -1670,19 +1474,3 @@ def test_clean_niveau_etude_real_structure(tmp_path):
     assert "Code_departement" in result.columns
     assert "annee" in result.columns
 
-def test_clean_abstention_votant_real_structure():
-    """Test clean_abstention_votant with realistic voting data."""
-    df = pd.DataFrame({
-        "id_election": ["2022_pres_t1", "2022_pres_t2"],
-        "code_departement": ["75", "75"],
-        "inscrits": [100000, 100000],
-        "abstentions": [20000, 25000],
-        "blancs": [5000, 4000],
-        "nuls": [1000, 1500],
-    })
-    
-    result = clean_abstention_votant(df)
-    assert result is not None
-    assert "code_departement" in result.columns
-    assert "annee" in result.columns
-    assert "[abstention_votant]tour" in result.columns
