@@ -1,0 +1,57 @@
+rang_moyen;critere;importance_centre;importance_droite;importance_gauche;importance_moyenne
+1;[taux_chomage]Taux_moyen;0.147361;0.117406;0.209361;0.158043
+2;[etablissement_culturel]nombre_etablissements;0.001437;0.022987;0.397729;0.140718
+3;[Laboratoires]DENSITE /100 000 hab.;0.007655;0.165005;0.078704;0.083788
+4;[categorie_professionnelle] Employés qualifiés;0.151854;0.059275;0.003771;0.071633
+5;[pouvoir_achat]Pouvoir d'achat du RDB;0.064653;0.062785;0.00419;0.043876
+6;[niveau_etude]CAP, BEP ou équivalent;0.108035;2e-05;0.004686;0.03758
+7;[categorie_professionnelle] Agriculteurs;0.108711;2e-05;0.003353;0.037361
+8;[Sages-femmes]DENSITE /100 000 hab.;0.013267;0.014493;0.063526;0.030429
+9;[Auxiliaires médicaux]DENSITE /100 000 hab.;0.005116;0.04039;0.042853;0.029453
+10;[niveau_etude]Aucun diplôme, CEP;0.079678;0.000107;0.004145;0.027977
+11;[categorie_professionnelle] Ouvriers qualifiés;0.079361;4.2e-05;0.002308;0.027237
+12;[categorie_professionnelle] Ouvriers peu qualifiés;0.07434;3.1e-05;0.001995;0.025455
+13;[equipement_sportif]nb_equipements;0.00292;0.035138;0.034315;0.024124
+14;[niveau_etude]Diplôme de niveau bac+5 ou plus;2.3e-05;0.065509;0.000813;0.022115
+15;[niveau_etude]Brevet des collèges;4e-06;0.062329;0.002411;0.021581
+16;[categorie_professionnelle] Employés;0.061642;1.3e-05;0.001064;0.020906
+17;[niveau_etude]Baccalauréat ou équivalent;2e-06;0.054911;0.001726;0.01888
+18;[delinquance]taux_pour_mille;0.00988;0.036523;0.00726;0.017888
+19;[pouvoir_achat]Revenu disponible brut (RDB);2.9e-05;0.051181;0.001979;0.01773
+20;[categorie_professionnelle] Employés peu qualifiés;9e-06;0.049574;0.001388;0.01699
+21;[Généralistes et MEP]DENSITE /100 000 hab.;0.003431;0.018884;0.015045;0.012453
+22;[Sages-femmes]EFFECTIF;0.001971;0.023207;0.00404;0.009739
+23;[Dentistes et ODF]DENSITE /100 000 hab.;0.003203;0.008377;0.014655;0.008745
+24;[compte_publique]euros_par_habitant;0.004528;0.012219;0.005686;0.007478
+25;[niveau_etude]Diplôme de niveau bac+3 ou bac+4;0.020763;3.6e-05;8.2e-05;0.00696
+26;[age_moyen]0 à 4 ans;0.00057;0.00887;0.009292;0.006244
+27;[compte_publique]depenses;0.004792;0.006292;0.003717;0.004934
+28;[age_moyen]20 à 24 ans;0.000454;0.003153;0.0105;0.004702
+29;[age_moyen]25 à 29 ans;0.000449;0.009203;0.004009;0.004554
+30;[age_moyen]5 à 9 ans;0.000338;0.007454;0.005236;0.004343
+31;[Auxiliaires médicaux]EFFECTIF;0.002152;0.007066;0.003619;0.004279
+32;[Spécialistes]DENSITE /100 000 hab.;0.002246;0.005701;0.004605;0.004184
+33;[age_moyen]30 à 34 ans;0.000416;0.00677;0.004643;0.003943
+34;[Spécialistes]EFFECTIF;0.000562;0.005023;0.005692;0.003759
+35;[compte_publique]population;0.002156;0.005107;0.003177;0.00348
+36;[categorie_professionnelle] Cadres et professions supérieures;0.007498;2.4e-05;0.002303;0.003275
+37;[age_moyen]80 ans et plus;0.001656;0.003894;0.002665;0.002738
+38;[Laboratoires]EFFECTIF;0.000978;0.002657;0.004174;0.002603
+39;[age_moyen]10 à 14 ans;0.000314;0.005047;0.0021;0.002487
+40;[categorie_professionnelle] Professions intermédiaires;0.005211;2.1e-05;0.001815;0.002349
+41;[categorie_professionnelle] Autres;0.005202;7e-06;0.001638;0.002282
+42;[age_moyen]15 à 19 ans;0.000433;0.004155;0.001369;0.001986
+43;[niveau_etude]Diplôme de niveau bac+2;0.005126;7.1e-05;0.000559;0.001919
+44;[age_moyen]75 à 79 ans;0.00128;0.00204;0.002429;0.001916
+45;[age_moyen]70 à 74 ans;0.002245;0.001671;0.001283;0.001733
+46;[Généralistes et MEP]EFFECTIF;0.000519;0.002371;0.002175;0.001688
+47;[delinquance]nombre;0.000893;0.001808;0.001891;0.001531
+48;[Dentistes et ODF]EFFECTIF;0.000746;0.001638;0.002032;0.001472
+49;[categorie_professionnelle] Artisans, commerçants et patron;2.8e-05;4.7e-05;0.004147;0.001407
+50;[age_moyen]35 à 39 ans;0.000359;0.002427;0.001341;0.001376
+51;[age_moyen]60 à 64 ans;0.001489;0.001314;0.000955;0.001253
+52;[age_moyen]65 à 69 ans;0.000771;0.001269;0.001233;0.001091
+53;[age_moyen]40 à 44 ans;0.00029;0.000933;0.002043;0.001089
+54;[age_moyen]45 à 49 ans;0.000255;0.00156;0.000894;0.000903
+55;[age_moyen]50 à 54 ans;0.000297;0.001149;0.000637;0.000694
+56;[age_moyen]55 à 59 ans;0.000401;0.000798;0.000741;0.000647

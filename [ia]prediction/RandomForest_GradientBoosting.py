@@ -176,15 +176,7 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
         "validation"   : dict  (métriques MAE / accuracy)
     """
 
-    def log(*args):
-        if verbose:
-            print(*args)
-
     # ── 1. PRÉPARATION ──────────────────────────────────────────────────────
-    log("=" * 62)
-    log(f"  PRÉDICTION ÉLECTORALE — CIBLE : {annee_cible}")
-    log("=" * 62)
-
     df_indic, FEATURES = _prep_indicator(df_indicateurs)
 
     # Années d'indicateurs disponibles (hors cible)
@@ -198,9 +190,6 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
     annee_prev = annees_hist[-2]
     annee_curr = annees_hist[-1]
 
-    log(f"  Années indicateurs : {annees_indic}")
-    log(f"  Pipeline projection : {annee_prev} → {annee_curr} → {annee_cible}")
-
     def get_indic(a):
         sub = df_indic[df_indic["annee"] == a].set_index("Code_departement")[FEATURES]
         return sub.apply(pd.to_numeric, errors="coerce")
@@ -211,7 +200,6 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
 
     # Années présidentielles disponibles
     annees_pres = sorted(df_resultats["annee"].unique())
-    log(f"  Années présidentielles : {annees_pres}")
 
     _, get_t1 = _prep_president(df_resultats, tour="t1")
     _, get_t2 = _prep_president(df_resultats, tour="t2")
@@ -230,8 +218,6 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
     if df_tgt is not None:
         depts_all = depts_all.intersection(df_tgt.index)
 
-    log(f"  ✔ {len(depts_all)} départements | {len(FEATURES)} critères")
-
     # Restreindre
     df_prev = df_prev.loc[depts_all].fillna(df_prev.median())
     df_curr = df_curr.loc[depts_all].fillna(df_curr.median())
@@ -248,7 +234,6 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
     for a in annees_pres:
         fam_t1_dispo |= set(scores_t1[a].columns.tolist())
     FAMILLES_T1 = [f for f in FAMILLES if f in fam_t1_dispo]
-    log(f"  ✔ Familles T1 : {FAMILLES_T1}")
 
     fam_t2_dispo = set()
     for a in annees_pres:
@@ -256,30 +241,19 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
             fam_t2_dispo |= set(scores_t2[a].columns.tolist())
     FAMILLES_T2_ACT = [f for f in FAMILLES_T2 if f in fam_t2_dispo]
     has_t2 = len(FAMILLES_T2_ACT) >= 2
-    log(f"  ✔ Familles T2 : {FAMILLES_T2_ACT if has_t2 else 'non disponibles'}")
 
     # ── 2. ÉTAPE 1 — PROJECTION DES INDICATEURS VERS L'ANNÉE CIBLE ──────────
-    log("\n" + "=" * 62)
-    log(f"  ÉTAPE 1 — PROJECTION DES INDICATEURS → {annee_cible}")
-    log("=" * 62)
-
     if df_tgt is not None:
         # Les données réelles de l'année cible existent → on les utilise directement
         df_cible = df_tgt
-        log(f"  Données réelles {annee_cible} disponibles — utilisées directement.")
         r2_info = None
     else:
         df_cible, r2_info = _predict_indicators_for_year(df_prev, df_curr, FEATURES)
         r2_series = pd.Series(r2_info)
-        log(f"  ✔ R² moyen : {r2_series.mean():.3f} | médiane : {r2_series.median():.3f}")
 
     df_cible = df_cible.loc[depts_all].fillna(0)
 
     # ── 3. ÉTAPE 2 — MODÈLE DE VOTE T1 ──────────────────────────────────────
-    log("\n" + "=" * 62)
-    log(f"  ÉTAPE 2 — PRÉDICTION DES SCORES T1 POUR {annee_cible}")
-    log("=" * 62)
-
     # Construction du dataset d'entraînement :
     # on empile les indicateurs de chaque année présidentielle
     # avec les scores correspondants
@@ -335,24 +309,14 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
         [f"score_{f}" for f in FAMILLES_T1]
     ].idxmax(axis=1).str.replace("score_", "")
 
-    log(f"\n  Scores nationaux T1 prédits ({annee_cible}) :")
-    for f, v in sorted(score_nat_t1.items(), key=lambda x: -x[1]):
-        bar = "█" * int(v / 2)
-        log(f"    {f:<10} {v:5.1f}%  {bar}")
-
     # ── 4. ÉTAPE 2 — MODÈLE DE VOTE T2 ──────────────────────────────────────
     df_res_t2       = pd.DataFrame()
     score_nat_t2    = {}
 
     if has_t2:
-        log("\n" + "=" * 62)
-        log(f"  ÉTAPE 2bis — PRÉDICTION DES SCORES T2 POUR {annee_cible}")
-        log("=" * 62)
-
         # Familles qualifiées pour le T2 = les 2 premières du T1 prédit
         top2 = sorted(score_nat_t1.items(), key=lambda x: -x[1])[:2]
         familles_qualifiees = [f for f, _ in top2]
-        log(f"  Familles qualifiées (top T1) : {familles_qualifiees}")
 
         # Ne garder que les familles présentes dans les données T2 historiques
         familles_t2_eff = [f for f in familles_qualifiees if f in FAMILLES_T2_ACT]
@@ -397,18 +361,7 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
                 [f"score_{f}" for f in familles_t2_eff]
             ].idxmax(axis=1).str.replace("score_", "")
 
-            vainqueur_t2 = max(score_nat_t2, key=score_nat_t2.get)
-            log(f"\n  Scores nationaux T2 prédits ({annee_cible}) :")
-            for f, v in sorted(score_nat_t2.items(), key=lambda x: -x[1]):
-                bar = "█" * int(v / 2)
-                log(f"    {f:<10} {v:5.1f}%  {bar}")
-            log(f"\n  → VAINQUEUR T2 PRÉDIT : {vainqueur_t2.upper()}")
-
     # ── 5. VALIDATION — ENTRAÎNÉ SUR n-1 ANNÉES, TESTÉ SUR LA DERNIÈRE ──────
-    log("\n" + "=" * 62)
-    log("  VALIDATION (entraîné sur n-1 élections, testé sur la dernière)")
-    log("=" * 62)
-
     annee_test  = annees_pres[-1]
     annees_train_val = annees_pres[:-1]
 
@@ -461,34 +414,7 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
             "mae_moyen": np.mean(list(mae_val.values())),
         }
 
-        log(f"\n  Test sur l'élection {annee_test} :")
-        log(f"    {'Famille':<12} {'MAE':>8}  {'R²':>8}")
-        for f in FAMILLES_T1:
-            log(f"    {f:<12} {mae_val[f]:>7.2f}  {r2_val[f]:>8.3f}")
-        log(f"\n  ┌──────────────────────────────────────────────┐")
-        log(f"  │  Accuracy vainqueur dept   : {acc*100:5.1f}%          │")
-        log(f"  │  MAE moyen (pts de %)      : {val_results['mae_moyen']:5.2f} pts       │")
-        log(f"  └──────────────────────────────────────────────┘")
-
     # ── 6. RÉSUMÉ FINAL ──────────────────────────────────────────────────────
-    log("\n" + "=" * 62)
-    log(f"  RÉSULTAT PRÉDIT {annee_cible}")
-    log("=" * 62)
-    log(f"\n  1er TOUR :")
-    for f, v in sorted(score_nat_t1.items(), key=lambda x: -x[1]):
-        bar = "█" * int(v / 2)
-        log(f"    {f:<10} {v:5.1f}%  {bar}")
-
-    if score_nat_t2:
-        log(f"\n  2e TOUR (si applicable) :")
-        for f, v in sorted(score_nat_t2.items(), key=lambda x: -x[1]):
-            bar = "█" * int(v / 2)
-            log(f"    {f:<10} {v:5.1f}%  {bar}")
-        vainqueur_final = max(score_nat_t2, key=score_nat_t2.get)
-        log(f"\n  → VAINQUEUR PRÉDIT : {vainqueur_final.upper()}")
-
-    log("\n  ✅ Analyse terminée !")
-
     results = {
         "t1_national":    score_nat_t1,
         "t1_par_dept":    df_res_t1,
@@ -525,10 +451,6 @@ def export_csv(results: dict, annee_cible: int = 2024,
        Importance de chaque critère socio-éco dans le Random Forest,
        par famille politique (T1).
     """
-
-    def log(*args):
-        if verbose:
-            print(*args)
 
     t1   = results["t1_national"]
     t2   = results["t2_national"]
@@ -567,7 +489,6 @@ def export_csv(results: dict, annee_cible: int = 2024,
     df_nat = pd.DataFrame(rows_nat)
     path_nat = f"{prefix}_national.csv"
     df_nat.to_csv(path_nat, index=False, sep=";")
-    log(f"  ✔ Export → {path_nat}")
 
     # ── 2. PAR DÉPARTEMENT ───────────────────────────────────────────────────
     df_t1 = results["t1_par_dept"].copy().reset_index(drop=True)
@@ -592,7 +513,6 @@ def export_csv(results: dict, annee_cible: int = 2024,
 
     path_dept = f"{prefix}_par_dept.csv"
     df_dept.to_csv(path_dept, index=False, sep=";")
-    log(f"  ✔ Export → {path_dept}")
 
     # ── 3. IMPORTANCE DES CRITÈRES ───────────────────────────────────────────
     # Deux formats dans un seul fichier :
@@ -615,9 +535,3 @@ def export_csv(results: dict, annee_cible: int = 2024,
         # Export
         path_croise = f"{prefix}_importance_croise.csv"
         df_croise.to_csv(path_croise, index=False, sep=";")
-        log(f"  ✔ Export → {path_croise}")
-
-    log(f"\n  📊 CSV prêts pour la datavisualisation :"
-        f"\n     • {prefix}_national.csv            (scores nationaux + métriques IA)"
-        f"\n     • {prefix}_par_dept.csv             (scores T1/T2 par département)"
-        f"\n     • {prefix}_importance_croise.csv    (importance de tous les critères, 1 colonne/famille)")

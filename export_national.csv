@@ -1,0 +1,4 @@
+annee_cible;famille;tour;score_pct;rang_t1;qualifie_t2;score_t2_pct;rang_t2;validation_annee_test;validation_accuracy_dept_pct;validation_mae_famille;validation_r2_famille;validation_mae_moyen;modele_t1;modele_etape1;normalisation
+2024;droite;T1;51.74;1;True;99.92;1.0;2022;58.0;13.78;-1.487;14.36;RandomForest(n=300,depth=5) + GradientBoosting(n=200,lr=0.05) — poids 2:1;Ridge(alpha=1.0) par critère;softmax linéaire (sum=100%)
+2024;gauche;T1;37.74;2;False;;;2022;58.0;9.31;0.076;14.36;RandomForest(n=300,depth=5) + GradientBoosting(n=200,lr=0.05) — poids 2:1;Ridge(alpha=1.0) par critère;softmax linéaire (sum=100%)
+2024;centre;T1;10.53;3;True;0.08;2.0;2022;58.0;20.0;-6.289;14.36;RandomForest(n=300,depth=5) + GradientBoosting(n=200,lr=0.05) — poids 2:1;Ridge(alpha=1.0) par critère;softmax linéaire (sum=100%)
