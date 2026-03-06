@@ -916,6 +916,7 @@ def clean_equipement_sportif(df: pd.DataFrame) -> pd.DataFrame:
             .sort_values(["annee", "Code_departement"], kind="mergesort")
             .reset_index(drop=True)
         )
+        base["Code_departement"] = df["Code_departement"].str.zfill(2)
         return base
 
     except Exception as e:
