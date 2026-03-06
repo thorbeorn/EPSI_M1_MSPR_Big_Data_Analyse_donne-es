@@ -15,7 +15,7 @@ docker-compose up -d
 python3 -m venv .venv
 .venv\Scripts\Activate
 pip install -r requirement.txt
-python main.py
+python etl.py
 python ia.py
 
 pytest test_unitaire/test_cleaning_functions.py 
