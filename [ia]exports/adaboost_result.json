@@ -1,0 +1,13 @@
+{
+  "model": "adaboost",
+  "generated_at": "2026-03-17T11:20:31.261001",
+  "metrics": {
+    "accuracy": 0.215,
+    "mae": 0.89,
+    "r2": -0.9642857142857142
+  },
+  "classification_report": "              precision    recall  f1-score   support\n\n      centre       0.20      0.25      0.22        80\n      droite       0.23      0.29      0.25        80\n      gauche       0.00      0.00      0.00        40\n\n    accuracy                           0.21       200\n   macro avg       0.14      0.18      0.16       200\nweighted avg       0.17      0.21      0.19       200\n",
+  "results_2024": {
+    "droite": 100
+  }
+}

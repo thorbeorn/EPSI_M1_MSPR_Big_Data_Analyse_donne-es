@@ -1,0 +1,14 @@
+{
+  "model": "mlp",
+  "generated_at": "2026-03-17T11:20:30.434529",
+  "metrics": {
+    "accuracy": 0.385,
+    "mae": 0.765,
+    "r2": -0.9017857142857142
+  },
+  "classification_report": "              precision    recall  f1-score   support\n\n      centre       0.39      0.74      0.51        80\n      droite       0.37      0.23      0.28        80\n      gauche       0.00      0.00      0.00        40\n\n    accuracy                           0.39       200\n   macro avg       0.25      0.32      0.26       200\nweighted avg       0.30      0.39      0.32       200\n",
+  "results_2024": {
+    "droite": 90,
+    "centre": 10
+  }
+}

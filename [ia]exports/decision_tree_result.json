@@ -1,0 +1,13 @@
+{
+  "model": "decision_tree",
+  "generated_at": "2026-03-17T11:20:30.471516",
+  "metrics": {
+    "accuracy": 0.09,
+    "mae": 1.325,
+    "r2": -2.8482142857142856
+  },
+  "classification_report": "              precision    recall  f1-score   support\n\n      centre       0.18      0.14      0.16        80\n      droite       0.05      0.01      0.02        80\n      gauche       0.05      0.15      0.08        40\n\n    accuracy                           0.09       200\n   macro avg       0.09      0.10      0.08       200\nweighted avg       0.10      0.09      0.09       200\n",
+  "results_2024": {
+    "gauche": 100
+  }
+}

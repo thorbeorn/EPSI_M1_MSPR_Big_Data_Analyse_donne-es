@@ -23,6 +23,8 @@
 =============================================================
 """
 
+import logging
+import os
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import Ridge
@@ -31,6 +33,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error, r2_score
 import warnings
 warnings.filterwarnings("ignore")
+
+# CONFIGURATION DU LOGGING
+logger = logging.getLogger(__name__)
 
 FAMILLES    = ["centre", "droite", "gauche"]
 FAMILLES_T2 = ["centre", "droite"]
@@ -176,6 +181,8 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
         "validation"   : dict  (métriques MAE / accuracy)
     """
 
+    logger.info("RandomForest_GradientBoosting: début de train_and_predict")
+
     # ── 1. PRÉPARATION ──────────────────────────────────────────────────────
     df_indic, FEATURES = _prep_indicator(df_indicateurs)
 
@@ -189,6 +196,7 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
         )
     annee_prev = annees_hist[-2]
     annee_curr = annees_hist[-1]
+    logger.debug(f"RandomForest_GradientBoosting: années utilisées (prev={annee_prev}, curr={annee_curr})")
 
     def get_indic(a):
         sub = df_indic[df_indic["annee"] == a].set_index("Code_departement")[FEATURES]
@@ -223,6 +231,8 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
     df_curr = df_curr.loc[depts_all].fillna(df_curr.median())
     if df_tgt is not None:
         df_tgt = df_tgt.loc[depts_all].fillna(df_tgt.median())
+
+    logger.debug(f"RandomForest_GradientBoosting: départements retenus = {len(depts_all)}")
 
     for a in annees_pres:
         scores_t1[a] = scores_t1[a].loc[depts_all]
@@ -364,6 +374,7 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
     # ── 5. VALIDATION — ENTRAÎNÉ SUR n-1 ANNÉES, TESTÉ SUR LA DERNIÈRE ──────
     annee_test  = annees_pres[-1]
     annees_train_val = annees_pres[:-1]
+    logger.debug(f"RandomForest_GradientBoosting: validation sur annee_test={annee_test}")
 
     val_results = {}
 
@@ -413,8 +424,6 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
             "r2_par_famille":   r2_val,
             "mae_moyen": np.mean(list(mae_val.values())),
         }
-
-    # ── 6. RÉSUMÉ FINAL ──────────────────────────────────────────────────────
     results = {
         "t1_national":    score_nat_t1,
         "t1_par_dept":    df_res_t1,
@@ -424,6 +433,8 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
         "rf_importances": rf_importances,
         "features":       FEATURES,
     }
+
+    logger.info(f"RandomForest_GradientBoosting: validation done (accuracy={acc:.4f}, mae_moyen={val_results['mae_moyen']:.4f})")
 
     export_csv(results, annee_cible=annee_cible, verbose=verbose)
 
@@ -435,7 +446,7 @@ def train_and_predict(df_indicateurs, df_resultats, annee_cible=2024, verbose=Tr
 # ─────────────────────────────────────────────────────────────────────────────
 
 def export_csv(results: dict, annee_cible: int = 2024,
-               prefix: str = "export", verbose: bool = True):
+               prefix: str = "RandomForest_GradientBoosting", verbose: bool = True):
     """
     Génère 3 fichiers CSV exploitables pour la dataviz :
 
@@ -451,6 +462,10 @@ def export_csv(results: dict, annee_cible: int = 2024,
        Importance de chaque critère socio-éco dans le Random Forest,
        par famille politique (T1).
     """
+
+    # Export folder (project-relative)
+    export_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "[ia]exports"))
+    os.makedirs(export_dir, exist_ok=True)
 
     t1   = results["t1_national"]
     t2   = results["t2_national"]
@@ -487,7 +502,7 @@ def export_csv(results: dict, annee_cible: int = 2024,
         rows_nat.append(row)
 
     df_nat = pd.DataFrame(rows_nat)
-    path_nat = f"{prefix}_national.csv"
+    path_nat = os.path.join(export_dir, f"{prefix}_national.csv")
     df_nat.to_csv(path_nat, index=False, sep=";")
 
     # ── 2. PAR DÉPARTEMENT ───────────────────────────────────────────────────
@@ -511,7 +526,7 @@ def export_csv(results: dict, annee_cible: int = 2024,
     else:
         df_dept = df_t1
 
-    path_dept = f"{prefix}_par_dept.csv"
+    path_dept = os.path.join(export_dir, f"{prefix}_par_dept.csv")
     df_dept.to_csv(path_dept, index=False, sep=";")
 
     # ── 3. IMPORTANCE DES CRITÈRES ───────────────────────────────────────────
@@ -533,5 +548,5 @@ def export_csv(results: dict, annee_cible: int = 2024,
         df_croise.insert(0, "rang_moyen", range(1, len(df_croise) + 1))
 
         # Export
-        path_croise = f"{prefix}_importance_croise.csv"
+        path_croise = os.path.join(export_dir, f"{prefix}_importance_croise.csv")
         df_croise.to_csv(path_croise, index=False, sep=";")
