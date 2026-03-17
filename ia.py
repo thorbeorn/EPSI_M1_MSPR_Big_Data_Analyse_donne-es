@@ -76,6 +76,8 @@ svm = getattr(__import__("[ia]prediction.svm"), "svm")
 mlp = getattr(__import__("[ia]prediction.mlp"), "mlp")
 decision_tree = getattr(__import__("[ia]prediction.decision_tree"), "decision_tree")
 adaboost = getattr(__import__("[ia]prediction.adaboost"), "adaboost")
+prediction_random_forest = getattr(__import__("[ia]prediction.prediction_random_forest"), "prediction_random_forest")
+prediction_gradient_boosting = getattr(__import__("[ia]prediction.prediction_gradient_boosting"), "prediction_gradient_boosting")
 
 FILES = {
     "all_indicator": "all_indicator.parquet",
@@ -155,11 +157,6 @@ _write_json("adaboost_result.json", _build_model_json(
     results_2024=resultats_2024,
 ))
 
-
-prediction_random_forest = getattr(__import__("[ia]prediction.prediction_random_forest"), "prediction_random_forest")
-prediction_gradient_boosting = getattr(__import__("[ia]prediction.prediction_gradient_boosting"), "prediction_gradient_boosting")
-
-# ── RANDOM FOREST SEUL ──────────────────────────────────────────────────────
 results_rf_only = prediction_random_forest.train_and_predict(df_indicator, df_president, annee_cible=2024)
 val_rf_only = results_rf_only.get("validation", {})
 val_rf_only_r2 = val_rf_only.get("r2_par_famille", {})
@@ -185,7 +182,6 @@ _write_json("random_forest_result.json", _build_model_json(
     },
 ))
 
-# ── GRADIENT BOOSTING SEUL ───────────────────────────────────────────────────
 results_gbr_only = prediction_gradient_boosting.train_and_predict(df_indicator, df_president, annee_cible=2024)
 val_gbr_only = results_gbr_only.get("validation", {})
 val_gbr_only_r2 = val_gbr_only.get("r2_par_famille", {})
