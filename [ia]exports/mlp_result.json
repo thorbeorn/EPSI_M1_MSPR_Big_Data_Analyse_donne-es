@@ -1,6 +1,6 @@
 {
   "model": "mlp",
-  "generated_at": "2026-03-17T11:20:30.434529",
+  "generated_at": "2026-03-17T21:04:28.344671",
   "metrics": {
     "accuracy": 0.385,
     "mae": 0.765,

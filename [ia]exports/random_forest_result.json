@@ -1,0 +1,23 @@
+{
+  "model": "RandomForest",
+  "generated_at": "2026-03-17T21:04:30.228076",
+  "metrics": {
+    "accuracy": 0.54,
+    "mae": 8.47084115995475,
+    "r2": NaN
+  },
+  "classification_report": "",
+  "results_2024": {
+    "t1_national": {},
+    "t2_national": {},
+    "t1_par_dept": [],
+    "t2_par_dept": []
+  },
+  "validation": {
+    "accuracy_vainqueur_dept": 0.54,
+    "mae_moyen": 8.47084115995475,
+    "r2_moyen": -0.34289911458468314
+  },
+  "features": [],
+  "rf_importances": {}
+}

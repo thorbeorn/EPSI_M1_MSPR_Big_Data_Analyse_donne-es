@@ -154,3 +154,59 @@ _write_json("adaboost_result.json", _build_model_json(
     classification_report=report,
     results_2024=resultats_2024,
 ))
+
+
+prediction_random_forest = getattr(__import__("[ia]prediction.prediction_random_forest"), "prediction_random_forest")
+prediction_gradient_boosting = getattr(__import__("[ia]prediction.prediction_gradient_boosting"), "prediction_gradient_boosting")
+
+# ── RANDOM FOREST SEUL ──────────────────────────────────────────────────────
+results_rf_only = prediction_random_forest.train_and_predict(df_indicator, df_president, annee_cible=2024)
+val_rf_only = results_rf_only.get("validation", {})
+val_rf_only_r2 = val_rf_only.get("r2_par_famille", {})
+avg_r2_rf = sum(val_rf_only_r2.values()) / len(val_rf_only_r2) if val_rf_only_r2 else float("nan")
+_write_json("random_forest_result.json", _build_model_json(
+    model_name="RandomForest",
+    accuracy=val_rf_only.get("accuracy_vainqueur_dept", float("nan")),
+    mae=val_rf_only.get("mae_moyen", float("nan")),
+    r2=avg_r2_rf,
+    classification_report="",
+    results_2024={
+        "t1_national": results_rf_only.get("t1_national", {}),
+        "t2_national": results_rf_only.get("t2_national", {}),
+        "t1_par_dept": results_rf_only.get("t1_par_dept", pd.DataFrame()).reset_index(drop=True).to_dict(orient="records")
+            if not results_rf_only.get("t1_par_dept", pd.DataFrame()).empty else [],
+        "t2_par_dept": results_rf_only.get("t2_par_dept", pd.DataFrame()).reset_index(drop=True).to_dict(orient="records")
+            if not results_rf_only.get("t2_par_dept", pd.DataFrame()).empty else [],
+    },
+    extra={
+        "validation": val_rf_only,
+        "features": results_rf_only.get("features", []),
+        "rf_importances": {k: list(v) for k, v in results_rf_only.get("rf_importances", {}).items()},
+    },
+))
+
+# ── GRADIENT BOOSTING SEUL ───────────────────────────────────────────────────
+results_gbr_only = prediction_gradient_boosting.train_and_predict(df_indicator, df_president, annee_cible=2024)
+val_gbr_only = results_gbr_only.get("validation", {})
+val_gbr_only_r2 = val_gbr_only.get("r2_par_famille", {})
+avg_r2_gbr = sum(val_gbr_only_r2.values()) / len(val_gbr_only_r2) if val_gbr_only_r2 else float("nan")
+_write_json("gradient_boosting_result.json", _build_model_json(
+    model_name="GradientBoosting",
+    accuracy=val_gbr_only.get("accuracy_vainqueur_dept", float("nan")),
+    mae=val_gbr_only.get("mae_moyen", float("nan")),
+    r2=avg_r2_gbr,
+    classification_report="",
+    results_2024={
+        "t1_national": results_gbr_only.get("t1_national", {}),
+        "t2_national": results_gbr_only.get("t2_national", {}),
+        "t1_par_dept": results_gbr_only.get("t1_par_dept", pd.DataFrame()).reset_index(drop=True).to_dict(orient="records")
+            if not results_gbr_only.get("t1_par_dept", pd.DataFrame()).empty else [],
+        "t2_par_dept": results_gbr_only.get("t2_par_dept", pd.DataFrame()).reset_index(drop=True).to_dict(orient="records")
+            if not results_gbr_only.get("t2_par_dept", pd.DataFrame()).empty else [],
+    },
+    extra={
+        "validation": val_gbr_only,
+        "features": results_gbr_only.get("features", []),
+        "gbr_importances": {k: list(v) for k, v in results_gbr_only.get("gbr_importances", {}).items()},
+    },
+))

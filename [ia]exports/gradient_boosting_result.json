@@ -1,0 +1,23 @@
+{
+  "model": "GradientBoosting",
+  "generated_at": "2026-03-17T21:04:30.739400",
+  "metrics": {
+    "accuracy": 0.55,
+    "mae": 8.674388531841013,
+    "r2": NaN
+  },
+  "classification_report": "",
+  "results_2024": {
+    "t1_national": {},
+    "t2_national": {},
+    "t1_par_dept": [],
+    "t2_par_dept": []
+  },
+  "validation": {
+    "accuracy_vainqueur_dept": 0.55,
+    "mae_moyen": 8.674388531841013,
+    "r2_moyen": -0.3632047570235028
+  },
+  "features": [],
+  "gbr_importances": {}
+}

@@ -1,6 +1,6 @@
 {
   "model": "svm",
-  "generated_at": "2026-03-17T11:20:30.222116",
+  "generated_at": "2026-03-17T21:04:28.166194",
   "metrics": {
     "accuracy": 0.35,
     "mae": 0.745,
@@ -8,7 +8,7 @@
   },
   "classification_report": "              precision    recall  f1-score   support\n\n      centre       0.34      0.39      0.36        80\n      droite       0.36      0.49      0.41        80\n      gauche       0.00      0.00      0.00        40\n\n    accuracy                           0.35       200\n   macro avg       0.23      0.29      0.26       200\nweighted avg       0.28      0.35      0.31       200\n",
   "results_2024": {
-    "droite": 45,
-    "centre": 55
+    "droite": 42,
+    "centre": 58
   }
 }
