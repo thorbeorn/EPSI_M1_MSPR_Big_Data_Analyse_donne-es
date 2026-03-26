@@ -41,7 +41,7 @@ PATHS = {
 
 URLS = {
     "delinquance": "https://object.files.data.gouv.fr/hydra-parquet/hydra-parquet/2b27a675-e3bf-41ef-a852-5fb9ab483967.parquet",
-    "taux_chommage": "https://www.insee.fr/fr/statistiques/fichier/2012804/sl_etc_2025T3.xls",
+    "taux_chommage": "https://www.insee.fr/fr/statistiques/fichier/2012804/sl_etc_2025T4.xls",
     "age_moyen": "https://data.sports.gouv.fr/api/explore/v2.1/catalog/datasets/pop_dep_age_sexe/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
     "compte_publique": "https://data.ofgl.fr/api/explore/v2.1/catalog/datasets/ofgl-base-departements-fonctionnelle/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
     "categorie_professionnelle": "https://api.insee.fr/melodi/data/DD_EEC_SERIES?UNIT_MEASURE=_Z&SEX=_T&AGE=_T&EDUC=_T&WKTIME=_T&UNDEREMP=_T",
