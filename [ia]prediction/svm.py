@@ -1,110 +1,216 @@
+"""
+=============================================================
+  PRÉDICTION ÉLECTORALE — SVM (RÉGRESSION)
+  Tâche    : prédire le % de vote par famille (gauche/centre/droite)
+             puis agréger au niveau national
+  Train    : 2017 + 2022 empilés — split 80/20 par département
+  Prédiction finale : 2024 (indicateurs sociopolitiques réels)
+  Métriques : accuracy vainqueur dept, MAE, RMSE, R²
+=============================================================
+"""
+
 import logging
-
-import pandas as pd
 import numpy as np
-from sklearn.svm import SVC
+import pandas as pd
+from sklearn.svm import SVR
+from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report, mean_absolute_error, r2_score
-from sklearn.decomposition import PCA # NOUVEAU : Import de la PCA
-from collections import Counter
+from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error, balanced_accuracy_score
+import warnings
+warnings.filterwarnings("ignore")
 
-# CONFIGURATION DU LOGGING
 logger = logging.getLogger(__name__)
+FAMILLES = ["centre", "droite", "gauche"]
 
-def train_logistic_model(df_indicateurs, df_resultats):
+
+def _normalize_dept(series):
+    def _fix(code):
+        code = str(code).strip()
+        return code.zfill(2) if code.isdigit() and len(code) == 1 else code
+    return series.apply(_fix)
+
+
+def _build_dataset(df_indicateurs, df_resultats, annee_cible):
+    """Construit le dataset empilé (toutes années < annee_cible)."""
+    df_indic = df_indicateurs.copy()
+    df_indic["Code_departement"] = _normalize_dept(df_indic["Code_departement"])
+    features = [c for c in df_indic.columns if c not in ["Code_departement", "annee"]]
+    df_indic[features] = df_indic[features].apply(pd.to_numeric, errors="coerce")
+
+    df_pres = df_resultats.copy()
+    df_pres["code_departement"] = _normalize_dept(df_pres["code_departement"])
+    df_pres["[president_sortant]pourcentage"] = pd.to_numeric(
+        df_pres["[president_sortant]pourcentage"], errors="coerce"
+    )
+    df_t1 = df_pres[df_pres["[president_sortant]tour"] == "t1"]
+
+    def get_scores_t1(annee):
+        s = df_t1[df_t1["annee"] == annee]
+        pivot = s.pivot_table(
+            index="code_departement",
+            columns="[president_sortant]famille_politique",
+            values="[president_sortant]pourcentage",
+            aggfunc="mean",
+        )
+        pivot.index = pivot.index.astype(str).str.strip()
+        return pivot
+
+    annees_pres = sorted(df_resultats["annee"].unique())
+    annees_train = [a for a in annees_pres if a < annee_cible]
+    annees_indic_dispo = sorted(df_indic["annee"].unique())
+
+    rows = []
+    for annee in annees_train:
+        scores = get_scores_t1(annee)
+        familles_dispo = [f for f in FAMILLES if f in scores.columns]
+        best_year = max([y for y in annees_indic_dispo if y <= annee], default=annees_indic_dispo[0])
+        indic = df_indic[df_indic["annee"] == best_year].set_index("Code_departement")[features]
+        indic = indic.apply(pd.to_numeric, errors="coerce")
+        depts = indic.index.intersection(scores.index)
+        for dept in depts:
+            row = {"annee": annee, "dept": dept}
+            for f in features:
+                row[f] = indic.loc[dept, f] if dept in indic.index else np.nan
+            for f in familles_dispo:
+                row[f"pct_{f}"] = scores.loc[dept, f] if dept in scores.index else np.nan
+            rows.append(row)
+
+    return pd.DataFrame(rows), features, df_indic, annees_indic_dispo
+
+
+def train_logistic_model(df_indicateurs, df_resultats, annee_cible=2024):
     """
-    Entraîne un modèle SVM (Support Vector Machine) boosté par PCA.
-    Le nom de la fonction est conservé pour la compatibilité avec ton main.py.
-
-    Retourne : (accuracy, report, resultats_2024, mae, r2)
+    Entraîne un SVR (Support Vector Regressor) avec PCA pour chaque famille.
+    Retourne : dict avec métriques et prédictions 2024.
     """
     logger.info("SVM: début de l'entraînement")
-    
-    # 1. Homogénéisation des noms de colonnes
-    if 'code_departement' in df_resultats.columns:
-        df_resultats = df_resultats.rename(columns={'code_departement': 'Code_departement'})
-        logger.debug("SVM: renommage de la colonne code_departement")
-        
-    # 2. Jointure des données historiques
-    df_train_full = pd.merge(df_indicateurs, df_resultats, on=['annee', 'Code_departement'], how='inner')
-    logger.debug(f"SVM: données jointes, shape={df_train_full.shape}")
-    
-    # 3. Préparation des données de 2024
-    df_2024 = df_indicateurs[df_indicateurs['annee'] == 2024].copy()
-    
-    # 4. Encodage de la cible
-    y_train_full = df_train_full['[president_sortant]famille_politique']
-    le = LabelEncoder()
-    y_encoded = le.fit_transform(y_train_full)
-    
-    # 5. Isolement des variables
-    cols_to_drop = ['annee', 'Code_departement', '[president_sortant]tour', 
-                    '[president_sortant]famille_politique', '[president_sortant]pourcentage']
-    
-    X_train_full = df_train_full.drop(columns=[c for c in cols_to_drop if c in df_train_full.columns])
-    X_train_full = X_train_full.select_dtypes(include=[np.number])
-    
-    # Suppression des infinis
-    X_train_full = X_train_full.replace([np.inf, -np.inf], np.nan)
-    if not df_2024.empty:
-        df_2024 = df_2024.replace([np.inf, -np.inf], np.nan)
-        
-    features = X_train_full.columns
-    
-    # 6. Nettoyage et Standardisation
-    imputer = SimpleImputer(strategy='median')
-    scaler = StandardScaler()
-    
-    X_imputed = imputer.fit_transform(X_train_full)
-    X_scaled = scaler.fit_transform(X_imputed)
-    
-    # --- LA SOLUTION EST ICI : LA PCA ---
-    # On compresse toutes tes colonnes en 15 super-variables qui résument l'essentiel.
-    # Cela élimine le "bruit" qui empêchait l'IA de dépasser les 40%.
-    pca = PCA(n_components=15, random_state=42)
-    X_pca = pca.fit_transform(X_scaled)
-    
-    # 7. Découpage (Train/Test)
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_pca, y_encoded, test_size=0.2, random_state=42, stratify=y_encoded
+
+    df_all, features, df_indic, annees_indic_dispo = _build_dataset(
+        df_indicateurs, df_resultats, annee_cible
     )
-    logger.debug(f"SVM: train/test split, train={X_train.shape}, test={X_test.shape}")
-    
-    # 8. Modèle SVM
-    # J'ai retiré le class_weight='balanced' pour que le modèle arrête de se forcer
-    # à prédire la gauche au détriment du score global.
-    model = SVC(kernel='rbf', C=1.0, random_state=42)
-    model.fit(X_train, y_train)
-    logger.info("SVM: entraînement terminé")
-    
-    # 9. Évaluation (L'Accuracy sera supérieure à 40%)
-    y_pred = model.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    mae = mean_absolute_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
-    report = classification_report(y_test, y_pred, target_names=le.classes_, zero_division=0)
-    logger.info(f"SVM: évaluation terminée - accuracy={accuracy:.4f}, mae={mae:.4f}, r2={r2:.4f}")
-    
-    # 10. Entraînement final
-    model.fit(X_pca, y_encoded)
-    logger.info("SVM: entraînement final sur l'ensemble des données terminé")
-    
-    # 11. Prédiction pour 2024
-    if not df_2024.empty:
-        X_2024 = df_2024[features]
-        
-        # On applique exactement les mêmes transformations à 2024
-        X_2024_imp = imputer.transform(X_2024)
-        X_2024_scaled = scaler.transform(X_2024_imp)
-        X_2024_pca = pca.transform(X_2024_scaled) # On compresse aussi 2024
-        
-        preds_2024 = model.predict(X_2024_pca)
-        preds_labels = le.inverse_transform(preds_2024)
-        
-        resultats_2024 = dict(Counter(preds_labels))
+
+    familles_cibles = [f"pct_{f}" for f in FAMILLES if f"pct_{f}" in df_all.columns]
+    familles_labels = [c.replace("pct_", "") for c in familles_cibles]
+
+    df_all[features]        = df_all[features].replace([np.inf, -np.inf], np.nan)
+    df_all[familles_cibles] = df_all[familles_cibles].replace([np.inf, -np.inf], np.nan)
+
+    # Split 80/20 par département
+    depts_uniques = df_all["dept"].unique().tolist()
+    depts_train, depts_test = train_test_split(depts_uniques, test_size=0.2, random_state=42)
+    df_tr = df_all[df_all["dept"].isin(depts_train)].copy()
+    df_te = df_all[df_all["dept"].isin(depts_test)].copy()
+
+    imputer = SimpleImputer(strategy="median")
+    scaler  = StandardScaler()
+    pca     = PCA(n_components=min(15, len(features)), random_state=42)
+
+    X_tr = pca.fit_transform(scaler.fit_transform(imputer.fit_transform(df_tr[features])))
+    X_te = pca.transform(scaler.transform(imputer.transform(df_te[features])))
+
+    models_eval = {}
+    metrics = {}
+
+    for col, label in zip(familles_cibles, familles_labels):
+        y_tr = df_tr[col].fillna(df_tr[col].median()).values
+        y_te = df_te[col].fillna(df_te[col].median()).values
+
+        svr = SVR(kernel="rbf", C=10.0, epsilon=0.1)
+        svr.fit(X_tr, y_tr)
+        y_pred = svr.predict(X_te)
+
+        models_eval[label] = svr
+        metrics[label] = {
+            "MAE":  round(float(mean_absolute_error(y_te, y_pred)), 4),
+            "RMSE": round(float(np.sqrt(mean_squared_error(y_te, y_pred))), 4),
+            "R2":   round(float(r2_score(y_te, y_pred)), 4),
+        }
+        logger.info(f"  SVM {label}: MAE={metrics[label]['MAE']}, R2={metrics[label]['R2']}")
+
+    # ── ACCURACY : uniquement sur l'année la plus récente du test set ───────────
+    # On filtre sur la dernière année pour éviter de compter deux fois
+    # les depts stables (même vainqueur 2017 et 2022 → double comptage).
+    annee_max_test = df_te["annee"].max()
+    idx_last       = df_te.index[df_te["annee"] == annee_max_test]
+    pos_last       = [list(df_te.index).index(i) for i in idx_last]
+
+    pred_te_matrix = np.stack([models_eval[l].predict(X_te) for l in familles_labels], axis=1)
+    true_te_matrix = df_te[familles_cibles].fillna(0).values
+
+    pred_last = pred_te_matrix[pos_last]
+    true_last = true_te_matrix[pos_last]
+
+    vainq_pred = np.array(familles_labels)[pred_last.argmax(axis=1)]
+    vainq_reel = np.array(familles_labels)[true_last.argmax(axis=1)]
+
+    accuracy = float(balanced_accuracy_score(vainq_reel, vainq_pred))
+
+    # Réentraînement sur 100%
+    X_full = pca.fit_transform(
+        scaler.fit_transform(
+            imputer.fit_transform(df_all[features].replace([np.inf, -np.inf], np.nan))
+        )
+    )
+    models_final = {}
+    for col, label in zip(familles_cibles, familles_labels):
+        y_full = df_all[col].fillna(df_all[col].median()).values
+        svr = SVR(kernel="rbf", C=10.0, epsilon=0.1)
+        svr.fit(X_full, y_full)
+        models_final[label] = svr
+
+    # Prédiction 2024
+    best_year_2024 = max(
+        [y for y in annees_indic_dispo if y <= annee_cible],
+        default=annees_indic_dispo[-1]
+    )
+    indic_2024 = (
+        df_indic[df_indic["annee"] == best_year_2024]
+        .set_index("Code_departement")[features]
+        .apply(pd.to_numeric, errors="coerce")
+        .replace([np.inf, -np.inf], np.nan)
+    )
+    X_2024 = pca.transform(scaler.transform(imputer.transform(indic_2024.values)))
+
+    pred_matrix = np.stack(
+        [models_final[l].predict(X_2024) for l in familles_labels], axis=1
+    )
+    pred_matrix = np.clip(pred_matrix, 0, None)
+    pred_matrix = pred_matrix / pred_matrix.sum(axis=1, keepdims=True) * 100
+
+    df_pred_dept = pd.DataFrame(
+        pred_matrix,
+        columns=[f"pct_{l}" for l in familles_labels],
+        index=indic_2024.index
+    )
+    df_pred_dept["vainqueur"] = np.array(familles_labels)[pred_matrix.argmax(axis=1)]
+
+    pop_col = "[compte_publique]population"
+    if pop_col in indic_2024.columns:
+        pop = indic_2024[pop_col].fillna(indic_2024[pop_col].median()).values
     else:
-        resultats_2024 = {"Erreur": "Aucune donnée trouvée pour 2024"}
-        
-    return accuracy, report, resultats_2024, mae, r2
+        pop = np.ones(len(indic_2024))
+
+    national = {
+        label: round(float(np.average(pred_matrix[:, i], weights=pop)), 2)
+        for i, label in enumerate(familles_labels)
+    }
+    vainqueur_national = max(national, key=national.get)
+    logger.info(f"SVM: résultat national 2024 → {national} | vainqueur={vainqueur_national}")
+
+    return {
+        "modele": "SVR (RBF + PCA)",
+        "annee_cible": annee_cible,
+        "validation": {
+            "methode": "split 80/20 par département — données 2017+2022 empilées",
+            "accuracy_pct": round(accuracy * 100, 2),
+            "mae_moyen":  round(float(np.mean([m["MAE"]  for m in metrics.values()])), 4),
+            "rmse_moyen": round(float(np.mean([m["RMSE"] for m in metrics.values()])), 4),
+            "r2_moyen":   round(float(np.mean([m["R2"]   for m in metrics.values()])), 4),
+            "metriques_par_famille": metrics,
+        },
+        "prediction_nationale_2024": national,
+        "vainqueur_national_2024": vainqueur_national,
+        "prediction_par_dept_2024": df_pred_dept,
+    }

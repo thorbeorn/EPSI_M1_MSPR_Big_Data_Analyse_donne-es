@@ -6,26 +6,24 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-# CONFIGURATION DU LOGGING
-LOG_LEVEL = logging.DEBUG
-
+# ── CONFIGURATION DU LOGGING ─────────────────────────────────────────────────
 logging.basicConfig(
-    level=LOG_LEVEL,
+    level=logging.DEBUG,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
-
 logger = logging.getLogger("ETL_PIPELINE")
 
 
+# ── UTILITAIRES ───────────────────────────────────────────────────────────────
+
 def _get_exports_dir():
-    """Retourne le dossier d'exports [ia]exports (créé si nécessaire)."""
     exports_dir = os.path.join(os.path.dirname(__file__), "[ia]exports")
     os.makedirs(exports_dir, exist_ok=True)
     return exports_dir
 
 
 def _to_json_serializable(obj):
-    """Recursively convert numpy / pandas types into native Python types."""
+    """Convertit recursively les types numpy/pandas en types Python natifs."""
     if isinstance(obj, (np.integer, np.floating)):
         return obj.item()
     if isinstance(obj, np.bool_):
@@ -34,6 +32,8 @@ def _to_json_serializable(obj):
         return [_to_json_serializable(v) for v in obj]
     if isinstance(obj, dict):
         return {k: _to_json_serializable(v) for k, v in obj.items()}
+    if isinstance(obj, pd.DataFrame):
+        return obj.reset_index(drop=True).to_dict(orient="records")
     return obj
 
 
@@ -41,168 +41,152 @@ def _write_json(filename: str, data):
     path = os.path.join(_get_exports_dir(), filename)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(_to_json_serializable(data), f, ensure_ascii=False, indent=2)
+    logger.info(f"JSON exporte : {path}")
 
 
-def _build_model_json(model_name: str, accuracy: float, mae: float, r2: float,
-                      classification_report: str, results_2024: dict,
-                      extra: dict | None = None) -> dict:
-    """Structure standardisée pour tous les modèles."""
-    payload = {
-        "model": model_name,
+def _build_result_json(model_name: str, result: dict) -> dict:
+    """
+    Structure JSON standardisee pour tous les modeles.
+    Tous les modeles retournent un dict avec :
+      - validation  (accuracy, mae, rmse, r2 + par famille)
+      - prediction_nationale_2024  {centre, droite, gauche}
+      - vainqueur_national_2024
+      - prediction_par_dept_2024  (DataFrame)
+    """
+    val = result.get("validation", {})
+    nat = result.get("prediction_nationale_2024", {})
+
+    return {
+        "model":        model_name,
         "generated_at": datetime.now().isoformat(),
         "metrics": {
-            "accuracy": accuracy,
-            "mae": mae,
-            "r2": r2,
+            "accuracy_pct": val.get("accuracy_pct"),
+            "mae_moyen":             val.get("mae_moyen"),
+            "rmse_moyen":            val.get("rmse_moyen"),
+            "r2_moyen":              val.get("r2_moyen"),
+            "metriques_par_famille": val.get("metriques_par_famille", {}),
         },
-        "classification_report": classification_report,
-        "results_2024": results_2024,
+        "resultat_national_2024": {
+            "centre":    nat.get("centre"),
+            "droite":    nat.get("droite"),
+            "gauche":    nat.get("gauche"),
+            "vainqueur": result.get("vainqueur_national_2024"),
+        },
+        "resultats_par_dept_2024": result.get("prediction_par_dept_2024", pd.DataFrame()),
+        "methode_validation": val.get("methode", ""),
     }
-    if extra:
-        payload.update(extra)
-    return payload
 
+
+# ── CHARGEMENT DES MODULES ────────────────────────────────────────────────────
 
 try:
-    load_module = getattr(__import__("[ia]prediction.load"), "load")
-    data_quality_module = getattr(__import__("[ia]prediction.data_quality"), "data_quality")
+    load_module         = getattr(__import__("[ia]prediction.load"),          "load")
+    data_quality_module = getattr(__import__("[ia]prediction.data_quality"),  "data_quality")
 except ModuleNotFoundError as e:
     raise SystemExit(
-        "Dépendance manquante : 'minio'. Assure-toi d'être dans le venv et d'avoir installé les dépendances (pip install -r requirement.txt)."
+        "Dependance manquante : assure-toi d'etre dans le venv "
+        "(pip install -r requirement.txt)."
     ) from e
 
-RandomForest_GradientBoosting = getattr(__import__("[ia]prediction.RandomForest_GradientBoosting"), "RandomForest_GradientBoosting")
-svm = getattr(__import__("[ia]prediction.svm"), "svm")
-mlp = getattr(__import__("[ia]prediction.mlp"), "mlp")
-decision_tree = getattr(__import__("[ia]prediction.decision_tree"), "decision_tree")
-adaboost = getattr(__import__("[ia]prediction.adaboost"), "adaboost")
-prediction_random_forest = getattr(__import__("[ia]prediction.prediction_random_forest"), "prediction_random_forest")
-prediction_gradient_boosting = getattr(__import__("[ia]prediction.prediction_gradient_boosting"), "prediction_gradient_boosting")
+RandomForest_GradientBoosting = getattr(
+    __import__("[ia]prediction.RandomForest_GradientBoosting"), "RandomForest_GradientBoosting")
+svm = getattr(
+    __import__("[ia]prediction.svm"), "svm")
+mlp = getattr(
+    __import__("[ia]prediction.mlp"), "mlp")
+decision_tree = getattr(
+    __import__("[ia]prediction.decision_tree"), "decision_tree")
+adaboost = getattr(
+    __import__("[ia]prediction.adaboost"), "adaboost")
+prediction_random_forest = getattr(
+    __import__("[ia]prediction.prediction_random_forest"), "prediction_random_forest")
+prediction_gradient_boosting = getattr(
+    __import__("[ia]prediction.prediction_gradient_boosting"), "prediction_gradient_boosting")
 
-FILES = {
-    "all_indicator": "all_indicator.parquet",
-    "all_president": "all_president.parquet"
+# ── CHARGEMENT DES DONNEES ────────────────────────────────────────────────────
+
+df_indicator = load_module.load_parquet_from_minio("all_indicator.parquet")
+data_quality_module.quality_report(
+    df_indicator, "df_indicator",
+    f"indicator_quality_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+)
+
+df_president = load_module.load_parquet_from_minio("all_president.parquet")
+data_quality_module.quality_report(
+    df_president, "df_president",
+    f"president_quality_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+)
+
+# ── ENSEMBLE LEARNING ─────────────────────────────────────────────────────────
+
+results_ensemble = RandomForest_GradientBoosting.train_and_predict(
+    df_indicator, df_president, annee_cible=2024
+)
+_write_json("ensemble_result.json", _build_result_json("EnsembleLearning", results_ensemble))
+logger.info(f"CSV importance criteres : {results_ensemble.get('csv_importance')}")
+logger.info(f"CSV resultats familles  : {results_ensemble.get('csv_resultats')}")
+
+# ── SVM ───────────────────────────────────────────────────────────────────────
+
+results_svm = svm.train_logistic_model(df_indicator, df_president)
+_write_json("svm_result.json", _build_result_json("SVM", results_svm))
+
+# ── MLP ───────────────────────────────────────────────────────────────────────
+
+results_mlp = mlp.train_logistic_model(df_indicator, df_president)
+_write_json("mlp_result.json", _build_result_json("MLP", results_mlp))
+
+# ── DECISION TREE ─────────────────────────────────────────────────────────────
+
+results_dt = decision_tree.train_logistic_model(df_indicator, df_president)
+_write_json("decision_tree_result.json", _build_result_json("DecisionTree", results_dt))
+
+# ── ADABOOST ──────────────────────────────────────────────────────────────────
+
+results_ada = adaboost.train_logistic_model(df_indicator, df_president)
+_write_json("adaboost_result.json", _build_result_json("AdaBoost", results_ada))
+
+# ── RANDOM FOREST SEUL ────────────────────────────────────────────────────────
+
+results_rf = prediction_random_forest.train_and_predict(
+    df_indicator, df_president, annee_cible=2024
+)
+_write_json("random_forest_result.json", _build_result_json("RandomForest", results_rf))
+
+# ── GRADIENT BOOSTING SEUL ────────────────────────────────────────────────────
+
+results_gbr = prediction_gradient_boosting.train_and_predict(
+    df_indicator, df_president, annee_cible=2024
+)
+_write_json("gradient_boosting_result.json", _build_result_json("GradientBoosting", results_gbr))
+logger.info(f"CSV importance GB  → {results_gbr.get('csv_importance')}")
+logger.info(f"CSV résultats GB   → {results_gbr.get('csv_resultats')}")
+
+# ── RECAP CONSOLE ─────────────────────────────────────────────────────────────
+
+logger.info("=" * 70)
+logger.info("RECAPITULATIF DES MODELES")
+logger.info("=" * 70)
+
+all_results = {
+    "EnsembleLearning": results_ensemble,
+    "SVM":              results_svm,
+    "MLP":              results_mlp,
+    "DecisionTree":     results_dt,
+    "AdaBoost":         results_ada,
+    "RandomForest":     results_rf,
+    "GradientBoosting": results_gbr,
 }
 
-df_indicator = load_module.load_parquet_from_minio(FILES["all_indicator"])
-data_quality_module.quality_report(df_indicator, "df_indicator", f"indicator_quality_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json")
-df_president = load_module.load_parquet_from_minio(FILES["all_president"])
-data_quality_module.quality_report(df_president, "df_president", f"president_quality_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json")
-
-results_rf = RandomForest_GradientBoosting.train_and_predict(df_indicator, df_president, annee_cible=2024)
-val_rf = results_rf.get("validation", {})
-
-# Export JSON results (RandomForest + GradientBoosting)
-val_rf_r2 = val_rf.get("r2_par_famille", {})
-avg_r2 = sum(val_rf_r2.values()) / len(val_rf_r2) if val_rf_r2 else float("nan")
-rf_json = _build_model_json(
-    model_name="RandomForest_GradientBoosting",
-    accuracy=val_rf.get("accuracy_vainqueur_dept", float("nan")),
-    mae=val_rf.get("mae_moyen", float("nan")),
-    r2=avg_r2,
-    classification_report="",
-    results_2024={
-        "t1_national": results_rf.get("t1_national", {}),
-        "t2_national": results_rf.get("t2_national", {}),
-        "t1_par_dept": results_rf.get("t1_par_dept", pd.DataFrame()).reset_index(drop=True).to_dict(orient="records")
-            if not results_rf.get("t1_par_dept", pd.DataFrame()).empty else [],
-        "t2_par_dept": results_rf.get("t2_par_dept", pd.DataFrame()).reset_index(drop=True).to_dict(orient="records")
-            if not results_rf.get("t2_par_dept", pd.DataFrame()).empty else [],
-    },
-    extra={
-        "validation": results_rf.get("validation", {}),
-        "features": results_rf.get("features", []),
-        "rf_importances": {k: list(v) for k, v in results_rf.get("rf_importances", {}).items()},
-    },
-)
-_write_json("RandomForest_GradientBoosting_result.json", rf_json)
-
-accuracy, report, resultats_2024, mae, r2 = svm.train_logistic_model(df_indicator, df_president)
-_write_json("svm_result.json", _build_model_json(
-    model_name="svm",
-    accuracy=accuracy,
-    mae=mae,
-    r2=r2,
-    classification_report=report,
-    results_2024=resultats_2024,
-))
-
-accuracy, report, resultats_2024, mae, r2 = mlp.train_logistic_model(df_indicator, df_president)
-_write_json("mlp_result.json", _build_model_json(
-    model_name="mlp",
-    accuracy=accuracy,
-    mae=mae,
-    r2=r2,
-    classification_report=report,
-    results_2024=resultats_2024,
-))
-
-accuracy, report, resultats_2024, mae, r2 = decision_tree.train_logistic_model(df_indicator, df_president)
-_write_json("decision_tree_result.json", _build_model_json(
-    model_name="decision_tree",
-    accuracy=accuracy,
-    mae=mae,
-    r2=r2,
-    classification_report=report,
-    results_2024=resultats_2024,
-))
-
-accuracy, report, resultats_2024, mae, r2 = adaboost.train_logistic_model(df_indicator, df_president)
-_write_json("adaboost_result.json", _build_model_json(
-    model_name="adaboost",
-    accuracy=accuracy,
-    mae=mae,
-    r2=r2,
-    classification_report=report,
-    results_2024=resultats_2024,
-))
-
-results_rf_only = prediction_random_forest.train_and_predict(df_indicator, df_president, annee_cible=2024)
-val_rf_only = results_rf_only.get("validation", {})
-val_rf_only_r2 = val_rf_only.get("r2_par_famille", {})
-avg_r2_rf = sum(val_rf_only_r2.values()) / len(val_rf_only_r2) if val_rf_only_r2 else float("nan")
-_write_json("random_forest_result.json", _build_model_json(
-    model_name="RandomForest",
-    accuracy=val_rf_only.get("accuracy_vainqueur_dept", float("nan")),
-    mae=val_rf_only.get("mae_moyen", float("nan")),
-    r2=avg_r2_rf,
-    classification_report="",
-    results_2024={
-        "t1_national": results_rf_only.get("t1_national", {}),
-        "t2_national": results_rf_only.get("t2_national", {}),
-        "t1_par_dept": results_rf_only.get("t1_par_dept", pd.DataFrame()).reset_index(drop=True).to_dict(orient="records")
-            if not results_rf_only.get("t1_par_dept", pd.DataFrame()).empty else [],
-        "t2_par_dept": results_rf_only.get("t2_par_dept", pd.DataFrame()).reset_index(drop=True).to_dict(orient="records")
-            if not results_rf_only.get("t2_par_dept", pd.DataFrame()).empty else [],
-    },
-    extra={
-        "validation": val_rf_only,
-        "features": results_rf_only.get("features", []),
-        "rf_importances": {k: list(v) for k, v in results_rf_only.get("rf_importances", {}).items()},
-    },
-))
-
-results_gbr_only = prediction_gradient_boosting.train_and_predict(df_indicator, df_president, annee_cible=2024)
-val_gbr_only = results_gbr_only.get("validation", {})
-val_gbr_only_r2 = val_gbr_only.get("r2_par_famille", {})
-avg_r2_gbr = sum(val_gbr_only_r2.values()) / len(val_gbr_only_r2) if val_gbr_only_r2 else float("nan")
-_write_json("gradient_boosting_result.json", _build_model_json(
-    model_name="GradientBoosting",
-    accuracy=val_gbr_only.get("accuracy_vainqueur_dept", float("nan")),
-    mae=val_gbr_only.get("mae_moyen", float("nan")),
-    r2=avg_r2_gbr,
-    classification_report="",
-    results_2024={
-        "t1_national": results_gbr_only.get("t1_national", {}),
-        "t2_national": results_gbr_only.get("t2_national", {}),
-        "t1_par_dept": results_gbr_only.get("t1_par_dept", pd.DataFrame()).reset_index(drop=True).to_dict(orient="records")
-            if not results_gbr_only.get("t1_par_dept", pd.DataFrame()).empty else [],
-        "t2_par_dept": results_gbr_only.get("t2_par_dept", pd.DataFrame()).reset_index(drop=True).to_dict(orient="records")
-            if not results_gbr_only.get("t2_par_dept", pd.DataFrame()).empty else [],
-    },
-    extra={
-        "validation": val_gbr_only,
-        "features": results_gbr_only.get("features", []),
-        "gbr_importances": {k: list(v) for k, v in results_gbr_only.get("gbr_importances", {}).items()},
-    },
-))
+for name, res in all_results.items():
+    val = res.get("validation", {})
+    nat = res.get("prediction_nationale_2024", {})
+    logger.info(
+        f"{name:25s} | "
+        f"accuracy={str(val.get('accuracy_pct','?')):>5}% | "
+        f"MAE={str(val.get('mae_moyen','?')):>6} | "
+        f"R2={str(val.get('r2_moyen','?')):>6} | "
+        f"centre={nat.get('centre','?')}% "
+        f"droite={nat.get('droite','?')}% "
+        f"gauche={nat.get('gauche','?')}%"
+    )
