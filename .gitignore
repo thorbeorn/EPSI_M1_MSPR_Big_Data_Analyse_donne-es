@@ -6,4 +6,8 @@ __pycache__
 *.xls
 .pytest_cache
 .coverage
-.minio.sys
+minio-data
+[docker]conf/minio-data/gold/all_indicator.csv/xl.meta
+eda_outputs/*.png
+!eda_outputs/hist_[taux_chomage]Taux_moyen.png
+!eda_outputs/spatial_[taux_chomage]Taux_moyen.png

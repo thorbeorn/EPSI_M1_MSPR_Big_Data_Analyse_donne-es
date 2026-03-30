@@ -1,11 +1,11 @@
 {
   "model": "SVM",
-  "generated_at": "2026-03-28T13:14:30.462545",
+  "generated_at": "2026-03-30T11:00:47.394921",
   "metrics": {
     "accuracy_pct": 67.86,
-    "mae_moyen": 6.427,
-    "rmse_moyen": 8.0718,
-    "r2_moyen": 0.3116,
+    "mae_moyen": 6.4267,
+    "rmse_moyen": 8.0714,
+    "r2_moyen": 0.3117,
     "metriques_par_famille": {
       "centre": {
         "MAE": 6.3115,
@@ -13,622 +13,622 @@
         "R2": 0.4819
       },
       "droite": {
-        "MAE": 6.2079,
-        "RMSE": 7.8395,
+        "MAE": 6.2076,
+        "RMSE": 7.8391,
         "R2": 0.3647
       },
       "gauche": {
-        "MAE": 6.7615,
-        "RMSE": 8.5482,
-        "R2": 0.0882
+        "MAE": 6.761,
+        "RMSE": 8.5475,
+        "R2": 0.0884
       }
     }
   },
   "resultat_national_2024": {
-    "centre": 27.29,
+    "centre": 27.3,
     "droite": 36.8,
     "gauche": 35.91,
     "vainqueur": "droite"
   },
   "resultats_par_dept_2024": [
     {
-      "pct_centre": 30.378923865027595,
-      "pct_droite": 36.65016158100878,
-      "pct_gauche": 32.970914553963624,
+      "pct_centre": 30.379091895903702,
+      "pct_droite": 36.65087075095836,
+      "pct_gauche": 32.97003735313794,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 26.88187278868072,
-      "pct_droite": 41.29835836118566,
-      "pct_gauche": 31.819768850133613,
+      "pct_centre": 26.88219177715652,
+      "pct_droite": 41.29847723071342,
+      "pct_gauche": 31.819330992130055,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.201466518777774,
-      "pct_droite": 40.135035052763165,
-      "pct_gauche": 31.663498428459068,
+      "pct_centre": 28.201605139512186,
+      "pct_droite": 40.13507370138386,
+      "pct_gauche": 31.663321159103962,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 24.493325547432363,
-      "pct_droite": 40.28625398146556,
-      "pct_gauche": 35.220420471102074,
+      "pct_centre": 24.493582840203125,
+      "pct_droite": 40.286273338645024,
+      "pct_gauche": 35.220143821151844,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 25.746231663525077,
-      "pct_droite": 38.87591661263915,
-      "pct_gauche": 35.377851723835775,
+      "pct_centre": 25.746435217530543,
+      "pct_droite": 38.87612655788926,
+      "pct_gauche": 35.3774382245802,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 25.54959326798965,
-      "pct_droite": 42.36240334259232,
-      "pct_gauche": 32.08800338941803,
+      "pct_centre": 25.54987232805384,
+      "pct_droite": 42.36343208825559,
+      "pct_gauche": 32.08669558369056,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 27.947893354663794,
-      "pct_droite": 39.573077500984304,
-      "pct_gauche": 32.479029144351905,
+      "pct_centre": 27.947909836987417,
+      "pct_droite": 39.57326064619789,
+      "pct_gauche": 32.47882951681469,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 26.97492899163479,
-      "pct_droite": 40.22989031682111,
-      "pct_gauche": 32.795180691544104,
+      "pct_centre": 26.974723355771797,
+      "pct_droite": 40.22977586584703,
+      "pct_gauche": 32.795500778381175,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 25.18885417272293,
-      "pct_droite": 40.308668695245295,
-      "pct_gauche": 34.50247713203179,
+      "pct_centre": 25.18887456517303,
+      "pct_droite": 40.30831361189219,
+      "pct_gauche": 34.50281182293478,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 26.29843769163753,
-      "pct_droite": 41.794813091373406,
-      "pct_gauche": 31.906749216989063,
+      "pct_centre": 26.298069516379062,
+      "pct_droite": 41.795090653156485,
+      "pct_gauche": 31.90683983046444,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 24.77769206356329,
-      "pct_droite": 41.12968692895089,
-      "pct_gauche": 34.09262100748583,
+      "pct_centre": 24.77743425591877,
+      "pct_droite": 41.12993534505944,
+      "pct_gauche": 34.092630399021786,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 30.3501847811494,
-      "pct_droite": 37.09045686251202,
-      "pct_gauche": 32.55935835633857,
+      "pct_centre": 30.35057639505626,
+      "pct_droite": 37.090268283929376,
+      "pct_gauche": 32.559155321014366,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 22.26521482742705,
-      "pct_droite": 39.87248394527322,
-      "pct_gauche": 37.862301227299724,
+      "pct_centre": 22.26523713956994,
+      "pct_droite": 39.87322076024257,
+      "pct_gauche": 37.8615421001875,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 31.38478872213148,
-      "pct_droite": 35.82625283253925,
-      "pct_gauche": 32.788958445329285,
+      "pct_centre": 31.384555739951743,
+      "pct_droite": 35.826954346257104,
+      "pct_gauche": 32.78848991379116,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 31.34708004152948,
-      "pct_droite": 37.593366180523596,
-      "pct_gauche": 31.05955377794693,
+      "pct_centre": 31.347676112786054,
+      "pct_droite": 37.59321139245588,
+      "pct_gauche": 31.059112494758068,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.643263019026925,
-      "pct_droite": 41.17571654989704,
-      "pct_gauche": 30.181020431076032,
+      "pct_centre": 28.643004812371085,
+      "pct_droite": 41.17622399814641,
+      "pct_gauche": 30.180771189482495,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 30.296933588061663,
-      "pct_droite": 37.420978575143835,
-      "pct_gauche": 32.282087836794524,
+      "pct_centre": 30.296915905868644,
+      "pct_droite": 37.421161447512574,
+      "pct_gauche": 32.281922646618796,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 29.105761853664458,
-      "pct_droite": 41.01695891640938,
-      "pct_gauche": 29.877279229926163,
+      "pct_centre": 29.10608011596974,
+      "pct_droite": 41.01698127455315,
+      "pct_gauche": 29.876938609477104,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 29.606183504585836,
-      "pct_droite": 40.007944292040484,
-      "pct_gauche": 30.385872203373694,
+      "pct_centre": 29.606778685504647,
+      "pct_droite": 40.007863083818805,
+      "pct_gauche": 30.385358230676545,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 29.780788113843144,
-      "pct_droite": 37.68153371036527,
-      "pct_gauche": 32.53767817579158,
+      "pct_centre": 29.78093734697759,
+      "pct_droite": 37.68172992067849,
+      "pct_gauche": 32.53733273234393,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 31.94777393674701,
-      "pct_droite": 37.02873826702239,
-      "pct_gauche": 31.023487796230604,
+      "pct_centre": 31.947953747118007,
+      "pct_droite": 37.029343522592654,
+      "pct_gauche": 31.022702730289332,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.23954022841472,
-      "pct_droite": 40.02372692735011,
-      "pct_gauche": 31.736732844235167,
+      "pct_centre": 28.23971245777032,
+      "pct_droite": 40.0236150338356,
+      "pct_gauche": 31.736672508394086,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 30.550753366405786,
-      "pct_droite": 39.31123226185061,
-      "pct_gauche": 30.138014371743623,
+      "pct_centre": 30.550592548893395,
+      "pct_droite": 39.31193301090012,
+      "pct_gauche": 30.137474440206496,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 30.82150819120164,
-      "pct_droite": 36.26014444117249,
-      "pct_gauche": 32.918347367625856,
+      "pct_centre": 30.821581116137896,
+      "pct_droite": 36.26023650353221,
+      "pct_gauche": 32.918182380329895,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 26.12940335256781,
-      "pct_droite": 39.45473779060934,
-      "pct_gauche": 34.41585885682285,
+      "pct_centre": 26.129272194653634,
+      "pct_droite": 39.45484966067833,
+      "pct_gauche": 34.415878144668035,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.946984216173245,
-      "pct_droite": 39.531143551487794,
-      "pct_gauche": 31.52187223233896,
+      "pct_centre": 28.947248280809333,
+      "pct_droite": 39.532032941818315,
+      "pct_gauche": 31.520718777372362,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.77889343958061,
-      "pct_droite": 40.954514237223364,
-      "pct_gauche": 30.26659232319601,
+      "pct_centre": 28.779179648973695,
+      "pct_droite": 40.95505446722561,
+      "pct_gauche": 30.26576588380071,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 30.194721768616567,
-      "pct_droite": 36.17881065379977,
-      "pct_gauche": 33.62646757758365,
+      "pct_centre": 30.195075601846778,
+      "pct_droite": 36.179038656033846,
+      "pct_gauche": 33.625885742119365,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 26.028373751161148,
-      "pct_droite": 41.54019560078469,
-      "pct_gauche": 32.431430648054146,
+      "pct_centre": 26.028042111886545,
+      "pct_droite": 41.54119180775317,
+      "pct_gauche": 32.43076608036028,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 23.800506144890363,
-      "pct_droite": 42.90780349947221,
-      "pct_gauche": 33.29169035563743,
+      "pct_centre": 23.800661620344574,
+      "pct_droite": 42.9087684795754,
+      "pct_gauche": 33.29056990008002,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 25.87032544194733,
-      "pct_droite": 39.341970346594444,
-      "pct_gauche": 34.78770421145823,
+      "pct_centre": 25.870179698210233,
+      "pct_droite": 39.34280659042238,
+      "pct_gauche": 34.787013711367386,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 27.64324626523782,
-      "pct_droite": 34.28512094387045,
-      "pct_gauche": 38.07163279089174,
+      "pct_centre": 27.643389542720097,
+      "pct_droite": 34.2856568651937,
+      "pct_gauche": 38.0709535920862,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 28.638819675250264,
-      "pct_droite": 39.22302155124962,
-      "pct_gauche": 32.138158773500116,
+      "pct_centre": 28.63928215667164,
+      "pct_droite": 39.22250560586363,
+      "pct_gauche": 32.13821223746473,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.33084830534155,
-      "pct_droite": 35.4803134570836,
-      "pct_gauche": 36.18883823757484,
+      "pct_centre": 28.33078417545162,
+      "pct_droite": 35.481102640799755,
+      "pct_gauche": 36.18811318374863,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 25.470282161679165,
-      "pct_droite": 38.8131250130457,
-      "pct_gauche": 35.71659282527513,
+      "pct_centre": 25.47007714549183,
+      "pct_droite": 38.81398154630888,
+      "pct_gauche": 35.7159413081993,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 31.738405940343302,
-      "pct_droite": 31.37200200513937,
-      "pct_gauche": 36.88959205451733,
+      "pct_centre": 31.73895256833023,
+      "pct_droite": 31.373418982364782,
+      "pct_gauche": 36.88762844930499,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 27.911914127398436,
-      "pct_droite": 41.46298915383857,
-      "pct_gauche": 30.625096718762983,
+      "pct_centre": 27.912527978041446,
+      "pct_droite": 41.46251111554279,
+      "pct_gauche": 30.624960906415765,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 30.213084310310016,
-      "pct_droite": 36.55184998832418,
-      "pct_gauche": 33.235065701365805,
+      "pct_centre": 30.21503839979602,
+      "pct_droite": 36.55266608793898,
+      "pct_gauche": 33.23229551226501,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.800501087375807,
-      "pct_droite": 34.10808391931827,
-      "pct_gauche": 37.09141499330592,
+      "pct_centre": 28.798989939410603,
+      "pct_droite": 34.11137188106706,
+      "pct_gauche": 37.089638179522346,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 30.899969859536196,
-      "pct_droite": 38.66051352456914,
-      "pct_gauche": 30.439516615894657,
+      "pct_centre": 30.900044253467325,
+      "pct_droite": 38.660313074310324,
+      "pct_gauche": 30.439642672222366,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.059210229385112,
-      "pct_droite": 39.35597641029563,
-      "pct_gauche": 32.58481336031927,
+      "pct_centre": 28.059058328502395,
+      "pct_droite": 39.35611392528258,
+      "pct_gauche": 32.584827746215026,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 29.64633161177733,
-      "pct_droite": 39.982150324024566,
-      "pct_gauche": 30.371518064198096,
+      "pct_centre": 29.646509010819972,
+      "pct_droite": 39.98229292404482,
+      "pct_gauche": 30.371198065135196,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 29.404676410514778,
-      "pct_droite": 36.93029336136751,
-      "pct_gauche": 33.6650302281177,
+      "pct_centre": 29.404108540143408,
+      "pct_droite": 36.9311127798937,
+      "pct_gauche": 33.664778679962886,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 30.42706632527066,
-      "pct_droite": 38.48576099319371,
-      "pct_gauche": 31.08717268153564,
+      "pct_centre": 30.42715951944901,
+      "pct_droite": 38.48539584698404,
+      "pct_gauche": 31.08744463356694,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 29.961389506100726,
-      "pct_droite": 32.9602086783187,
-      "pct_gauche": 37.078401815580584,
+      "pct_centre": 29.960860455877114,
+      "pct_droite": 32.96095039809728,
+      "pct_gauche": 37.0781891460256,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 28.89309786577943,
-      "pct_droite": 38.81888750389611,
-      "pct_gauche": 32.28801463032446,
+      "pct_centre": 28.893045112809773,
+      "pct_droite": 38.82022930716406,
+      "pct_gauche": 32.28672558002615,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.73653055249393,
-      "pct_droite": 39.23291990402104,
-      "pct_gauche": 32.03054954348502,
+      "pct_centre": 28.736939843818867,
+      "pct_droite": 39.23254165022826,
+      "pct_gauche": 32.03051850595287,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.17280712455366,
-      "pct_droite": 41.24823640898456,
-      "pct_gauche": 30.578956466461776,
+      "pct_centre": 28.17291561037212,
+      "pct_droite": 41.2484377238104,
+      "pct_gauche": 30.578646665817494,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 29.453975140104184,
-      "pct_droite": 38.38950655186805,
-      "pct_gauche": 32.15651830802775,
+      "pct_centre": 29.45503869043518,
+      "pct_droite": 38.38924337724703,
+      "pct_gauche": 32.15571793231779,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 31.43211394226077,
-      "pct_droite": 34.693699502900934,
-      "pct_gauche": 33.874186554838296,
+      "pct_centre": 31.43247746186269,
+      "pct_droite": 34.693860313521704,
+      "pct_gauche": 33.873662224615614,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 32.33213569273327,
-      "pct_droite": 37.6259503566192,
-      "pct_gauche": 30.04191395064753,
+      "pct_centre": 32.33162013939397,
+      "pct_droite": 37.62709588875778,
+      "pct_gauche": 30.04128397184826,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 29.159862700270338,
-      "pct_droite": 37.28682243140617,
-      "pct_gauche": 33.55331486832349,
+      "pct_centre": 29.159878043482284,
+      "pct_droite": 37.28675608737665,
+      "pct_gauche": 33.55336586914105,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.336541661018018,
-      "pct_droite": 40.47800569872705,
-      "pct_gauche": 31.18545264025493,
+      "pct_centre": 28.33688513944807,
+      "pct_droite": 40.47769161482226,
+      "pct_gauche": 31.185423245729655,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 30.399034585172934,
-      "pct_droite": 40.06423375527534,
-      "pct_gauche": 29.53673165955172,
+      "pct_centre": 30.399595774125,
+      "pct_droite": 40.06403129180224,
+      "pct_gauche": 29.536372934072762,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 29.4076957578348,
-      "pct_droite": 36.49879138852185,
-      "pct_gauche": 34.09351285364335,
+      "pct_centre": 29.40796490967699,
+      "pct_droite": 36.4990525762195,
+      "pct_gauche": 34.0929825141035,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 27.082269297129415,
-      "pct_droite": 41.550388027754,
-      "pct_gauche": 31.36734267511659,
+      "pct_centre": 27.08241860568415,
+      "pct_droite": 41.550127318770045,
+      "pct_gauche": 31.367454075545805,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 30.814427785838756,
-      "pct_droite": 35.86568324532325,
-      "pct_gauche": 33.319888968837994,
+      "pct_centre": 30.81475273941731,
+      "pct_droite": 35.8659070807622,
+      "pct_gauche": 33.31934017982049,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 27.680286178941554,
-      "pct_droite": 37.61410921724453,
-      "pct_gauche": 34.70560460381392,
+      "pct_centre": 27.68070548279568,
+      "pct_droite": 37.61475540174101,
+      "pct_gauche": 34.704539115463305,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.9381580247185,
-      "pct_droite": 40.69685639902622,
-      "pct_gauche": 30.364985576255275,
+      "pct_centre": 28.938291986647812,
+      "pct_droite": 40.696757061320795,
+      "pct_gauche": 30.364950952031407,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 24.346038830017886,
-      "pct_droite": 38.75069890168774,
-      "pct_gauche": 36.90326226829438,
+      "pct_centre": 24.345874020040004,
+      "pct_droite": 38.75155529691839,
+      "pct_gauche": 36.90257068304161,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 27.88087573911512,
-      "pct_droite": 37.629484765341395,
-      "pct_gauche": 34.48963949554349,
+      "pct_centre": 27.88129330815215,
+      "pct_droite": 37.62949471370419,
+      "pct_gauche": 34.489211978143665,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.83740590530212,
-      "pct_droite": 41.69563226152029,
-      "pct_gauche": 29.466961833177578,
+      "pct_centre": 28.837732419106064,
+      "pct_droite": 41.69561392598779,
+      "pct_gauche": 29.46665365490614,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 27.310351358788452,
-      "pct_droite": 36.41579869774193,
-      "pct_gauche": 36.273849943469614,
+      "pct_centre": 27.31000549929499,
+      "pct_droite": 36.41695210464248,
+      "pct_gauche": 36.273042396062536,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 30.92586650748871,
-      "pct_droite": 34.99281109379733,
-      "pct_gauche": 34.081322398713965,
+      "pct_centre": 30.92604212512262,
+      "pct_droite": 34.99284881762702,
+      "pct_gauche": 34.081109057250345,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 26.95002770580464,
-      "pct_droite": 39.12418316210298,
-      "pct_gauche": 33.92578913209238,
+      "pct_centre": 26.950628814748423,
+      "pct_droite": 39.12427302217637,
+      "pct_gauche": 33.92509816307521,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 27.276021511468016,
-      "pct_droite": 39.812114333411664,
-      "pct_gauche": 32.91186415512031,
+      "pct_centre": 27.276230382249224,
+      "pct_droite": 39.81212205254213,
+      "pct_gauche": 32.91164756520863,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 22.85145147996912,
-      "pct_droite": 42.14029980793006,
-      "pct_gauche": 35.00824871210082,
+      "pct_centre": 22.851703822966975,
+      "pct_droite": 42.14083792643397,
+      "pct_gauche": 35.00745825059905,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 30.155227711951067,
-      "pct_droite": 36.13576628514515,
-      "pct_gauche": 33.70900600290379,
+      "pct_centre": 30.155082470481297,
+      "pct_droite": 36.13639047952201,
+      "pct_gauche": 33.708527049996704,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 29.9474926097608,
-      "pct_droite": 38.03387456915309,
-      "pct_gauche": 32.018632821086115,
+      "pct_centre": 29.94791464667459,
+      "pct_droite": 38.03455121119387,
+      "pct_gauche": 32.01753414213154,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.372363593948425,
-      "pct_droite": 32.61586190391459,
-      "pct_gauche": 39.01177450213698,
+      "pct_centre": 28.372309270773034,
+      "pct_droite": 32.616657375570476,
+      "pct_gauche": 39.01103335365648,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 29.49674821767533,
-      "pct_droite": 39.66363046850685,
-      "pct_gauche": 30.83962131381784,
+      "pct_centre": 29.496285568772574,
+      "pct_droite": 39.66330187547023,
+      "pct_gauche": 30.84041255575719,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 30.27910711778123,
-      "pct_droite": 39.18572812802821,
-      "pct_gauche": 30.535164754190568,
+      "pct_centre": 30.27928296172177,
+      "pct_droite": 39.18657418999998,
+      "pct_gauche": 30.534142848278258,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.713070139977816,
-      "pct_droite": 39.30892330877868,
-      "pct_gauche": 31.97800655124351,
+      "pct_centre": 28.713599060883254,
+      "pct_droite": 39.30917256396349,
+      "pct_gauche": 31.977228375153256,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.653156912354795,
-      "pct_droite": 38.103203188342086,
-      "pct_gauche": 33.24363989930313,
+      "pct_centre": 28.65298366690419,
+      "pct_droite": 38.10310743897293,
+      "pct_gauche": 33.24390889412288,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 30.851774920032383,
-      "pct_droite": 34.1604509649347,
-      "pct_gauche": 34.98777411503291,
+      "pct_centre": 30.85208708275254,
+      "pct_droite": 34.160851912278034,
+      "pct_gauche": 34.98706100496942,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 23.01089279000711,
-      "pct_droite": 37.479270358925575,
-      "pct_gauche": 39.50983685106732,
+      "pct_centre": 23.01103490507759,
+      "pct_droite": 37.48005942243529,
+      "pct_gauche": 39.508905672487124,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 28.680529425539486,
-      "pct_droite": 34.672852386655336,
-      "pct_gauche": 36.64661818780518,
+      "pct_centre": 28.68041418469484,
+      "pct_droite": 34.67371432863528,
+      "pct_gauche": 36.64587148666987,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 28.124082963961673,
-      "pct_droite": 30.38576473740935,
-      "pct_gauche": 41.49015229862897,
+      "pct_centre": 28.124186575101216,
+      "pct_droite": 30.38681965087411,
+      "pct_gauche": 41.48899377402467,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 31.569206351483693,
-      "pct_droite": 29.437087472252326,
-      "pct_gauche": 38.99370617626399,
+      "pct_centre": 31.569532196558498,
+      "pct_droite": 29.438077319933814,
+      "pct_gauche": 38.992390483507684,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 30.33833805518921,
-      "pct_droite": 38.7377254749209,
-      "pct_gauche": 30.923936469889888,
+      "pct_centre": 30.338181309248963,
+      "pct_droite": 38.73807611668496,
+      "pct_gauche": 30.923742574066072,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 27.448176478255093,
-      "pct_droite": 39.21148286159505,
-      "pct_gauche": 33.34034066014985,
+      "pct_centre": 27.448148713618597,
+      "pct_droite": 39.2116507826379,
+      "pct_gauche": 33.340200503743496,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 27.58998302895181,
-      "pct_droite": 39.04883680000481,
-      "pct_gauche": 33.36118017104338,
+      "pct_centre": 27.589768327613136,
+      "pct_droite": 39.04946139371662,
+      "pct_gauche": 33.36077027867024,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 26.727120734207393,
-      "pct_droite": 41.44215366272716,
-      "pct_gauche": 31.830725603065453,
+      "pct_centre": 26.727076392845184,
+      "pct_droite": 41.442512066860765,
+      "pct_gauche": 31.830411540294044,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 25.256142592438106,
-      "pct_droite": 43.05739618232127,
-      "pct_gauche": 31.68646122524062,
+      "pct_centre": 25.25610712034864,
+      "pct_droite": 43.058728070350526,
+      "pct_gauche": 31.68516480930083,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 22.58205514265036,
-      "pct_droite": 43.24724247145934,
-      "pct_gauche": 34.17070238589031,
+      "pct_centre": 22.581927351154192,
+      "pct_droite": 43.24776107174749,
+      "pct_gauche": 34.170311577098325,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 31.54107430273005,
-      "pct_droite": 37.071784664612885,
-      "pct_gauche": 31.387141032657073,
+      "pct_centre": 31.541165167925527,
+      "pct_droite": 37.073116536163084,
+      "pct_gauche": 31.385718295911406,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 31.104192609111404,
-      "pct_droite": 37.60370849407981,
-      "pct_gauche": 31.29209889680879,
+      "pct_centre": 31.10393592049789,
+      "pct_droite": 37.60391194292003,
+      "pct_gauche": 31.292152136582075,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 30.27999741942633,
-      "pct_droite": 38.16055652855957,
-      "pct_gauche": 31.559446052014113,
+      "pct_centre": 30.27963021609151,
+      "pct_droite": 38.16083444986687,
+      "pct_gauche": 31.559535334041623,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.274646201433008,
-      "pct_droite": 39.81247592121755,
-      "pct_gauche": 31.912877877349437,
+      "pct_centre": 28.274718205910247,
+      "pct_droite": 39.81230644636838,
+      "pct_gauche": 31.912975347721385,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 28.379199349065754,
-      "pct_droite": 41.59427094821247,
-      "pct_gauche": 30.026529702721767,
+      "pct_centre": 28.379183893932908,
+      "pct_droite": 41.594481851341136,
+      "pct_gauche": 30.02633425472595,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 25.842636594764585,
-      "pct_droite": 41.065871824835185,
-      "pct_gauche": 33.09149158040023,
+      "pct_centre": 25.842662023924127,
+      "pct_droite": 41.06616212061374,
+      "pct_gauche": 33.09117585546213,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 29.162581999321187,
-      "pct_droite": 29.981370510996253,
-      "pct_gauche": 40.85604748968256,
+      "pct_centre": 29.162924327411794,
+      "pct_droite": 29.982333670189398,
+      "pct_gauche": 40.8547420023988,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 31.749758950164196,
-      "pct_droite": 28.335032533098865,
-      "pct_gauche": 39.91520851673693,
+      "pct_centre": 31.750485642670856,
+      "pct_droite": 28.33446502920534,
+      "pct_gauche": 39.9150493281238,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 23.02109373743129,
-      "pct_droite": 29.80794892234318,
-      "pct_gauche": 47.170957340225534,
+      "pct_centre": 23.022042238827847,
+      "pct_droite": 29.808523396497076,
+      "pct_gauche": 47.16943436467506,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 29.31174011248859,
-      "pct_droite": 28.730479595733883,
-      "pct_gauche": 41.95778029177753,
+      "pct_centre": 29.312912465829594,
+      "pct_droite": 28.731153208463322,
+      "pct_gauche": 41.955934325707084,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 27.219943057577485,
-      "pct_droite": 30.198616245143945,
-      "pct_gauche": 42.58144069727858,
+      "pct_centre": 27.220430780734713,
+      "pct_droite": 30.199619270152727,
+      "pct_gauche": 42.57994994911255,
       "vainqueur": "gauche"
     },
     {
-      "pct_centre": 16.930592094634743,
-      "pct_droite": 41.64771575246739,
-      "pct_gauche": 41.42169215289787,
+      "pct_centre": 16.929657785979565,
+      "pct_droite": 41.64894331844311,
+      "pct_gauche": 41.421398895577326,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 19.532345577886414,
-      "pct_droite": 41.85879431269057,
-      "pct_gauche": 38.60886010942301,
+      "pct_centre": 19.531897926246415,
+      "pct_droite": 41.85894806637648,
+      "pct_gauche": 38.609154007377114,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 17.00735196034148,
-      "pct_droite": 44.13039535284396,
-      "pct_gauche": 38.86225268681456,
+      "pct_centre": 17.007774844060833,
+      "pct_droite": 44.13063113503705,
+      "pct_gauche": 38.86159402090212,
       "vainqueur": "droite"
     },
     {
-      "pct_centre": 21.157551189474454,
-      "pct_droite": 37.37198940734226,
-      "pct_gauche": 41.470459403183284,
+      "pct_centre": 21.157378949203796,
+      "pct_droite": 37.37290001764028,
+      "pct_gauche": 41.46972103315592,
       "vainqueur": "gauche"
     }
   ],

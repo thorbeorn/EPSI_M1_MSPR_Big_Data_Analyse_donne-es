@@ -1,6 +1,6 @@
 {
   "model": "DecisionTree",
-  "generated_at": "2026-03-28T13:14:33.015288",
+  "generated_at": "2026-03-30T11:00:51.446536",
   "metrics": {
     "accuracy_pct": 54.76,
     "mae_moyen": 7.0482,

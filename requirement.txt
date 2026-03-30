@@ -21,3 +21,4 @@ pymysql
 minio
 pyarrow
 scikit-learn
+matplotlib
