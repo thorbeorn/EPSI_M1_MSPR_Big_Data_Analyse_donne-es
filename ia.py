@@ -88,8 +88,6 @@ except ModuleNotFoundError as e:
         "(pip install -r requirement.txt)."
     ) from e
 
-RandomForest_GradientBoosting = getattr(
-    __import__("[ia]prediction.RandomForest_GradientBoosting"), "RandomForest_GradientBoosting")
 svm = getattr(
     __import__("[ia]prediction.svm"), "svm")
 mlp = getattr(
@@ -117,15 +115,6 @@ data_quality_module.quality_report(
     f"president_quality_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 )
 
-# ── ENSEMBLE LEARNING ─────────────────────────────────────────────────────────
-
-results_ensemble = RandomForest_GradientBoosting.train_and_predict(
-    df_indicator, df_president, annee_cible=2024
-)
-_write_json("ensemble_result.json", _build_result_json("EnsembleLearning", results_ensemble))
-logger.info(f"CSV importance criteres : {results_ensemble.get('csv_importance')}")
-logger.info(f"CSV resultats familles  : {results_ensemble.get('csv_resultats')}")
-
 # ── SVM ───────────────────────────────────────────────────────────────────────
 
 results_svm = svm.train_logistic_model(df_indicator, df_president)
@@ -146,14 +135,14 @@ _write_json("decision_tree_result.json", _build_result_json("DecisionTree", resu
 results_ada = adaboost.train_logistic_model(df_indicator, df_president)
 _write_json("adaboost_result.json", _build_result_json("AdaBoost", results_ada))
 
-# ── RANDOM FOREST SEUL ────────────────────────────────────────────────────────
+# ── RANDOM FOREST ────────────────────────────────────────────────────────
 
 results_rf = prediction_random_forest.train_and_predict(
     df_indicator, df_president, annee_cible=2024
 )
 _write_json("random_forest_result.json", _build_result_json("RandomForest", results_rf))
 
-# ── GRADIENT BOOSTING SEUL ────────────────────────────────────────────────────
+# ── GRADIENT BOOSTING ────────────────────────────────────────────────────
 
 results_gbr = prediction_gradient_boosting.train_and_predict(
     df_indicator, df_president, annee_cible=2024
@@ -169,7 +158,6 @@ logger.info("RECAPITULATIF DES MODELES")
 logger.info("=" * 70)
 
 all_results = {
-    "EnsembleLearning": results_ensemble,
     "SVM":              results_svm,
     "MLP":              results_mlp,
     "DecisionTree":     results_dt,

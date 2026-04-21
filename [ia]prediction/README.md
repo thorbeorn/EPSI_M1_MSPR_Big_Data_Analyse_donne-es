@@ -12,7 +12,8 @@ Ce dossier contient les scripts de **modélisation prédictive** (machine learni
 - `adaboost.py` — entraînement et évaluation d'un modèle AdaBoost.
 - `decision_tree.py` — entraînement et évaluation d'un Decision Tree.
 - `mlp.py` — entraînement et évaluation d'un réseau de neurones (MLP).
-- `RandomForest_GradientBoosting.py` — entraînement et évaluation combinée Random Forest + Gradient Boosting.
+- `prediction_random_forest.py` — entraînement et évaluation de Random Forest.
+- `prediction_gradient_boosting.py` — entraînement et évaluation de Gradient Boosting.
 - `svm.py` — entraînement et évaluation d'un Support Vector Machine.
 
 ## ✅ Utilisation générale

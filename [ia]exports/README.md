@@ -8,10 +8,10 @@ Ce dossier contient les **résultats d'exécution** des modèles d'apprentissage
 - `decision_tree_result.json` — résultat du modèle Decision Tree
 - `mlp_result.json` — résultat du modèle MLP
 - `svm_result.json` — résultat du modèle SVM
-- `RandomForest_GradientBoosting_result.json` — résultat du modèle Random Forest + Gradient Boosting
-- `RandomForest_GradientBoosting_national.csv` — export des prédictions agrégées au niveau national
-- `RandomForest_GradientBoosting_par_dept.csv` — export des prédictions par département
-- `RandomForest_GradientBoosting_importance_croise.csv` — importance croisée des features pour Random Forest / Gradient Boosting
+- `random_forest_result.json` — résultat du modèle Random Forest
+- `gradient_boosting_result.json` - résultat du modèle Gradient Boosting
+- `gb_resultats_par famille.csv` — export des prédictions par département et au niveau national
+- `gb_importance_criteres.csv` — importance des critères utilisés par Gradient Boosting pour la prédiction
 
 ## 🧠 À quoi servent ces fichiers ?
 
