@@ -44,7 +44,7 @@ URLS = {
     "taux_chommage": "https://www.insee.fr/fr/statistiques/fichier/2012804/sl_etc_2025T4.xls",
     "age_moyen": "https://data.sports.gouv.fr/api/explore/v2.1/catalog/datasets/pop_dep_age_sexe/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
     "compte_publique": "https://data.ofgl.fr/api/explore/v2.1/catalog/datasets/ofgl-base-departements-fonctionnelle/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
-    "categorie_professionnelle": "https://api.insee.fr/melodi/data/DD_EEC_SERIES?UNIT_MEASURE=_Z&SEX=_T&AGE=_T&EDUC=_T&WKTIME=_T&UNDEREMP=_T",
+    "categorie_professionnelle": "https://api.insee.fr/melodi/data/DD_EEC_SERIES?UNIT_MEASURE=PS&SEX=_T&AGE=_T&EDUC=_T&WKTIME=_T&UNDEREMP=_T",
     "equipement_sportif": "https://data.education.gouv.fr/api/explore/v2.1/catalog/datasets/fr-en-data-es-base-de-donnees/exports/parquet?lang=fr&timezone=Europe%2FBerlin",
     "professionnels_sante": {
         "16": "https://www.assurance-maladie.ameli.fr/sites/default/files/2016_effectif-densite-de-professionnels-de-sante-liberaux-par-departement_serie-annuelle.xls",
